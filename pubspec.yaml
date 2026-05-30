@@ -1,0 +1,36 @@
+name: grc
+description: GRC runs mobile app.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  get: ^4.7.2
+  dio: ^5.8.0+1
+  flutter_query: ^0.7.0
+  flutter_hooks: ^0.21.2
+  dart_mappable: ^4.5.0
+  flutter_dotenv: ^5.2.1
+  shared_preferences: ^2.5.3
+  validators: ^3.0.0
+  google_sign_in: ^6.3.0
+  image_picker: ^1.1.2
+  fluttertoast: ^8.2.12
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  build_runner: ^2.4.15
+  dart_mappable_builder: ^4.5.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/logos/
+    - .env
