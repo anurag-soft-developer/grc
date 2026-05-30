@@ -11,11 +11,7 @@ import 'package:grc/core/utils/exception_handler.dart';
 class AuthRepository {
   final ApiService _api = ApiService();
   final AuthStorageService _storage = AuthStorageService();
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    serverClientId: EnvConfig.googleClientId.isNotEmpty
-        ? EnvConfig.googleClientId
-        : null,
-  );
+  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
 
   Future<UserModel?> getStoredUser() async {
     try {
@@ -74,9 +70,7 @@ class AuthRepository {
     if (response == null) return null;
 
     if (response['requiresOtp'] == true) {
-      return LoginResult.challenge(
-        LoginOtpChallengeResponse.fromMap(response),
-      );
+      return LoginResult.challenge(LoginOtpChallengeResponse.fromMap(response));
     }
 
     final auth = AuthResponse.fromMap(response);
@@ -102,9 +96,10 @@ class AuthRepository {
 
   Future<UserModel?> signInWithGoogle() async {
     try {
-      final account = await _googleSignIn.signIn();
-      if (account == null) return null;
-      final auth = await account.authentication;
+      await _googleSignIn.initialize(serverClientId: EnvConfig.googleClientId);
+
+      final GoogleSignInAccount user = await _googleSignIn.authenticate();
+      final GoogleSignInAuthentication auth = user.authentication;
       final idToken = auth.idToken;
       if (idToken == null) {
         ExceptionHandler.showErrorToast('Google Sign-In failed');
@@ -176,7 +171,9 @@ class AuthRepository {
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
     );
-    ExceptionHandler.showSuccessToast(AppConstants.successMessages.emailVerified);
+    ExceptionHandler.showSuccessToast(
+      AppConstants.successMessages.emailVerified,
+    );
     return tokens;
   }
 

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:grc/core/auth/auth_state_controller.dart';
 import 'package:grc/core/config/constants.dart';
-import 'package:grc/core/utils/exception_handler.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -46,11 +45,11 @@ class SettingsScreen extends StatelessWidget {
           const _SectionHeader('Legal'),
           ListTile(
             title: const Text('Terms of service'),
-            onTap: () => ExceptionHandler.showInfoToast('Coming soon'),
+            onTap: () => Get.toNamed(AppConstants.routes.termsOfService),
           ),
           ListTile(
             title: const Text('Privacy policy'),
-            onTap: () => ExceptionHandler.showInfoToast('Coming soon'),
+            onTap: () => Get.toNamed(AppConstants.routes.privacyPolicy),
           ),
           const Divider(),
           ListTile(

@@ -25,6 +25,8 @@ class Routes {
   final String settings = '/settings';
   final String changePassword = '/change-password';
   final String twoFactorAuth = '/two-factor';
+  final String termsOfService = '/terms-of-service';
+  final String privacyPolicy = '/privacy-policy';
   final String accessDenied = '/access-denied';
 }
 

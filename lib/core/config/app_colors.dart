@@ -1,12 +1,12 @@
-/// GRC brand palette (light-first).
+/// GRC brand palette (light-first, modern enterprise look).
 class AppColors {
-  static const int primary = 0xFFE85D4C;
-  static const int secondary = 0xFF1B6B5A;
-  static const int background = 0xFFF7F5F2;
+  static const int primary = 0xFF4F46E5;
+  static const int secondary = 0xFF0D9488;
+  static const int background = 0xFFF8FAFC;
   static const int surface = 0xFFFFFFFF;
-  static const int error = 0xFFDC2626;
-  static const int success = 0xFF16A34A;
-  static const int text = 0xFF1F2937;
-  static const int textSecondary = 0xFF6B7280;
-  static const int divider = 0xFFE5E7EB;
+  static const int error = 0xFFEF4444;
+  static const int success = 0xFF10B981;
+  static const int text = 0xFF0F172A;
+  static const int textSecondary = 0xFF64748B;
+  static const int divider = 0xFFE2E8F0;
 }

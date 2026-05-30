@@ -22,6 +22,15 @@ class AuthGuard extends GetMiddleware {
     if (!_auth.isLoggedIn) {
       return RouteSettings(name: AppConstants.routes.login);
     }
+
+    if (_auth.user?.isEmailVerified != true &&
+        route != AppConstants.routes.verifyEmail) {
+      return RouteSettings(
+        name: AppConstants.routes.verifyEmail,
+        arguments: {'email': _auth.user?.email},
+      );
+    }
+
     return null;
   }
 }

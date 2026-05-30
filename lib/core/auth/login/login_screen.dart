@@ -134,7 +134,18 @@ class LoginScreen extends HookWidget {
                       CustomButton(
                         text: 'Continue with Google',
                         isOutlined: true,
-                        icon: const Icon(Icons.g_mobiledata, size: 28),
+                        icon: Container(
+                          width: 20,
+                          height: 20,
+                          decoration: const BoxDecoration(
+                            image: DecorationImage(
+                              image: NetworkImage(
+                                'https://developers.google.com/identity/images/g-logo.png',
+                              ),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
                         onPressed: () => googleMutation.mutate(null),
                       ),
                       const SizedBox(height: 24),

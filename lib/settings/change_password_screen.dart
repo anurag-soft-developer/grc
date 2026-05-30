@@ -24,16 +24,28 @@ class ChangePasswordScreen extends HookWidget {
     final newPassword = useTextEditingController();
     final confirmPassword = useTextEditingController();
     final otpController = useTextEditingController();
-    final needsOtp = useState(false);
+    final initialOtpSent = useState(false);
 
     final user = authState.user;
-    final requiresOtp =
-        user?.isPasswordExists != true || user?.twoFactorEnabled == true;
+    final hasPassword = user?.isPasswordExists == true;
+    final twoFactorOn = user?.twoFactorEnabled == true;
+    final needsOtpForVerification = !hasPassword || twoFactorOn;
 
     final sendOtpMutation = useMutation<bool, Object, void, void>(
       (_, __) => authRepo.sendChangePasswordOtp(),
       mutationKey: const ['mutation', 'sendChangePasswordOtp'],
+      onSuccess: (ok, _, __, ___) {
+        if (ok) {
+          initialOtpSent.value = true;
+        }
+      },
     );
+
+    useEffect(() {
+      if (!needsOtpForVerification) return null;
+      sendOtpMutation.mutate(null);
+      return null;
+    }, const []);
 
     final changeMutation = useMutation<bool, Object, void, void>(
       (_, __) async {
@@ -42,8 +54,9 @@ class ChangePasswordScreen extends HookWidget {
         }
         return authRepo.changePassword(
           newPassword: newPassword.text.trim(),
-          currentPassword: requiresOtp ? null : currentPassword.text.trim(),
-          otp: requiresOtp ? otpController.text.trim() : null,
+          currentPassword:
+              hasPassword ? currentPassword.text.trim() : null,
+          otp: needsOtpForVerification ? otpController.text.trim() : null,
         );
       },
       mutationKey: QueryKeys.changePassword,
@@ -59,40 +72,68 @@ class ChangePasswordScreen extends HookWidget {
       appBar: AppBar(title: const Text('Change password')),
       body: MutationLoadingOverlay(
         mutationKey: QueryKeys.changePassword,
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Form(
             key: formKey,
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (!requiresOtp) ...[
+                if (needsOtpForVerification) ...[
+                  Text(
+                    twoFactorOn && hasPassword
+                        ? 'Two-factor authentication is on. Enter the code we email you, plus your current password.'
+                        : twoFactorOn
+                            ? 'Two-factor authentication is on. Enter the code we email you.'
+                            : 'You signed in without a password. Enter the code we email you to set a new password.',
+                    style: const TextStyle(
+                      color: Color(AppColors.textSecondary),
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    controller: otpController,
+                    labelText: 'Verification code',
+                    hintText: '${AppConstants.otp.length}-digit code',
+                    keyboardType: TextInputType.number,
+                    validator: Validators.validateOtp,
+                  ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: sendOtpMutation.isPending
+                          ? null
+                          : () {
+                              sendOtpMutation.mutate(null);
+                              if (initialOtpSent.value) {
+                                ExceptionHandler.showSuccessToast(
+                                  AppConstants.successMessages.otpSent,
+                                );
+                              }
+                            },
+                      child: sendOtpMutation.isPending
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : Text(
+                              initialOtpSent.value ? 'Resend code' : 'Send code',
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+                if (hasPassword) ...[
                   CustomTextField(
                     controller: currentPassword,
                     labelText: 'Current password',
                     obscureText: true,
+                    validator: (v) =>
+                        Validators.validateRequired(v, 'Current password'),
                   ),
                   const SizedBox(height: 16),
-                ],
-                if (requiresOtp) ...[
-                  if (!needsOtp.value)
-                    CustomButton(
-                      text: 'Send OTP',
-                      onPressed: () {
-                        sendOtpMutation.mutate(null);
-                        needsOtp.value = true;
-                        ExceptionHandler.showSuccessToast(
-                          AppConstants.successMessages.otpSent,
-                        );
-                      },
-                    ),
-                  if (needsOtp.value) ...[
-                    CustomTextField(
-                      controller: otpController,
-                      labelText: 'OTP',
-                      validator: (v) => Validators.validateOtp(v),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
                 ],
                 CustomTextField(
                   controller: newPassword,
@@ -103,14 +144,14 @@ class ChangePasswordScreen extends HookWidget {
                 const SizedBox(height: 16),
                 CustomTextField(
                   controller: confirmPassword,
-                  labelText: 'Confirm password',
+                  labelText: 'Confirm new password',
                   obscureText: true,
                   validator: (v) => Validators.validateConfirmPassword(
                     v,
                     newPassword.text,
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 32),
                 CustomButton(
                   text: 'Update password',
                   onPressed: () => changeMutation.mutate(null),
