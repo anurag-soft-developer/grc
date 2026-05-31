@@ -75,11 +75,22 @@ class AuthStorageService {
     return prefs.getBool(AppConstants.storageKeys.isLoggedIn) ?? false;
   }
 
+  Future<AppMode> getAppMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    return AppMode.fromValue(prefs.getString(AppConstants.storageKeys.appMode));
+  }
+
+  Future<void> setAppMode(AppMode mode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(AppConstants.storageKeys.appMode, mode.value);
+  }
+
   Future<void> clearAuthData() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(AppConstants.storageKeys.accessToken);
     await prefs.remove(AppConstants.storageKeys.refreshToken);
     await prefs.remove(AppConstants.storageKeys.userData);
+    await prefs.remove(AppConstants.storageKeys.appMode);
     await prefs.setBool(AppConstants.storageKeys.isLoggedIn, false);
   }
 }

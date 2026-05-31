@@ -21,6 +21,7 @@ dependencies:
   google_sign_in: ^7.2.0
   image_picker: ^1.1.2
   fluttertoast: ^8.2.12
+  google_places_flutter: ^2.0.9
 
 dev_dependencies:
   flutter_test:

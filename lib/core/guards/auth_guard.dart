@@ -34,3 +34,17 @@ class AuthGuard extends GetMiddleware {
     return null;
   }
 }
+
+class RoleGuard extends GetMiddleware {
+  final List<String> allowedRoles;
+
+  RoleGuard({required this.allowedRoles});
+
+  @override
+  RouteSettings? redirect(String? route) {
+    if (!allowedRoles.contains(_auth.user?.role)) {
+      return RouteSettings(name: AppConstants.routes.accessDenied);
+    }
+    return null;
+  }
+}

@@ -50,6 +50,8 @@ class UserModel with UserModelMappable {
 
   String get displayName => fullName ?? email?.split('@').first ?? 'User';
 
+  bool get isAdmin => role == 'admin';
+
   static final fromMap = UserModelMapper.fromMap;
   static final fromJson = UserModelMapper.fromJson;
 }

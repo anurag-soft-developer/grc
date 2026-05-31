@@ -3,6 +3,8 @@ class QueryKeys {
 
   static const profile = ['profile'];
   static const authStatus = ['authStatus'];
+  static const adminEvents = ['adminEvents'];
+  static List<String> adminEvent(String id) => ['adminEvent', id];
 
   static const login = ['mutation', 'login'];
   static const verifyLoginOtp = ['mutation', 'verifyLoginOtp'];
@@ -16,4 +18,8 @@ class QueryKeys {
   static const sendVerificationEmail = ['mutation', 'sendVerificationEmail'];
   static const verifyEmail = ['mutation', 'verifyEmail'];
   static const avatarUpload = ['mutation', 'avatarUpload'];
+  static const createEvent = ['mutation', 'createEvent'];
+  static const updateEvent = ['mutation', 'updateEvent'];
+  static const publishEvent = ['mutation', 'publishEvent'];
+  static const closeEvent = ['mutation', 'closeEvent'];
 }

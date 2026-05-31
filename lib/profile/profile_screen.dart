@@ -25,7 +25,10 @@ class ProfileTabScreen extends HookWidget {
 
     useEffect(() {
       final data = profileQuery.data;
-      if (data != null) authState.setUser(data);
+      if (data == null) return null;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        authState.setUser(data);
+      });
       return null;
     }, [profileQuery.data]);
 
@@ -130,6 +133,31 @@ class ProfileContent extends StatelessWidget {
           Text(user.bio!),
         ],
         const SizedBox(height: 24),
+        Obx(() {
+          if (!authState.isAdmin) return const SizedBox.shrink();
+          final adminMode = authState.isAdminMode;
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SwitchListTile(
+                secondary: Icon(
+                  adminMode
+                      ? Icons.person_outline
+                      : Icons.admin_panel_settings_outlined,
+                ),
+                title: Text(adminMode ? 'Admin mode' : 'User mode'),
+                subtitle: Text(
+                  adminMode ? 'Switch to user mode' : 'Switch to admin mode',
+                ),
+                value: adminMode,
+                onChanged: (_) => authState.setAppMode(
+                  adminMode ? AppMode.user : AppMode.admin,
+                ),
+              ),
+              const Divider(),
+            ],
+          );
+        }),
         ListTile(
           leading: const Icon(Icons.edit_outlined),
           title: const Text('Edit profile'),

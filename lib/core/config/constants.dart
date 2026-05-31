@@ -28,6 +28,21 @@ class Routes {
   final String termsOfService = '/terms-of-service';
   final String privacyPolicy = '/privacy-policy';
   final String accessDenied = '/access-denied';
+  final String eventForm = '/admin/event-form';
+  final String adminEventDetail = '/admin/event-detail';
+}
+
+enum AppMode {
+  user('user'),
+  admin('admin');
+
+  const AppMode(this.value);
+  final String value;
+
+  static AppMode fromValue(String? raw) {
+    if (raw == AppMode.admin.value) return AppMode.admin;
+    return AppMode.user;
+  }
 }
 
 class StorageKeys {
@@ -37,6 +52,7 @@ class StorageKeys {
   final String refreshToken = 'refresh_token';
   final String userData = 'user_data';
   final String isLoggedIn = 'is_logged_in';
+  final String appMode = 'app_mode';
 }
 
 class ErrorMessages {

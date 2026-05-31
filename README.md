@@ -8,7 +8,7 @@ Mobile client for [grc-services](../grc-services). Uses **GetX** (routing, guard
    ```bash
    cp .env.example .env
    ```
-   Set `BASE_API_URL` (Android emulator: `http://10.0.2.2:3000`) and `GOOGLE_CLIENT_ID`.
+   Set `BASE_API_URL` (Android emulator: `http://10.0.2.2:3000`), `GOOGLE_CLIENT_ID`, and `GOOGLE_PLACES_API_KEY` (Places API + Place Details enabled).
 
 2. Install dependencies and generate mappers:
    ```bash

@@ -4,6 +4,8 @@ class EnvConfig {
   static String get appName => dotenv.env['APP_NAME'] ?? 'GRC';
   static String get baseApiUrl => dotenv.env['BASE_API_URL'] ?? '';
   static String get googleClientId => dotenv.env['GOOGLE_CLIENT_ID'] ?? '';
+  static String get googlePlacesApiKey =>
+      dotenv.env['GOOGLE_PLACES_API_KEY'] ?? '';
 
   static Future<void> initialize() async {
     await dotenv.load(fileName: '.env');

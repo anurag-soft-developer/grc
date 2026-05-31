@@ -6,6 +6,7 @@ class ApiConstants {
   static const auth = AuthEndpoints();
   static const user = UserEndpoints();
   static const storage = StorageEndpoints();
+  static const runEvents = RunEventEndpoints();
 
   static const Map<String, String> defaultHeaders = {
     'Content-Type': 'application/json',
@@ -47,4 +48,14 @@ class StorageEndpoints {
 
   String get uploadUrl => '/storage/upload-url';
   String get delete => '/storage/objects';
+}
+
+class RunEventEndpoints {
+  const RunEventEndpoints();
+
+  String get list => '/run-events';
+  String get create => '/run-events';
+  String eventById(String id) => '/run-events/$id';
+  String publish(String id) => '/run-events/$id/publish';
+  String close(String id) => '/run-events/$id/close';
 }
