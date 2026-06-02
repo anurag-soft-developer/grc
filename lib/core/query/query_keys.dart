@@ -4,6 +4,8 @@ class QueryKeys {
   static const profile = ['profile'];
   static const authStatus = ['authStatus'];
   static const adminEvents = ['adminEvents'];
+  static const publicUpcomingEvents = ['publicEvents', 'upcoming'];
+  static const publicClosedEvents = ['publicEvents', 'closed'];
   static List<String> adminEvent(String id) => ['adminEvent', id];
 
   static const login = ['mutation', 'login'];
@@ -22,4 +24,14 @@ class QueryKeys {
   static const updateEvent = ['mutation', 'updateEvent'];
   static const publishEvent = ['mutation', 'publishEvent'];
   static const closeEvent = ['mutation', 'closeEvent'];
+  static const archiveEvent = ['mutation', 'archiveEvent'];
+  static const pauseEventRegistrations = [
+    'mutation',
+    'pauseEventRegistrations',
+  ];
+  static const resumeEventRegistrations = [
+    'mutation',
+    'resumeEventRegistrations',
+  ];
+  static const deleteEvent = ['mutation', 'deleteEvent'];
 }

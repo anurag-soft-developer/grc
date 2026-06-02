@@ -4,7 +4,7 @@ import 'package:grc/admin/dashboard/admin_dashboard_controller.dart';
 import 'package:grc/admin/dashboard/admin_dashboard_screen.dart';
 import 'package:grc/admin/events/my_events_controller.dart';
 import 'package:grc/admin/events/my_events_screen.dart';
-import 'package:grc/events/events_placeholder_screen.dart';
+import 'package:grc/events/events_screen.dart';
 import 'package:grc/home/home_placeholder_screen.dart';
 import 'package:grc/profile/profile_screen.dart';
 import 'package:grc/registrations/registrations_placeholder_screen.dart';
@@ -50,7 +50,7 @@ final List<NavTab> kUserNavTabs = [
     icon: Icons.event_outlined,
     activeIcon: Icons.event,
     label: 'Events',
-    screenBuilder: () => const EventsPlaceholderScreen(),
+    screenBuilder: () => const EventsScreen(),
   ),
   NavTab(
     icon: Icons.assignment_outlined,

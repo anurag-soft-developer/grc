@@ -8,6 +8,25 @@ class RunEventsService {
 
   final ApiService _api = ApiService();
 
+  Future<PaginatedRunEvents> listPublicEvents({
+    required String segment,
+    int page = 1,
+    int limit = 10,
+  }) async {
+    final response = await _api.get<Map<String, dynamic>>(
+      ApiConstants.runEvents.publicList,
+      queryParameters: {
+        'segment': segment,
+        'page': page,
+        'limit': limit,
+      },
+    );
+    if (response == null) {
+      throw Exception('Failed to load events');
+    }
+    return PaginatedRunEvents.fromApiMap(response, fallbackPage: page);
+  }
+
   Future<PaginatedRunEvents> listEvents({
     int page = 1,
     int limit = 10,
@@ -24,7 +43,7 @@ class RunEventsService {
     if (response == null) {
       throw Exception('Failed to load events');
     }
-    return PaginatedRunEvents.fromMap(response);
+    return PaginatedRunEvents.fromApiMap(response, fallbackPage: page);
   }
 
   Future<RunEventModel?> createEvent(CreateRunEventInput input) async {
@@ -70,5 +89,36 @@ class RunEventsService {
     );
     if (response == null) return null;
     return RunEventModel.fromMap(response);
+  }
+
+  Future<RunEventModel?> archiveEvent(String id) async {
+    final response = await _api.patch<Map<String, dynamic>>(
+      ApiConstants.runEvents.archive(id),
+    );
+    if (response == null) return null;
+    return RunEventModel.fromMap(response);
+  }
+
+  Future<RunEventModel?> pauseRegistrations(String id) async {
+    final response = await _api.patch<Map<String, dynamic>>(
+      ApiConstants.runEvents.pauseRegistrations(id),
+    );
+    if (response == null) return null;
+    return RunEventModel.fromMap(response);
+  }
+
+  Future<RunEventModel?> resumeRegistrations(String id) async {
+    final response = await _api.patch<Map<String, dynamic>>(
+      ApiConstants.runEvents.resumeRegistrations(id),
+    );
+    if (response == null) return null;
+    return RunEventModel.fromMap(response);
+  }
+
+  Future<bool> deleteEvent(String id) async {
+    final response = await _api.delete<Map<String, dynamic>>(
+      ApiConstants.runEvents.eventById(id),
+    );
+    return response != null && response['success'] == true;
   }
 }

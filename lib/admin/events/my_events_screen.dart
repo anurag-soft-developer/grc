@@ -4,7 +4,6 @@ import 'package:flutter_query/flutter_query.dart';
 import 'package:get/get.dart';
 import 'package:grc/admin/form/event_form_screen.dart';
 import 'package:grc/admin/events/model/run_event_model.dart';
-import 'package:grc/admin/events/my_events_controller.dart';
 import 'package:grc/admin/events/run_events_service.dart';
 import 'package:grc/components/admin/event_list_tile.dart';
 import 'package:grc/core/config/constants.dart';
@@ -15,32 +14,16 @@ class MyEventsScreen extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<MyEventsController>();
     final eventsQuery = useInfiniteQuery<PaginatedRunEvents, Object, int>(
       QueryKeys.adminEvents,
       (ctx) => RunEventsService.instance.listEvents(page: ctx.pageParam),
       initialPageParam: 1,
       nextPageParamBuilder: (data) {
         final last = data.pages.isNotEmpty ? data.pages.last : null;
-        if (last == null) return null;
-        if (last.page < last.totalPages) return last.page + 1;
-        return null;
+        if (last == null || !last.hasMore) return null;
+        return last.page + 1;
       },
     );
-
-    useEffect(() {
-      void onScroll() {
-        final pos = controller.scrollController.position;
-        if (pos.pixels >= pos.maxScrollExtent - 240) {
-          if (eventsQuery.hasNextPage && !eventsQuery.isFetchingNextPage) {
-            eventsQuery.fetchNextPage();
-          }
-        }
-      }
-
-      controller.scrollController.addListener(onScroll);
-      return () => controller.scrollController.removeListener(onScroll);
-    }, [eventsQuery.hasNextPage, eventsQuery.isFetchingNextPage]);
 
     final allEvents = eventsQuery.data?.pages
             .expand((p) => p.data)
@@ -86,24 +69,57 @@ class MyEventsScreen extends HookWidget {
     }
 
     if (allEvents.isEmpty) {
-      return const Center(child: Text('No events yet. Tap + to create one.'));
+      return RefreshIndicator(
+        onRefresh: () async => eventsQuery.refetch(),
+        color: const Color(AppColors.primary),
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: const [
+            SizedBox(
+              height: 240,
+              child: Center(
+                child: Text('No events yet. Tap + to create one.'),
+              ),
+            ),
+          ],
+        ),
+      );
     }
 
-    final controller = Get.find<MyEventsController>();
-
-    return ListView.builder(
-      controller: controller.scrollController,
-      padding: const EdgeInsets.all(16),
-      itemCount: allEvents.length + (eventsQuery.isFetchingNextPage ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index >= allEvents.length) {
-          return const Padding(
-            padding: EdgeInsets.all(16),
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
-        return AdminEventListTile(event: allEvents[index]);
-      },
+    return RefreshIndicator(
+      onRefresh: () async => eventsQuery.refetch(),
+      color: const Color(AppColors.primary),
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          if (notification.metrics.pixels >=
+              notification.metrics.maxScrollExtent - 160) {
+            if (eventsQuery.hasNextPage && !eventsQuery.isFetchingNextPage) {
+              eventsQuery.fetchNextPage();
+            }
+          }
+          return false;
+        },
+        child: ListView.builder(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          itemCount: allEvents.length + (eventsQuery.isFetchingNextPage ? 1 : 0),
+          itemBuilder: (context, index) {
+            if (index >= allEvents.length) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: Center(
+                  child: SizedBox(
+                    width: 28,
+                    height: 28,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+              );
+            }
+            return AdminEventListTile(event: allEvents[index]);
+          },
+        ),
+      ),
     );
   }
 }

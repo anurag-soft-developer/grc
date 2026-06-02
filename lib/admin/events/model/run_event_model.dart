@@ -43,6 +43,14 @@ class RunEventModel with RunEventModelMappable {
   @MappableField(key: 'coverImages')
   final List<String> coverImages;
   final String? status;
+  final bool isClosed;
+  final String? closedAt;
+  final String? publishedAt;
+  final bool archive;
+  @MappableField(key: 'registrationsPaused')
+  final bool registrationsPaused;
+  @MappableField(key: 'registeredCount')
+  final int? registeredCount;
   @MappableField(key: 'createdBy', hook: UserRefHook())
   final UserRefFieldInstance? createdBy;
 
@@ -59,8 +67,28 @@ class RunEventModel with RunEventModelMappable {
     this.maxParticipants,
     this.coverImages = const [],
     this.status,
+    this.isClosed = false,
+    this.closedAt,
+    this.publishedAt,
+    this.archive = false,
+    this.registrationsPaused = false,
+    this.registeredCount,
     this.createdBy,
   });
+
+  /// UI label for status chip (closed overrides published).
+  String get displayStatusLabel {
+    if (archive) return 'archived';
+    if (isClosed) return 'closed';
+    if (registrationsPaused) return 'paused';
+    return status ?? 'draft';
+  }
+
+  bool get isOpenForRegistration =>
+      status?.toLowerCase() == 'published' &&
+      !isClosed &&
+      !registrationsPaused &&
+      !archive;
 
   String get cityLabel => location?.city ?? '';
 
@@ -89,6 +117,7 @@ class PaginatedRunEvents with PaginatedRunEventsMappable {
   final int limit;
   @MappableField(key: 'totalPages')
   final int totalPages;
+  final bool hasMore;
 
   const PaginatedRunEvents({
     required this.data,
@@ -96,9 +125,50 @@ class PaginatedRunEvents with PaginatedRunEventsMappable {
     required this.page,
     required this.limit,
     required this.totalPages,
+    required this.hasMore,
   });
 
   static final fromMap = PaginatedRunEventsMapper.fromMap;
+
+  /// Parses API pagination; treats missing fields and empty `data` as success.
+  static PaginatedRunEvents fromApiMap(
+    Map<String, dynamic> map, {
+    int fallbackPage = 1,
+    int fallbackLimit = 10,
+  }) {
+    final rawData = map['data'];
+    final items = rawData is List
+        ? rawData
+              .whereType<Map>()
+              .map((e) => RunEventModel.fromMap(Map<String, dynamic>.from(e)))
+              .toList()
+        : <RunEventModel>[];
+
+    final totalDocuments = _readInt(map['totalDocuments']) ?? items.length;
+    final page = _readInt(map['page']) ?? fallbackPage;
+    final limit = _readInt(map['limit']) ?? fallbackLimit;
+    final totalPages =
+        _readInt(map['totalPages']) ??
+        (totalDocuments == 0 ? 1 : (totalDocuments / limit).ceil());
+    final hasMore = map['hasMore'] is bool
+        ? map['hasMore'] as bool
+        : page < totalPages;
+
+    return PaginatedRunEvents(
+      data: items,
+      totalDocuments: totalDocuments,
+      page: page,
+      limit: limit,
+      totalPages: totalPages,
+      hasMore: hasMore,
+    );
+  }
+
+  static int? _readInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return null;
+  }
 }
 
 /// Request body for POST /run-events (not deserialized from API).

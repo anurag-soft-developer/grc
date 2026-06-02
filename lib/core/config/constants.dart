@@ -30,6 +30,7 @@ class Routes {
   final String accessDenied = '/access-denied';
   final String eventForm = '/admin/event-form';
   final String adminEventDetail = '/admin/event-detail';
+  final String eventDetail = '/event-detail';
 }
 
 enum AppMode {

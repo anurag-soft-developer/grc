@@ -7,6 +7,8 @@ class CustomButton extends StatelessWidget {
   final bool isLoading;
   final bool isOutlined;
   final Widget? icon;
+  final double height;
+  final double? fontSize;
 
   const CustomButton({
     super.key,
@@ -15,6 +17,8 @@ class CustomButton extends StatelessWidget {
     this.isLoading = false,
     this.isOutlined = false,
     this.icon,
+    this.height = 50,
+    this.fontSize,
   });
 
   @override
@@ -28,29 +32,40 @@ class CustomButton extends StatelessWidget {
 
     return SizedBox(
       width: double.infinity,
-      height: 50,
+      height: height,
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: bg,
           foregroundColor: fg,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           side: isOutlined
               ? const BorderSide(color: Color(AppColors.primary))
               : null,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
         child: isLoading
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
+            ? SizedBox(
+                height: height * 0.4,
+                width: height * 0.4,
+                child: const CircularProgressIndicator(strokeWidth: 2),
               )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (icon != null) ...[icon!, const SizedBox(width: 8)],
-                  Text(text, style: const TextStyle(fontWeight: FontWeight.w600)),
-                ],
+            : FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (icon != null) ...[icon!, const SizedBox(width: 4)],
+                    Text(
+                      text,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: fontSize,
+                      ),
+                    ),
+                  ],
+                ),
               ),
       ),
     );

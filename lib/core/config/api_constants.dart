@@ -54,8 +54,14 @@ class RunEventEndpoints {
   const RunEventEndpoints();
 
   String get list => '/run-events';
+  String get publicList => '/run-events/public';
   String get create => '/run-events';
   String eventById(String id) => '/run-events/$id';
   String publish(String id) => '/run-events/$id/publish';
   String close(String id) => '/run-events/$id/close';
+  String archive(String id) => '/run-events/$id/archive';
+  String pauseRegistrations(String id) =>
+      '/run-events/$id/pause-registrations';
+  String resumeRegistrations(String id) =>
+      '/run-events/$id/resume-registrations';
 }

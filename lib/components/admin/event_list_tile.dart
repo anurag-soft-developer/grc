@@ -19,6 +19,43 @@ class AdminEventListTile extends StatelessWidget {
     }
   }
 
+  String? get _coverImageUrl {
+    for (final url in event.coverImages) {
+      if (url.isNotEmpty) return url;
+    }
+    return null;
+  }
+
+  Widget _coverThumbnail() {
+    const size = 56.0;
+    final url = _coverImageUrl;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: url != null
+          ? Image.network(
+              url,
+              width: size,
+              height: size,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => _coverPlaceholder(size),
+            )
+          : _coverPlaceholder(size),
+    );
+  }
+
+  Widget _coverPlaceholder(double size) {
+    return Container(
+      width: size,
+      height: size,
+      color: const Color(AppColors.divider),
+      child: const Icon(
+        Icons.event_outlined,
+        color: Color(AppColors.textSecondary),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final date = event.eventDate;
@@ -29,6 +66,8 @@ class AdminEventListTile extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        leading: _coverThumbnail(),
         onTap: () =>
             Get.toNamed(AppConstants.routes.adminEventDetail, arguments: event),
         title: Text(event.title),
@@ -36,15 +75,17 @@ class AdminEventListTile extends StatelessWidget {
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: _statusColor(event.status).withValues(alpha: 0.12),
+            color: _statusColor(
+              event.displayStatusLabel,
+            ).withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
-            (event.status ?? 'draft').toUpperCase(),
+            event.displayStatusLabel.toUpperCase(),
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: _statusColor(event.status),
+              color: _statusColor(event.displayStatusLabel),
             ),
           ),
         ),

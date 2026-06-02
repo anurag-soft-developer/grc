@@ -265,6 +265,45 @@ class RunEventModelMapper extends ClassMapperBase<RunEventModel> {
     _$status,
     opt: true,
   );
+  static bool _$isClosed(RunEventModel v) => v.isClosed;
+  static const Field<RunEventModel, bool> _f$isClosed = Field(
+    'isClosed',
+    _$isClosed,
+    opt: true,
+    def: false,
+  );
+  static String? _$closedAt(RunEventModel v) => v.closedAt;
+  static const Field<RunEventModel, String> _f$closedAt = Field(
+    'closedAt',
+    _$closedAt,
+    opt: true,
+  );
+  static String? _$publishedAt(RunEventModel v) => v.publishedAt;
+  static const Field<RunEventModel, String> _f$publishedAt = Field(
+    'publishedAt',
+    _$publishedAt,
+    opt: true,
+  );
+  static bool _$archive(RunEventModel v) => v.archive;
+  static const Field<RunEventModel, bool> _f$archive = Field(
+    'archive',
+    _$archive,
+    opt: true,
+    def: false,
+  );
+  static bool _$registrationsPaused(RunEventModel v) => v.registrationsPaused;
+  static const Field<RunEventModel, bool> _f$registrationsPaused = Field(
+    'registrationsPaused',
+    _$registrationsPaused,
+    opt: true,
+    def: false,
+  );
+  static int? _$registeredCount(RunEventModel v) => v.registeredCount;
+  static const Field<RunEventModel, int> _f$registeredCount = Field(
+    'registeredCount',
+    _$registeredCount,
+    opt: true,
+  );
   static UserRefFieldInstance? _$createdBy(RunEventModel v) => v.createdBy;
   static const Field<RunEventModel, UserRefFieldInstance> _f$createdBy = Field(
     'createdBy',
@@ -287,6 +326,12 @@ class RunEventModelMapper extends ClassMapperBase<RunEventModel> {
     #maxParticipants: _f$maxParticipants,
     #coverImages: _f$coverImages,
     #status: _f$status,
+    #isClosed: _f$isClosed,
+    #closedAt: _f$closedAt,
+    #publishedAt: _f$publishedAt,
+    #archive: _f$archive,
+    #registrationsPaused: _f$registrationsPaused,
+    #registeredCount: _f$registeredCount,
     #createdBy: _f$createdBy,
   };
 
@@ -304,6 +349,12 @@ class RunEventModelMapper extends ClassMapperBase<RunEventModel> {
       maxParticipants: data.dec(_f$maxParticipants),
       coverImages: data.dec(_f$coverImages),
       status: data.dec(_f$status),
+      isClosed: data.dec(_f$isClosed),
+      closedAt: data.dec(_f$closedAt),
+      publishedAt: data.dec(_f$publishedAt),
+      archive: data.dec(_f$archive),
+      registrationsPaused: data.dec(_f$registrationsPaused),
+      registeredCount: data.dec(_f$registeredCount),
       createdBy: data.dec(_f$createdBy),
     );
   }
@@ -386,6 +437,12 @@ abstract class RunEventModelCopyWith<$R, $In extends RunEventModel, $Out>
     int? maxParticipants,
     List<String>? coverImages,
     String? status,
+    bool? isClosed,
+    String? closedAt,
+    String? publishedAt,
+    bool? archive,
+    bool? registrationsPaused,
+    int? registeredCount,
     UserRefFieldInstance? createdBy,
   });
   RunEventModelCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(Then<$Out2, $R2> t);
@@ -423,6 +480,12 @@ class _RunEventModelCopyWithImpl<$R, $Out>
     Object? maxParticipants = $none,
     List<String>? coverImages,
     Object? status = $none,
+    bool? isClosed,
+    Object? closedAt = $none,
+    Object? publishedAt = $none,
+    bool? archive,
+    bool? registrationsPaused,
+    Object? registeredCount = $none,
     Object? createdBy = $none,
   }) => $apply(
     FieldCopyWithData({
@@ -438,6 +501,13 @@ class _RunEventModelCopyWithImpl<$R, $Out>
       if (maxParticipants != $none) #maxParticipants: maxParticipants,
       if (coverImages != null) #coverImages: coverImages,
       if (status != $none) #status: status,
+      if (isClosed != null) #isClosed: isClosed,
+      if (closedAt != $none) #closedAt: closedAt,
+      if (publishedAt != $none) #publishedAt: publishedAt,
+      if (archive != null) #archive: archive,
+      if (registrationsPaused != null)
+        #registrationsPaused: registrationsPaused,
+      if (registeredCount != $none) #registeredCount: registeredCount,
       if (createdBy != $none) #createdBy: createdBy,
     }),
   );
@@ -455,6 +525,15 @@ class _RunEventModelCopyWithImpl<$R, $Out>
     maxParticipants: data.get(#maxParticipants, or: $value.maxParticipants),
     coverImages: data.get(#coverImages, or: $value.coverImages),
     status: data.get(#status, or: $value.status),
+    isClosed: data.get(#isClosed, or: $value.isClosed),
+    closedAt: data.get(#closedAt, or: $value.closedAt),
+    publishedAt: data.get(#publishedAt, or: $value.publishedAt),
+    archive: data.get(#archive, or: $value.archive),
+    registrationsPaused: data.get(
+      #registrationsPaused,
+      or: $value.registrationsPaused,
+    ),
+    registeredCount: data.get(#registeredCount, or: $value.registeredCount),
     createdBy: data.get(#createdBy, or: $value.createdBy),
   );
 
@@ -501,6 +580,11 @@ class PaginatedRunEventsMapper extends ClassMapperBase<PaginatedRunEvents> {
     'totalPages',
     _$totalPages,
   );
+  static bool _$hasMore(PaginatedRunEvents v) => v.hasMore;
+  static const Field<PaginatedRunEvents, bool> _f$hasMore = Field(
+    'hasMore',
+    _$hasMore,
+  );
 
   @override
   final MappableFields<PaginatedRunEvents> fields = const {
@@ -509,6 +593,7 @@ class PaginatedRunEventsMapper extends ClassMapperBase<PaginatedRunEvents> {
     #page: _f$page,
     #limit: _f$limit,
     #totalPages: _f$totalPages,
+    #hasMore: _f$hasMore,
   };
 
   static PaginatedRunEvents _instantiate(DecodingData data) {
@@ -518,6 +603,7 @@ class PaginatedRunEventsMapper extends ClassMapperBase<PaginatedRunEvents> {
       page: data.dec(_f$page),
       limit: data.dec(_f$limit),
       totalPages: data.dec(_f$totalPages),
+      hasMore: data.dec(_f$hasMore),
     );
   }
 
@@ -604,6 +690,7 @@ abstract class PaginatedRunEventsCopyWith<
     int? page,
     int? limit,
     int? totalPages,
+    bool? hasMore,
   });
   PaginatedRunEventsCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(
     Then<$Out2, $R2> t,
@@ -636,6 +723,7 @@ class _PaginatedRunEventsCopyWithImpl<$R, $Out>
     int? page,
     int? limit,
     int? totalPages,
+    bool? hasMore,
   }) => $apply(
     FieldCopyWithData({
       if (data != null) #data: data,
@@ -643,6 +731,7 @@ class _PaginatedRunEventsCopyWithImpl<$R, $Out>
       if (page != null) #page: page,
       if (limit != null) #limit: limit,
       if (totalPages != null) #totalPages: totalPages,
+      if (hasMore != null) #hasMore: hasMore,
     }),
   );
   @override
@@ -652,6 +741,7 @@ class _PaginatedRunEventsCopyWithImpl<$R, $Out>
     page: data.get(#page, or: $value.page),
     limit: data.get(#limit, or: $value.limit),
     totalPages: data.get(#totalPages, or: $value.totalPages),
+    hasMore: data.get(#hasMore, or: $value.hasMore),
   );
 
   @override

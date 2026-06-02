@@ -48,17 +48,8 @@ class EventFormScreen extends HookWidget {
       if (!controller.formKey.currentState!.validate()) {
         throw Exception('Validation failed');
       }
-      final date = controller.eventDate.value;
-      if (date == null) {
-        throw Exception('Event date is required');
-      }
-      final reportingTime = controller.reportingTimeValue;
-      if (reportingTime == null) {
-        throw Exception('Reporting time is required');
-      }
-      if (!controller.hasLocation) {
-        throw Exception('Location is required');
-      }
+      final date = controller.eventDate.value!;
+      final reportingTime = controller.reportingTimeValue!;
 
       final price = double.tryParse(controller.priceController.text.trim());
       final maxParticipants = int.tryParse(
@@ -193,54 +184,99 @@ class EventFormScreen extends HookWidget {
                       v == null || v.trim().isEmpty ? 'Required' : null,
                 ),
                 const SizedBox(height: 16),
-                Obx(
-                  () => ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Event date'),
-                    subtitle: Text(
-                      controller.eventDate.value != null
-                          ? controller.eventDate.value!
-                                .toLocal()
-                                .toString()
-                                .split(' ')
-                                .first
-                          : 'Tap to select',
-                    ),
-                    trailing: const Icon(Icons.calendar_today_outlined),
-                    onTap: () async {
-                      final picked = await showDatePicker(
-                        context: context,
-                        initialDate: DateTime.now().add(
-                          const Duration(days: 7),
+                FormField<void>(
+                  validator: (_) =>
+                      controller.eventDate.value == null ? 'Required' : null,
+                  builder: (field) => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Obx(
+                        () => ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: const Text('Event date'),
+                          subtitle: Text(
+                            controller.eventDate.value != null
+                                ? controller.eventDate.value!
+                                      .toLocal()
+                                      .toString()
+                                      .split(' ')
+                                      .first
+                                : 'Tap to select',
+                          ),
+                          trailing: const Icon(Icons.calendar_today_outlined),
+                          onTap: () async {
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate: controller.eventDate.value ??
+                                  DateTime.now().add(
+                                    const Duration(days: 7),
+                                  ),
+                              firstDate: DateTime.now(),
+                              lastDate: DateTime.now().add(
+                                const Duration(days: 365 * 2),
+                              ),
+                            );
+                            if (picked != null) {
+                              controller.eventDate.value = picked;
+                              field.didChange(null);
+                            }
+                          },
                         ),
-                        firstDate: DateTime.now(),
-                        lastDate: DateTime.now().add(
-                          const Duration(days: 365 * 2),
+                      ),
+                      if (field.hasError)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4, left: 12),
+                          child: Text(
+                            field.errorText!,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                              fontSize: 12,
+                            ),
+                          ),
                         ),
-                      );
-                      if (picked != null) {
-                        controller.eventDate.value = picked;
-                      }
-                    },
+                    ],
                   ),
                 ),
                 const SizedBox(height: 16),
-                Obx(
-                  () => ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Reporting time'),
-                    subtitle: Text(controller.reportingTimeLabel),
-                    trailing: const Icon(Icons.access_time_outlined),
-                    onTap: () async {
-                      final picked = await showTimePicker(
-                        context: context,
-                        initialTime:
-                            controller.reportingTime.value ?? TimeOfDay.now(),
-                      );
-                      if (picked != null) {
-                        controller.reportingTime.value = picked;
-                      }
-                    },
+                FormField<void>(
+                  validator: (_) => controller.reportingTime.value == null
+                      ? 'Required'
+                      : null,
+                  builder: (field) => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Obx(
+                        () => ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: const Text('Reporting time'),
+                          subtitle: Text(controller.reportingTimeLabel),
+                          trailing:
+                              const Icon(Icons.access_time_outlined),
+                          onTap: () async {
+                            final picked = await showTimePicker(
+                              context: context,
+                              initialTime: controller.reportingTime.value ??
+                                  TimeOfDay.now(),
+                            );
+                            if (picked != null) {
+                              controller.reportingTime.value = picked;
+                              field.didChange(null);
+                            }
+                          },
+                        ),
+                      ),
+                      if (field.hasError)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4, left: 12),
+                          child: Text(
+                            field.errorText!,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 16),

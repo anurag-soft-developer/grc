@@ -6,20 +6,49 @@ import 'package:grc/admin/events/model/run_event_model.dart';
 import 'package:grc/admin/events/run_events_service.dart';
 import 'package:grc/admin/form/event_form_binding.dart';
 import 'package:grc/admin/form/event_form_screen.dart';
-import 'package:grc/components/shared/custom_button.dart';
+import 'package:grc/components/events/admin_event_actions.dart';
+import 'package:grc/components/events/user_event_actions.dart';
 import 'package:grc/core/auth/auth_state_controller.dart';
 import 'package:grc/core/components/query/mutation_loading_overlay.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/query/query_keys.dart';
-import 'package:grc/core/utils/exception_handler.dart';
 
 class EventDetailScreen extends HookWidget {
   const EventDetailScreen({super.key});
+
+  static const _adminMutationKeys = [
+    QueryKeys.publishEvent,
+    QueryKeys.closeEvent,
+    QueryKeys.archiveEvent,
+    QueryKeys.pauseEventRegistrations,
+    QueryKeys.resumeEventRegistrations,
+    QueryKeys.deleteEvent,
+  ];
 
   @override
   Widget build(BuildContext context) {
     final authState = Get.find<AuthStateController>();
     final event = useState<RunEventModel?>(Get.arguments as RunEventModel?);
+    final isAdminMode = authState.isAdminMode;
+    final eventId = event.value?.id;
+
+    final adminDetailQuery = useQuery<RunEventModel?, Object>(
+      QueryKeys.adminEvent(eventId ?? ''),
+      (_) async {
+        final id = eventId;
+        if (id == null) return null;
+        return RunEventsService.instance.getEventById(id);
+      },
+      enabled: isAdminMode && eventId != null,
+    );
+
+    useEffect(() {
+      final fresh = adminDetailQuery.data;
+      if (fresh != null) {
+        event.value = fresh;
+      }
+      return null;
+    }, [adminDetailQuery.data]);
 
     Future<void> openEdit() async {
       final current = event.value;
@@ -37,12 +66,31 @@ class EventDetailScreen extends HookWidget {
 
     final data = event.value;
 
+    Widget body;
+    if (data == null) {
+      body = const Center(child: Text('Event not found'));
+    } else {
+      body = _buildDetailBody(
+        data,
+        isAdminMode,
+        (updated) => event.value = updated,
+        onDeleted: () => Get.back(),
+      );
+    }
+
+    if (isAdminMode) {
+      body = MutationLoadingOverlay(
+        mutationKeys: _adminMutationKeys,
+        child: body,
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(AppColors.background),
       appBar: AppBar(
         title: const Text('Event details'),
         actions: [
-          if (data != null && authState.isAdminMode)
+          if (data != null && isAdminMode)
             IconButton(
               icon: const Icon(Icons.edit_outlined),
               tooltip: 'Edit event',
@@ -50,28 +98,29 @@ class EventDetailScreen extends HookWidget {
             ),
         ],
       ),
-      body: data == null
-          ? const Center(child: Text('Event not found'))
-          : MutationLoadingOverlay(
-              mutationKey: _statusMutationKey(data.status),
-              child: Column(
-                children: [
-                  Expanded(child: _EventDetailBody(event: data)),
-                  if (authState.isAdminMode)
-                    _AdminStatusActions(
-                      event: data,
-                      onUpdated: (updated) => event.value = updated,
-                    ),
-                ],
-              ),
-            ),
+      body: body,
     );
   }
 
-  static List<String> _statusMutationKey(String? status) {
-    final normalized = status?.toLowerCase();
-    if (normalized == 'published') return QueryKeys.closeEvent;
-    return QueryKeys.publishEvent;
+  static Widget _buildDetailBody(
+    RunEventModel data,
+    bool isAdminMode,
+    ValueChanged<RunEventModel> onUpdated, {
+    VoidCallback? onDeleted,
+  }) {
+    return Column(
+      children: [
+        Expanded(child: _EventDetailBody(event: data)),
+        if (isAdminMode)
+          AdminEventActions(
+            event: data,
+            onUpdated: onUpdated,
+            onDeleted: onDeleted,
+          )
+        else
+          UserEventActions(event: data),
+      ],
+    );
   }
 }
 
@@ -133,7 +182,7 @@ class _EventDetailBody extends StatelessWidget {
                   ),
                 ),
               ),
-              _StatusChip(status: event.status),
+              _StatusChip(status: event.displayStatusLabel),
             ],
           ),
           const SizedBox(height: 16),
@@ -206,12 +255,16 @@ class _StatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = (status ?? 'draft').toUpperCase();
-    Color color;
+    final Color color;
     switch (status) {
       case 'published':
         color = const Color(AppColors.success);
       case 'closed':
         color = const Color(AppColors.textSecondary);
+      case 'archived':
+        color = const Color(AppColors.textSecondary);
+      case 'paused':
+        color = const Color(AppColors.secondary);
       default:
         color = const Color(AppColors.primary);
     }
@@ -277,125 +330,6 @@ class _DetailRow extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _AdminStatusActions extends HookWidget {
-  final RunEventModel event;
-  final ValueChanged<RunEventModel> onUpdated;
-
-  const _AdminStatusActions({
-    required this.event,
-    required this.onUpdated,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final client = useQueryClient();
-    final status = event.status?.toLowerCase();
-    final canPublish = status == null || status == 'draft';
-    final canClose = status == 'published';
-
-    if (!canPublish && !canClose) {
-      return const SizedBox.shrink();
-    }
-
-    final publishMutation = useMutation<RunEventModel?, Object, void, void>(
-      (_, __) async {
-        final id = event.id;
-        if (id == null) throw Exception('Event id missing');
-        final updated = await RunEventsService.instance.publishEvent(id);
-        if (updated == null) throw Exception('Failed to publish event');
-        return updated;
-      },
-      mutationKey: QueryKeys.publishEvent,
-      onSuccess: (result, _, __, ___) async {
-        await client.invalidateQueries(queryKey: QueryKeys.adminEvents);
-        if (result?.id != null) {
-          await client.invalidateQueries(
-            queryKey: QueryKeys.adminEvent(result!.id!),
-          );
-        }
-        ExceptionHandler.showSuccessToast('Event published');
-        if (result != null) onUpdated(result);
-      },
-    );
-
-    final closeMutation = useMutation<RunEventModel?, Object, void, void>(
-      (_, __) async {
-        final id = event.id;
-        if (id == null) throw Exception('Event id missing');
-        final updated = await RunEventsService.instance.closeEvent(id);
-        if (updated == null) throw Exception('Failed to close event');
-        return updated;
-      },
-      mutationKey: QueryKeys.closeEvent,
-      onSuccess: (result, _, __, ___) async {
-        await client.invalidateQueries(queryKey: QueryKeys.adminEvents);
-        if (result?.id != null) {
-          await client.invalidateQueries(
-            queryKey: QueryKeys.adminEvent(result!.id!),
-          );
-        }
-        ExceptionHandler.showSuccessToast('Event closed');
-        if (result != null) onUpdated(result);
-      },
-    );
-
-    Future<void> confirmClose() async {
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Close event?'),
-          content: const Text(
-            'Registrations will stop. You can still view this event in your list.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Close event'),
-            ),
-          ],
-        ),
-      );
-      if (confirmed == true && context.mounted) {
-        closeMutation.mutate(null);
-      }
-    }
-
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (canPublish)
-              CustomButton(
-                text: 'Publish event',
-                icon: const Icon(Icons.publish_outlined, size: 20),
-                isLoading: publishMutation.isPending,
-                onPressed: publishMutation.isPending
-                    ? null
-                    : () => publishMutation.mutate(null),
-              ),
-            if (canPublish && canClose) const SizedBox(height: 12),
-            if (canClose)
-              CustomButton(
-                text: 'Close event',
-                isOutlined: true,
-                icon: const Icon(Icons.lock_outline, size: 20),
-                isLoading: closeMutation.isPending,
-                onPressed: closeMutation.isPending ? null : confirmClose,
-              ),
-          ],
-        ),
       ),
     );
   }
