@@ -18,7 +18,6 @@ class RunEventParticipantModelMapper
       MapperContainer.globals.use(
         _instance = RunEventParticipantModelMapper._(),
       );
-      RunEventModelMapper.ensureInitialized();
     }
     return _instance!;
   }
@@ -33,56 +32,19 @@ class RunEventParticipantModelMapper
     key: r'_id',
     opt: true,
   );
-  static RunEventModel? _$runEvent(RunEventParticipantModel v) => v.runEvent;
-  static const Field<RunEventParticipantModel, RunEventModel> _f$runEvent =
-      Field('runEvent', _$runEvent, opt: true);
-  static String? _$userId(RunEventParticipantModel v) => v.userId;
-  static const Field<RunEventParticipantModel, String> _f$userId = Field(
-    'userId',
-    _$userId,
+  static RunEventRefFieldInstance? _$runEvent(RunEventParticipantModel v) =>
+      v.runEvent;
+  static const Field<RunEventParticipantModel, RunEventRefFieldInstance>
+  _f$runEvent = Field(
+    'runEvent',
+    _$runEvent,
+    key: r'runEventId',
     opt: true,
+    hook: RunEventRefHook(),
   );
-  static String? _$fullName(RunEventParticipantModel v) => v.fullName;
-  static const Field<RunEventParticipantModel, String> _f$fullName = Field(
-    'fullName',
-    _$fullName,
-    opt: true,
-  );
-  static String? _$contactNumber(RunEventParticipantModel v) => v.contactNumber;
-  static const Field<RunEventParticipantModel, String> _f$contactNumber = Field(
-    'contactNumber',
-    _$contactNumber,
-    opt: true,
-  );
-  static String? _$gender(RunEventParticipantModel v) => v.gender;
-  static const Field<RunEventParticipantModel, String> _f$gender = Field(
-    'gender',
-    _$gender,
-    opt: true,
-  );
-  static String? _$instagramHandle(RunEventParticipantModel v) =>
-      v.instagramHandle;
-  static const Field<RunEventParticipantModel, String> _f$instagramHandle =
-      Field('instagramHandle', _$instagramHandle, opt: true);
-  static String? _$city(RunEventParticipantModel v) => v.city;
-  static const Field<RunEventParticipantModel, String> _f$city = Field(
-    'city',
-    _$city,
-    opt: true,
-  );
-  static List<String> _$howDidYouHearAboutUs(RunEventParticipantModel v) =>
-      v.howDidYouHearAboutUs;
-  static const Field<RunEventParticipantModel, List<String>>
-  _f$howDidYouHearAboutUs = Field(
-    'howDidYouHearAboutUs',
-    _$howDidYouHearAboutUs,
-    opt: true,
-    def: const [],
-  );
-  static bool? _$guidelinesAgreed(RunEventParticipantModel v) =>
-      v.guidelinesAgreed;
-  static const Field<RunEventParticipantModel, bool> _f$guidelinesAgreed =
-      Field('guidelinesAgreed', _$guidelinesAgreed, opt: true);
+  static UserRefFieldInstance? _$userId(RunEventParticipantModel v) => v.userId;
+  static const Field<RunEventParticipantModel, UserRefFieldInstance> _f$userId =
+      Field('userId', _$userId, opt: true, hook: UserRefHook());
   static Map<String, dynamic> _$customQuestionResponses(
     RunEventParticipantModel v,
   ) => v.customQuestionResponses;
@@ -149,13 +111,6 @@ class RunEventParticipantModelMapper
     #id: _f$id,
     #runEvent: _f$runEvent,
     #userId: _f$userId,
-    #fullName: _f$fullName,
-    #contactNumber: _f$contactNumber,
-    #gender: _f$gender,
-    #instagramHandle: _f$instagramHandle,
-    #city: _f$city,
-    #howDidYouHearAboutUs: _f$howDidYouHearAboutUs,
-    #guidelinesAgreed: _f$guidelinesAgreed,
     #customQuestionResponses: _f$customQuestionResponses,
     #status: _f$status,
     #totalAmount: _f$totalAmount,
@@ -173,13 +128,6 @@ class RunEventParticipantModelMapper
       id: data.dec(_f$id),
       runEvent: data.dec(_f$runEvent),
       userId: data.dec(_f$userId),
-      fullName: data.dec(_f$fullName),
-      contactNumber: data.dec(_f$contactNumber),
-      gender: data.dec(_f$gender),
-      instagramHandle: data.dec(_f$instagramHandle),
-      city: data.dec(_f$city),
-      howDidYouHearAboutUs: data.dec(_f$howDidYouHearAboutUs),
-      guidelinesAgreed: data.dec(_f$guidelinesAgreed),
       customQuestionResponses: data.dec(_f$customQuestionResponses),
       status: data.dec(_f$status),
       totalAmount: data.dec(_f$totalAmount),
@@ -263,22 +211,12 @@ abstract class RunEventParticipantModelCopyWith<
   $Out
 >
     implements ClassCopyWith<$R, $In, $Out> {
-  RunEventModelCopyWith<$R, RunEventModel, RunEventModel>? get runEvent;
-  ListCopyWith<$R, String, ObjectCopyWith<$R, String, String>>
-  get howDidYouHearAboutUs;
   MapCopyWith<$R, String, dynamic, ObjectCopyWith<$R, dynamic, dynamic>?>
   get customQuestionResponses;
   $R call({
     String? id,
-    RunEventModel? runEvent,
-    String? userId,
-    String? fullName,
-    String? contactNumber,
-    String? gender,
-    String? instagramHandle,
-    String? city,
-    List<String>? howDidYouHearAboutUs,
-    bool? guidelinesAgreed,
+    RunEventRefFieldInstance? runEvent,
+    UserRefFieldInstance? userId,
     Map<String, dynamic>? customQuestionResponses,
     String? status,
     double? totalAmount,
@@ -305,16 +243,6 @@ class _RunEventParticipantModelCopyWithImpl<$R, $Out>
   late final ClassMapperBase<RunEventParticipantModel> $mapper =
       RunEventParticipantModelMapper.ensureInitialized();
   @override
-  RunEventModelCopyWith<$R, RunEventModel, RunEventModel>? get runEvent =>
-      $value.runEvent?.copyWith.$chain((v) => call(runEvent: v));
-  @override
-  ListCopyWith<$R, String, ObjectCopyWith<$R, String, String>>
-  get howDidYouHearAboutUs => ListCopyWith(
-    $value.howDidYouHearAboutUs,
-    (v, t) => ObjectCopyWith(v, $identity, t),
-    (v) => call(howDidYouHearAboutUs: v),
-  );
-  @override
   MapCopyWith<$R, String, dynamic, ObjectCopyWith<$R, dynamic, dynamic>?>
   get customQuestionResponses => MapCopyWith(
     $value.customQuestionResponses,
@@ -326,13 +254,6 @@ class _RunEventParticipantModelCopyWithImpl<$R, $Out>
     Object? id = $none,
     Object? runEvent = $none,
     Object? userId = $none,
-    Object? fullName = $none,
-    Object? contactNumber = $none,
-    Object? gender = $none,
-    Object? instagramHandle = $none,
-    Object? city = $none,
-    List<String>? howDidYouHearAboutUs,
-    Object? guidelinesAgreed = $none,
     Map<String, dynamic>? customQuestionResponses,
     Object? status = $none,
     Object? totalAmount = $none,
@@ -348,14 +269,6 @@ class _RunEventParticipantModelCopyWithImpl<$R, $Out>
       if (id != $none) #id: id,
       if (runEvent != $none) #runEvent: runEvent,
       if (userId != $none) #userId: userId,
-      if (fullName != $none) #fullName: fullName,
-      if (contactNumber != $none) #contactNumber: contactNumber,
-      if (gender != $none) #gender: gender,
-      if (instagramHandle != $none) #instagramHandle: instagramHandle,
-      if (city != $none) #city: city,
-      if (howDidYouHearAboutUs != null)
-        #howDidYouHearAboutUs: howDidYouHearAboutUs,
-      if (guidelinesAgreed != $none) #guidelinesAgreed: guidelinesAgreed,
       if (customQuestionResponses != null)
         #customQuestionResponses: customQuestionResponses,
       if (status != $none) #status: status,
@@ -374,16 +287,6 @@ class _RunEventParticipantModelCopyWithImpl<$R, $Out>
     id: data.get(#id, or: $value.id),
     runEvent: data.get(#runEvent, or: $value.runEvent),
     userId: data.get(#userId, or: $value.userId),
-    fullName: data.get(#fullName, or: $value.fullName),
-    contactNumber: data.get(#contactNumber, or: $value.contactNumber),
-    gender: data.get(#gender, or: $value.gender),
-    instagramHandle: data.get(#instagramHandle, or: $value.instagramHandle),
-    city: data.get(#city, or: $value.city),
-    howDidYouHearAboutUs: data.get(
-      #howDidYouHearAboutUs,
-      or: $value.howDidYouHearAboutUs,
-    ),
-    guidelinesAgreed: data.get(#guidelinesAgreed, or: $value.guidelinesAgreed),
     customQuestionResponses: data.get(
       #customQuestionResponses,
       or: $value.customQuestionResponses,

@@ -162,7 +162,7 @@ class EventRegistrationController extends GetxController {
       context.value =
           await _service.getRegistrationContext(eventId) ??
           RunEventRegistrationContext(
-            event: existing.runEvent ?? const RunEventModel(title: ''),
+            event: existing.runEventModel ?? const RunEventModel(title: ''),
           );
       participant.value = existing;
       Get.toNamed(AppConstants.routes.registrationForm);
@@ -176,7 +176,7 @@ class EventRegistrationController extends GetxController {
   }
 
   Future<void> payNowFromDetail(RunEventParticipantModel p) async {
-    final eventId = p.runEvent?.id ?? _eventId;
+    final eventId = p.runEventModel?.id ?? _eventId;
     if (eventId == null) return;
     _eventId = eventId;
     participant.value = p;

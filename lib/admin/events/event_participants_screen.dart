@@ -66,9 +66,7 @@ class EventParticipantsScreen extends HookWidget {
     }
     if (query.isError && items.isEmpty) {
       return Center(
-        child: Text(
-          query.error?.toString() ?? 'Failed to load participants',
-        ),
+        child: Text(query.error?.toString() ?? 'Failed to load participants'),
       );
     }
     if (items.isEmpty) {
@@ -122,10 +120,9 @@ class _ParticipantTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final name = (participant.fullName?.trim().isNotEmpty ?? false)
-        ? participant.fullName!
-        : 'Participant';
-    final contact = participant.contactNumber ?? '';
+    final name = participant.displayFullName;
+    final contact = participant.displayContact;
+    final avatar = participant.displayAvatar;
     final submitted = participant.submittedAt;
     final payment = participant.paymentStatus ?? '';
 
@@ -141,41 +138,62 @@ class _ParticipantTile extends StatelessWidget {
         },
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Column(
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                name,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
-                ),
+              CircleAvatar(
+                radius: 24,
+                backgroundColor: const Color(AppColors.background),
+                backgroundImage: avatar != null ? NetworkImage(avatar) : null,
+                child: avatar != null
+                    ? null
+                    : const Icon(
+                        Icons.person_rounded,
+                        color: Color(AppColors.textSecondary),
+                      ),
               ),
-              if (contact.isNotEmpty) ...[
-                const SizedBox(height: 4),
-                Text(
-                  contact,
-                  style: const TextStyle(color: Color(AppColors.textSecondary)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                      ),
+                    ),
+                    if (contact.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        contact,
+                        style: const TextStyle(
+                          color: Color(AppColors.textSecondary),
+                        ),
+                      ),
+                    ],
+                    if (submitted != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        _formatDate(submitted),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(AppColors.textSecondary),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: [
+                        _chip(participant.status ?? 'submitted'),
+                        if (payment.isNotEmpty) _chip(payment),
+                      ],
+                    ),
+                  ],
                 ),
-              ],
-              if (submitted != null) ...[
-                const SizedBox(height: 4),
-                Text(
-                  _formatDate(submitted),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(AppColors.textSecondary),
-                  ),
-                ),
-              ],
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children: [
-                  _chip(participant.status ?? 'submitted'),
-                  if (payment.isNotEmpty) _chip(payment),
-                ],
               ),
             ],
           ),
@@ -201,7 +219,7 @@ class _ParticipantTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
-        label.replaceAll('_', ' '),
+        label.replaceAll('_', ' ').capitalizeFirst ?? '',
         style: const TextStyle(fontSize: 12),
       ),
     );

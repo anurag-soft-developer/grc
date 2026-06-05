@@ -1,5 +1,10 @@
 import 'package:dart_mappable/dart_mappable.dart';
 import 'package:grc/admin/events/model/run_event_model.dart';
+import 'package:grc/admin/events/model/run_event_ref_field_instance.dart';
+import 'package:grc/admin/events/model/run_event_ref_hook.dart';
+import 'package:grc/core/models/user/user_model.dart';
+import 'package:grc/core/models/user/user_ref_field_instance.dart';
+import 'package:grc/core/models/user/user_ref_hook.dart';
 import 'package:grc/registrations/model/razorpay_order_model.dart';
 
 part 'run_event_participant_model.mapper.dart';
@@ -8,15 +13,10 @@ part 'run_event_participant_model.mapper.dart';
 class RunEventParticipantModel with RunEventParticipantModelMappable {
   @MappableField(key: '_id')
   final String? id;
-  final RunEventModel? runEvent;
-  final String? userId;
-  final String? fullName;
-  final String? contactNumber;
-  final String? gender;
-  final String? instagramHandle;
-  final String? city;
-  final List<String> howDidYouHearAboutUs;
-  final bool? guidelinesAgreed;
+  @MappableField(key: 'runEventId', hook: RunEventRefHook())
+  final RunEventRefFieldInstance? runEvent;
+  @MappableField(key: 'userId', hook: UserRefHook())
+  final UserRefFieldInstance? userId;
   final Map<String, dynamic> customQuestionResponses;
   final String? status;
   final double? totalAmount;
@@ -32,13 +32,6 @@ class RunEventParticipantModel with RunEventParticipantModelMappable {
     this.id,
     this.runEvent,
     this.userId,
-    this.fullName,
-    this.contactNumber,
-    this.gender,
-    this.instagramHandle,
-    this.city,
-    this.howDidYouHearAboutUs = const [],
-    this.guidelinesAgreed,
     this.customQuestionResponses = const {},
     this.status,
     this.totalAmount,
@@ -55,15 +48,33 @@ class RunEventParticipantModel with RunEventParticipantModelMappable {
   bool get isPendingPayment => status == 'pending_payment';
   bool get isPaid => paymentStatus == 'paid';
 
+  String? get runEventId => runEvent?.getId();
+  RunEventModel? get runEventModel => runEvent?.getModel();
+  bool get runEventPopulated => runEvent?.isPopulated ?? false;
+
+  UserModel? get userModel => userId?.getModel();
+  bool get userPopulated => userId?.isPopulated ?? false;
+
+  String get displayFullName => userId?.getDisplayName() ?? 'Participant';
+
+  String get displayContact {
+    final user = userId?.getModel();
+    return user?.phone?.trim() ?? user?.email?.trim() ?? '';
+  }
+
+  String? get displayAvatar {
+    final avatar = userModel?.avatar?.trim();
+    if (avatar != null && avatar.isNotEmpty) return avatar;
+    return null;
+  }
+
   static final fromMap = RunEventParticipantModelMapper.fromMap;
 
   static RunEventParticipantModel fromApiMap(Map<String, dynamic> map) {
-    final copy = Map<String, dynamic>.from(map);
-    final runEventId = copy.remove('runEventId');
-    if (runEventId is Map) {
-      copy['runEvent'] = runEventId;
-    }
-    return RunEventParticipantModelMapper.fromMap(copy);
+    RunEventParticipantModelMapper.ensureInitialized();
+    UserModelMapper.ensureInitialized();
+    RunEventModelMapper.ensureInitialized();
+    return RunEventParticipantModelMapper.fromMap(map);
   }
 }
 

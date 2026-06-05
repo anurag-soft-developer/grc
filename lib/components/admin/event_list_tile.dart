@@ -56,6 +56,17 @@ class AdminEventListTile extends StatelessWidget {
     );
   }
 
+  String get _priceLabel {
+    if (event.price == null) return '—';
+    if (event.price == 0) return 'Free';
+    return '₹${event.price!.toStringAsFixed(0)}';
+  }
+
+  String get _registrationsLabel {
+    final count = event.registeredCount ?? 0;
+    return count == 1 ? '1 registration' : '$count registrations';
+  }
+
   @override
   Widget build(BuildContext context) {
     final date = event.eventDate;
@@ -71,7 +82,21 @@ class AdminEventListTile extends StatelessWidget {
         onTap: () =>
             Get.toNamed(AppConstants.routes.adminEventDetail, arguments: event),
         title: Text(event.title),
-        subtitle: Text('$dateLabel · ${event.cityLabel}'),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('$dateLabel · ${event.cityLabel}'),
+            const SizedBox(height: 4),
+            Text(
+              '$_priceLabel · $_registrationsLabel',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Color(AppColors.primary),
+              ),
+            ),
+          ],
+        ),
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(

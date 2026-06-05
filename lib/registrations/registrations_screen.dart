@@ -105,7 +105,7 @@ class _RegistrationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final event = participant.runEvent;
+    final event = participant.runEventModel;
     final title = event?.title ?? 'Event';
     final date = event?.eventDate;
     final status = participant.status ?? '';
