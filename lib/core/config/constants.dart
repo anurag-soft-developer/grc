@@ -31,6 +31,8 @@ class Routes {
   final String eventForm = '/admin/event-form';
   final String formBuilder = '/admin/form-builder';
   final String adminEventDetail = '/admin/event-detail';
+  final String adminEventParticipants = '/admin/event-participants';
+  final String adminEventAnalytics = '/admin/event-analytics';
   final String eventDetail = '/event-detail';
   final String registrationForm = '/registration-form';
   final String registrationDetail = '/registration-detail';

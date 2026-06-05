@@ -1,23 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_query/flutter_query.dart';
+import 'package:get/get.dart';
 import 'package:grc/admin/events/model/run_event_model.dart';
 import 'package:grc/admin/events/run_events_service.dart';
-import 'package:grc/components/shared/custom_button.dart';
+import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/query/query_keys.dart';
 import 'package:grc/core/utils/exception_handler.dart';
 
-class AdminEventActions extends HookWidget {
-  static const _buttonHeight = 40.0;
-  static const _rowSpacing = 8.0;
-  static const _iconSize = 16.0;
-  static const _fontSize = 12.0;
+enum _MenuItemType { action, navigation }
 
-  static double _rowButtonWidth(double maxWidth, int count) {
-    if (count == 0) return 0;
-    final gaps = (count - 1) * _rowSpacing;
-    return (maxWidth - gaps) / count;
-  }
+class _AdminActionItem {
+  final String label;
+  final IconData icon;
+  final VoidCallback? onPressed;
+  final bool isLoading;
+  final Color iconColor;
+  final _MenuItemType type;
+  final bool isDestructive;
+  final String? subtitle;
+
+  const _AdminActionItem({
+    required this.label,
+    required this.icon,
+    required this.onPressed,
+    required this.iconColor,
+    required this.type,
+    this.isLoading = false,
+    this.isDestructive = false,
+    this.subtitle,
+  });
+}
+
+class AdminEventActions extends HookWidget {
+  static const _menuMaxWidth = 300.0;
+  static const _fabMargin = 16.0;
+  static const _menuGapAboveFab = 12.0;
 
   final RunEventModel event;
   final ValueChanged<RunEventModel> onUpdated;
@@ -63,6 +81,7 @@ class AdminEventActions extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isMenuOpen = useState(false);
     final client = useQueryClient();
     final status = event.status?.toLowerCase();
     final canPublish = status == null || status == 'draft';
@@ -73,14 +92,8 @@ class AdminEventActions extends HookWidget {
     final canArchive = !event.archive;
     final canDelete = event.registeredCount == 0;
 
-    if (!canPublish &&
-        !canPause &&
-        !canResume &&
-        !canClose &&
-        !canArchive &&
-        !canDelete) {
-      return const SizedBox.shrink();
-    }
+    void closeMenu() => isMenuOpen.value = false;
+    void openMenu() => isMenuOpen.value = true;
 
     Future<void> invalidateCaches(String? eventId) async {
       await client.invalidateQueries(queryKey: QueryKeys.adminEvents);
@@ -262,147 +275,433 @@ class AdminEventActions extends HookWidget {
       if (ok && context.mounted) deleteMutation.mutate(null);
     }
 
-    Widget actionButton({
-      required double width,
-      required String text,
-      required VoidCallback? onPressed,
-      required bool isLoading,
-      bool isOutlined = false,
-      Widget? icon,
-    }) {
-      return SizedBox(
-        width: width,
-        child: CustomButton(
-          text: text,
-          icon: icon,
-          height: _buttonHeight,
-          fontSize: _fontSize,
-          isOutlined: isOutlined,
-          isLoading: isLoading,
-          onPressed: onPressed,
-        ),
+    void openParticipants() {
+      closeMenu();
+      Get.toNamed(
+        AppConstants.routes.adminEventParticipants,
+        arguments: event,
       );
     }
 
-    final actionBuilders = <Widget Function(double width)>[
+    void openAnalytics() {
+      closeMenu();
+      Get.toNamed(AppConstants.routes.adminEventAnalytics, arguments: event);
+    }
+
+    const publishColor = Color(AppColors.success);
+    const pauseColor = Color(0xFFF59E0B);
+    const resumeColor = Color(0xFF06B6D4);
+    const closeColor = Color(AppColors.textSecondary);
+    const archiveColor = Color(0xFF8B5CF6);
+    const deleteColor = Color(AppColors.error);
+    const participantsColor = Color(AppColors.primary);
+    const analyticsColor = Color(AppColors.secondary);
+
+    final lifecycleActions = <_AdminActionItem>[
       if (canPublish)
-        (width) => actionButton(
-          width: width,
-          text: 'Publish',
-          icon: const Icon(Icons.publish_outlined, size: _iconSize),
+        _AdminActionItem(
+          label: 'Publish',
+          icon: Icons.publish_outlined,
+          iconColor: publishColor,
+          type: _MenuItemType.action,
           isLoading: publishMutation.isPending,
           onPressed: isBusy ? null : confirmPublish,
         ),
       if (canPause)
-        (width) => actionButton(
-          width: width,
-          text: 'Pause',
-          isOutlined: true,
-          icon: const Icon(Icons.pause_circle_outline, size: _iconSize),
+        _AdminActionItem(
+          label: 'Pause registrations',
+          icon: Icons.pause_circle_outline,
+          iconColor: pauseColor,
+          type: _MenuItemType.action,
           isLoading: pauseMutation.isPending,
           onPressed: isBusy ? null : confirmPause,
         ),
       if (canResume)
-        (width) => actionButton(
-          width: width,
-          text: 'Resume',
-          icon: const Icon(Icons.play_circle_outline, size: _iconSize),
+        _AdminActionItem(
+          label: 'Resume registrations',
+          icon: Icons.play_circle_outline,
+          iconColor: resumeColor,
+          type: _MenuItemType.action,
           isLoading: resumeMutation.isPending,
           onPressed: isBusy ? null : confirmResume,
         ),
       if (canClose)
-        (width) => actionButton(
-          width: width,
-          text: 'Close',
-          isOutlined: true,
-          icon: const Icon(Icons.lock_outline, size: _iconSize),
+        _AdminActionItem(
+          label: 'Close event',
+          icon: Icons.lock_outline,
+          iconColor: closeColor,
+          type: _MenuItemType.action,
           isLoading: closeMutation.isPending,
           onPressed: isBusy ? null : confirmClose,
         ),
       if (canArchive)
-        (width) => actionButton(
-          width: width,
-          text: 'Archive',
-          isOutlined: true,
-          icon: const Icon(Icons.archive_outlined, size: _iconSize),
+        _AdminActionItem(
+          label: 'Archive',
+          icon: Icons.archive_outlined,
+          iconColor: archiveColor,
+          type: _MenuItemType.action,
           isLoading: archiveMutation.isPending,
           onPressed: isBusy ? null : confirmArchive,
         ),
       if (canDelete)
-        (width) => actionButton(
-          width: width,
-          text: 'Delete',
-          isOutlined: true,
-          icon: Icon(
-            Icons.delete_forever_outlined,
-            size: _iconSize,
-            color: Theme.of(context).colorScheme.error,
-          ),
+        _AdminActionItem(
+          label: 'Delete',
+          icon: Icons.delete_forever_outlined,
+          iconColor: deleteColor,
+          type: _MenuItemType.action,
+          isDestructive: true,
           isLoading: deleteMutation.isPending,
           onPressed: isBusy ? null : confirmDelete,
         ),
     ];
 
-    final firstRowCount = (actionBuilders.length / 2).ceil();
-    final firstRowBuilders = actionBuilders.sublist(0, firstRowCount);
-    final secondRowBuilders = actionBuilders.sublist(firstRowCount);
+    final registered = event.registeredCount;
+    final participantsSubtitle = registered != null
+        ? '$registered submitted registration${registered == 1 ? '' : 's'}'
+        : 'View submitted registrations';
 
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final maxWidth = constraints.maxWidth;
-            final firstRowWidth = _rowButtonWidth(
-              maxWidth,
-              firstRowBuilders.length,
-            );
-            final secondRowWidth = _rowButtonWidth(
-              maxWidth,
-              secondRowBuilders.length,
-            );
+    final navigationActions = <_AdminActionItem>[
+      _AdminActionItem(
+        label: 'Participants',
+        subtitle: participantsSubtitle,
+        icon: Icons.people_outline,
+        iconColor: participantsColor,
+        type: _MenuItemType.navigation,
+        onPressed: isBusy ? null : openParticipants,
+      ),
+      _AdminActionItem(
+        label: 'Analytics',
+        subtitle: 'Capacity, payments & revenue',
+        icon: Icons.analytics_outlined,
+        iconColor: analyticsColor,
+        type: _MenuItemType.navigation,
+        onPressed: isBusy ? null : openAnalytics,
+      ),
+    ];
 
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _ActionButtonRow(
-                  buttonWidth: firstRowWidth,
-                  builders: firstRowBuilders,
-                ),
-                if (secondRowBuilders.isNotEmpty) ...[
-                  const SizedBox(height: _rowSpacing),
-                  _ActionButtonRow(
-                    buttonWidth: secondRowWidth,
-                    builders: secondRowBuilders,
+    final fabBottom = _fabMargin + MediaQuery.paddingOf(context).bottom;
+    const fabSize = 56.0;
+    final menuBottom = fabBottom + fabSize + _menuGapAboveFab;
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        if (isMenuOpen.value)
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: closeMenu,
+              child: ColoredBox(
+                color: Colors.black.withValues(alpha: 0.4),
+              ),
+            ),
+          ),
+        if (isMenuOpen.value)
+          Positioned(
+            right: _fabMargin,
+            bottom: menuBottom,
+            child: _ActionsMenuPanel(
+              lifecycleActions: lifecycleActions,
+              navigationActions: navigationActions,
+              onClose: closeMenu,
+            ),
+          ),
+        Positioned(
+          right: _fabMargin,
+          bottom: fabBottom,
+          child: FloatingActionButton(
+            elevation: 4,
+            highlightElevation: 6,
+            backgroundColor: const Color(AppColors.primary),
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            onPressed: isMenuOpen.value ? closeMenu : openMenu,
+            tooltip: isMenuOpen.value ? 'Close menu' : 'Open menu',
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: Icon(
+                isMenuOpen.value ? Icons.close_rounded : Icons.tune_rounded,
+                key: ValueKey(isMenuOpen.value),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ActionsMenuPanel extends StatelessWidget {
+  final List<_AdminActionItem> lifecycleActions;
+  final List<_AdminActionItem> navigationActions;
+  final VoidCallback onClose;
+
+  const _ActionsMenuPanel({
+    required this.lifecycleActions,
+    required this.navigationActions,
+    required this.onClose,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: AdminEventActions._menuMaxWidth),
+        decoration: BoxDecoration(
+          color: const Color(AppColors.surface),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(AppColors.divider)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.12),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
+                decoration: const BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: Color(AppColors.divider)),
                   ),
-                ],
-              ],
-            );
-          },
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: const Color(AppColors.primary).withValues(
+                          alpha: 0.1,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.tune_rounded,
+                        size: 18,
+                        color: Color(AppColors.primary),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Text(
+                        'Menu',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.2,
+                          color: Color(AppColors.text),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: onClose,
+                      tooltip: 'Close',
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                        minWidth: 32,
+                        minHeight: 32,
+                      ),
+                      style: IconButton.styleFrom(
+                        backgroundColor: const Color(AppColors.background),
+                        foregroundColor: const Color(AppColors.textSecondary),
+                      ),
+                      icon: const Icon(Icons.close_rounded, size: 18),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (lifecycleActions.isNotEmpty) ...[
+                      const _MenuSectionLabel(title: 'Actions'),
+                      const SizedBox(height: 8),
+                      for (var i = 0; i < lifecycleActions.length; i++) ...[
+                        if (i > 0) const SizedBox(height: 8),
+                        _ActionMenuTile(item: lifecycleActions[i]),
+                      ],
+                    ],
+                    if (lifecycleActions.isNotEmpty &&
+                        navigationActions.isNotEmpty) ...[
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                        child: Divider(
+                          height: 1,
+                          color: Color(AppColors.divider),
+                        ),
+                      ),
+                    ],
+                    if (navigationActions.isNotEmpty) ...[
+                      const _MenuSectionLabel(title: 'Navigate'),
+                      const SizedBox(height: 8),
+                      for (var i = 0; i < navigationActions.length; i++) ...[
+                        if (i > 0) const SizedBox(height: 6),
+                        _NavigationMenuTile(item: navigationActions[i]),
+                      ],
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(height: 4),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _ActionButtonRow extends StatelessWidget {
-  final double buttonWidth;
-  final List<Widget Function(double width)> builders;
+class _MenuSectionLabel extends StatelessWidget {
+  final String title;
 
-  const _ActionButtonRow({required this.buttonWidth, required this.builders});
+  const _MenuSectionLabel({required this.title});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        for (var i = 0; i < builders.length; i++) ...[
-          if (i > 0) const SizedBox(width: AdminEventActions._rowSpacing),
-          builders[i](buttonWidth),
-        ],
-      ],
+    return Text(
+      title.toUpperCase(),
+      style: const TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.8,
+        color: Color(AppColors.textSecondary),
+      ),
+    );
+  }
+}
+
+class _ActionMenuTile extends StatelessWidget {
+  final _AdminActionItem item;
+
+  const _ActionMenuTile({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    final borderColor = item.isDestructive
+        ? item.iconColor.withValues(alpha: 0.45)
+        : item.iconColor.withValues(alpha: 0.35);
+    final bgColor = item.isDestructive
+        ? item.iconColor.withValues(alpha: 0.06)
+        : item.iconColor.withValues(alpha: 0.08);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: item.isLoading ? null : item.onPressed,
+        borderRadius: BorderRadius.circular(12),
+        child: Ink(
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: borderColor),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: [
+                Icon(item.icon, size: 20, color: item.iconColor),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    item.label,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: item.isDestructive
+                          ? item.iconColor
+                          : const Color(AppColors.text),
+                    ),
+                  ),
+                ),
+                if (item.isLoading)
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: item.iconColor,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NavigationMenuTile extends StatelessWidget {
+  final _AdminActionItem item;
+
+  const _NavigationMenuTile({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: item.onPressed,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: item.iconColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(item.icon, size: 22, color: item.iconColor),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.label,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Color(AppColors.text),
+                      ),
+                    ),
+                    if (item.subtitle != null && item.subtitle!.isNotEmpty)
+                      Text(
+                        item.subtitle!,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: item.iconColor.withValues(alpha: 0.85),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 14,
+                color: item.iconColor.withValues(alpha: 0.7),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:grc/admin/events/model/run_event_analytics_model.dart';
 import 'package:grc/admin/events/model/run_event_model.dart';
 import 'package:grc/core/config/api_constants.dart';
 import 'package:grc/core/services/api_service.dart';
@@ -61,6 +62,14 @@ class RunEventsService {
     );
     if (response == null) return null;
     return RunEventModel.fromMap(response);
+  }
+
+  Future<RunEventAnalyticsModel?> getEventAnalytics(String eventId) async {
+    final response = await _api.get<Map<String, dynamic>>(
+      ApiConstants.runEvents.analytics(eventId),
+    );
+    if (response == null) return null;
+    return RunEventAnalyticsModel.fromApiMap(response);
   }
 
   Future<RunEventModel?> updateEvent(

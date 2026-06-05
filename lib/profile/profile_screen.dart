@@ -75,105 +75,391 @@ class ProfileContent extends StatelessWidget {
     final authState = Get.find<AuthStateController>();
 
     return ListView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
       children: [
-        if (user.isEmailVerified != true)
-          Card(
-            color: const Color(AppColors.primary).withValues(alpha: 0.1),
-            child: ListTile(
-              leading: const Icon(Icons.mark_email_unread_outlined),
-              title: const Text('Verify your email'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Get.toNamed(
-                AppConstants.routes.verifyEmail,
-                arguments: {'email': user.email},
-              ),
-            ),
-          ),
-        const SizedBox(height: 16),
-        Center(
-          child: CircleAvatar(
-            radius: 48,
-            backgroundImage: user.avatar != null && user.avatar!.isNotEmpty
-                ? NetworkImage(user.avatar!)
-                : null,
-            child: user.avatar == null || user.avatar!.isEmpty
-                ? const Icon(Icons.person, size: 48)
-                : null,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          user.displayName,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-        ),
-        if (user.email != null)
-          Text(
-            user.email!,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: Color(AppColors.textSecondary)),
-          ),
-        const SizedBox(height: 8),
-        Wrap(
-          alignment: WrapAlignment.center,
-          spacing: 8,
-          children: [
-            if (user.isEmailVerified == true)
-              const Chip(
-                label: Text('Email verified'),
-                avatar: Icon(Icons.verified, size: 16),
-              ),
-            if (user.twoFactorEnabled == true)
-              const Chip(label: Text('2FA enabled')),
-          ],
-        ),
-        if (user.bio != null && user.bio!.isNotEmpty) ...[
-          const SizedBox(height: 16),
-          Text(user.bio!),
+        if (user.isEmailVerified != true) ...[
+          _VerifyEmailBanner(email: user.email),
+          const SizedBox(height: 20),
         ],
-        const SizedBox(height: 24),
+        _ProfileHeaderCard(user: user),
+        const SizedBox(height: 20),
         Obx(() {
           if (!authState.isAdmin) return const SizedBox.shrink();
           final adminMode = authState.isAdminMode;
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              SwitchListTile(
-                secondary: Icon(
-                  adminMode
-                      ? Icons.person_outline
-                      : Icons.admin_panel_settings_outlined,
-                ),
-                title: Text(adminMode ? 'Admin mode' : 'User mode'),
-                subtitle: Text(
-                  adminMode ? 'Switch to user mode' : 'Switch to admin mode',
-                ),
-                value: adminMode,
-                onChanged: (_) => authState.setAppMode(
-                  adminMode ? AppMode.user : AppMode.admin,
-                ),
+              _ProfileSectionCard(
+                children: [
+                  SwitchListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
+                    secondary: _ColorfulIcon(
+                      icon: adminMode
+                          ? Icons.admin_panel_settings_rounded
+                          : Icons.person_rounded,
+                      color: const Color(0xFF7C3AED),
+                    ),
+                    title: Text(adminMode ? 'Admin mode' : 'User mode'),
+                    subtitle: Text(
+                      adminMode
+                          ? 'Switch to user mode'
+                          : 'Switch to admin mode',
+                      style: const TextStyle(
+                        color: Color(AppColors.textSecondary),
+                      ),
+                    ),
+                    value: adminMode,
+                    onChanged: (_) => authState.setAppMode(
+                      adminMode ? AppMode.user : AppMode.admin,
+                    ),
+                  ),
+                ],
               ),
-              const Divider(),
+              const SizedBox(height: 16),
             ],
           );
         }),
-        ListTile(
-          leading: const Icon(Icons.edit_outlined),
-          title: const Text('Edit profile'),
-          onTap: () => Get.toNamed(AppConstants.routes.editProfile),
-        ),
-        ListTile(
-          leading: const Icon(Icons.settings_outlined),
-          title: const Text('Settings'),
-          onTap: () => Get.toNamed(AppConstants.routes.settings),
-        ),
-        ListTile(
-          leading: const Icon(Icons.logout, color: Color(AppColors.error)),
-          title: const Text('Sign out'),
-          onTap: authState.signOut,
+        _ProfileSectionCard(
+          children: [
+            _ProfileActionTile(
+              icon: Icons.edit_rounded,
+              color: const Color(AppColors.primary),
+              title: 'Edit profile',
+              onTap: () => Get.toNamed(AppConstants.routes.editProfile),
+            ),
+            const _ProfileTileDivider(),
+            _ProfileActionTile(
+              icon: Icons.settings_rounded,
+              color: const Color(AppColors.secondary),
+              title: 'Settings',
+              onTap: () => Get.toNamed(AppConstants.routes.settings),
+            ),
+            const _ProfileTileDivider(),
+            _ProfileActionTile(
+              icon: Icons.logout_rounded,
+              color: const Color(AppColors.error),
+              title: 'Sign out',
+              titleColor: const Color(AppColors.error),
+              onTap: authState.signOut,
+            ),
+          ],
         ),
       ],
+    );
+  }
+}
+
+class _ProfileHeaderCard extends StatelessWidget {
+  final UserModel user;
+
+  const _ProfileHeaderCard({required this.user});
+
+  @override
+  Widget build(BuildContext context) {
+    final hasAvatar = user.avatar != null && user.avatar!.isNotEmpty;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+      decoration: BoxDecoration(
+        color: const Color(AppColors.surface),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(AppColors.divider)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(AppColors.primary).withValues(alpha: 0.06),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  const Color(AppColors.primary).withValues(alpha: 0.7),
+                  const Color(AppColors.secondary).withValues(alpha: 0.7),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: CircleAvatar(
+              radius: 44,
+              backgroundColor: const Color(AppColors.surface),
+              backgroundImage: hasAvatar ? NetworkImage(user.avatar!) : null,
+              child: hasAvatar
+                  ? null
+                  : Icon(
+                      Icons.person_rounded,
+                      size: 44,
+                      color: const Color(AppColors.primary).withValues(
+                        alpha: 0.6,
+                      ),
+                    ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            user.displayName,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              color: Color(AppColors.text),
+              letterSpacing: -0.3,
+            ),
+          ),
+          if (user.email != null) ...[
+            const SizedBox(height: 8),
+            _EmailRow(
+              email: user.email!,
+              isVerified: user.isEmailVerified == true,
+            ),
+          ],
+          if (user.twoFactorEnabled == true) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(AppColors.success).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.shield_rounded,
+                    size: 16,
+                    color: Color(AppColors.success),
+                  ),
+                  SizedBox(width: 6),
+                  Text(
+                    '2FA enabled',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Color(AppColors.success),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          if (user.bio != null && user.bio!.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(AppColors.background),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                user.bio!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Color(AppColors.textSecondary),
+                  height: 1.5,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _EmailRow extends StatelessWidget {
+  final String email;
+  final bool isVerified;
+
+  const _EmailRow({required this.email, required this.isVerified});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (isVerified) ...[
+          const Icon(
+            Icons.verified_rounded,
+            size: 18,
+            color: Color(AppColors.primary),
+          ),
+          const SizedBox(width: 6),
+        ],
+        Flexible(
+          child: Text(
+            email,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Color(AppColors.textSecondary),
+              fontSize: 15,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _VerifyEmailBanner extends StatelessWidget {
+  final String? email;
+
+  const _VerifyEmailBanner({required this.email});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: const Color(0xFFFFF7ED),
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: () => Get.toNamed(
+          AppConstants.routes.verifyEmail,
+          arguments: {'email': email},
+        ),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: const Color(0xFFFDBA74).withValues(alpha: 0.5),
+            ),
+          ),
+          child: Row(
+            children: [
+              _ColorfulIcon(
+                icon: Icons.mark_email_unread_rounded,
+                color: const Color(0xFFF97316),
+              ),
+              const SizedBox(width: 14),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Verify your email',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: Color(AppColors.text),
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Tap to complete verification',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Color(AppColors.textSecondary),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: Color(0xFFF97316),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileSectionCard extends StatelessWidget {
+  final List<Widget> children;
+
+  const _ProfileSectionCard({required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(AppColors.surface),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(AppColors.divider)),
+      ),
+      child: Column(children: children),
+    );
+  }
+}
+
+class _ProfileActionTile extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String title;
+  final Color? titleColor;
+  final VoidCallback onTap;
+
+  const _ProfileActionTile({
+    required this.icon,
+    required this.color,
+    required this.title,
+    this.titleColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: _ColorfulIcon(icon: icon, color: color),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontWeight: FontWeight.w500,
+          color: titleColor ?? const Color(AppColors.text),
+        ),
+      ),
+      trailing: Icon(
+        Icons.chevron_right_rounded,
+        color: const Color(AppColors.textSecondary).withValues(alpha: 0.6),
+      ),
+      onTap: onTap,
+    );
+  }
+}
+
+class _ColorfulIcon extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+
+  const _ColorfulIcon({required this.icon, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(icon, color: color, size: 22),
+    );
+  }
+}
+
+class _ProfileTileDivider extends StatelessWidget {
+  const _ProfileTileDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.only(left: 68),
+      child: Divider(height: 1, color: Color(AppColors.divider)),
     );
   }
 }

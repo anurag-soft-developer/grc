@@ -104,6 +104,24 @@ class RunEventParticipantsService {
     return RunEventParticipantModel.fromApiMap(response);
   }
 
+  Future<PaginatedRunEventParticipants> listByEvent(
+    String eventId, {
+    int page = 1,
+    int limit = 10,
+  }) async {
+    final response = await _api.get<Map<String, dynamic>>(
+      ApiConstants.runEventParticipants.listByEvent(eventId),
+      queryParameters: {'page': page, 'limit': limit},
+    );
+    if (response == null) {
+      throw Exception('Failed to load participants');
+    }
+    return PaginatedRunEventParticipants.fromApiMap(
+      response,
+      fallbackPage: page,
+    );
+  }
+
   Future<PaginatedRunEventParticipants> listMine({
     int page = 1,
     int limit = 10,

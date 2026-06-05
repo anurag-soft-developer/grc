@@ -128,17 +128,23 @@ class EventDetailScreen extends HookWidget {
     ValueChanged<RunEventModel> onUpdated, {
     VoidCallback? onDeleted,
   }) {
-    return Column(
-      children: [
-        Expanded(child: _EventDetailBody(event: data)),
-        if (isAdminMode)
+    if (isAdminMode) {
+      return Stack(
+        children: [
+          Positioned.fill(child: _EventDetailBody(event: data)),
           AdminEventActions(
             event: data,
             onUpdated: onUpdated,
             onDeleted: onDeleted,
-          )
-        else
-          UserEventActions(event: data),
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      children: [
+        Expanded(child: _EventDetailBody(event: data)),
+        UserEventActions(event: data),
       ],
     );
   }

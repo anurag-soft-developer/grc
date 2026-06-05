@@ -16,6 +16,14 @@ class QueryKeys {
     'eventRegistrationStatus',
     eventId,
   ];
+  static List<String> eventParticipants(String eventId) => [
+    'eventParticipants',
+    eventId,
+  ];
+  static List<String> eventAnalytics(String eventId) => [
+    'eventAnalytics',
+    eventId,
+  ];
 
   static const login = ['mutation', 'login'];
   static const verifyLoginOtp = ['mutation', 'verifyLoginOtp'];

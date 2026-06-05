@@ -68,6 +68,7 @@ class RunEventEndpoints {
   String registrationContext(String eventId) =>
       '/run-events/$eventId/registration-context';
   String publicBySlug(String slug) => '/run-events/public/$slug';
+  String analytics(String id) => '/run-events/$id/analytics';
 }
 
 class RunEventParticipantEndpoints {
@@ -84,4 +85,5 @@ class RunEventParticipantEndpoints {
       '/run-events/$eventId/participants/verify-payment';
   String get me => '/run-event-participants/me';
   String byId(String id) => '/run-event-participants/$id';
+  String listByEvent(String eventId) => '/run-events/$eventId/participants';
 }
