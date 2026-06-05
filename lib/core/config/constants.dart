@@ -29,8 +29,11 @@ class Routes {
   final String privacyPolicy = '/privacy-policy';
   final String accessDenied = '/access-denied';
   final String eventForm = '/admin/event-form';
+  final String formBuilder = '/admin/form-builder';
   final String adminEventDetail = '/admin/event-detail';
   final String eventDetail = '/event-detail';
+  final String registrationForm = '/registration-form';
+  final String registrationDetail = '/registration-detail';
 }
 
 enum AppMode {

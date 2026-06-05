@@ -7,6 +7,7 @@ class ApiConstants {
   static const user = UserEndpoints();
   static const storage = StorageEndpoints();
   static const runEvents = RunEventEndpoints();
+  static const runEventParticipants = RunEventParticipantEndpoints();
 
   static const Map<String, String> defaultHeaders = {
     'Content-Type': 'application/json',
@@ -64,4 +65,23 @@ class RunEventEndpoints {
       '/run-events/$id/pause-registrations';
   String resumeRegistrations(String id) =>
       '/run-events/$id/resume-registrations';
+  String registrationContext(String eventId) =>
+      '/run-events/$eventId/registration-context';
+  String publicBySlug(String slug) => '/run-events/public/$slug';
+}
+
+class RunEventParticipantEndpoints {
+  const RunEventParticipantEndpoints();
+
+  String myRegistration(String eventId) =>
+      '/run-events/$eventId/participants/my-registration';
+  String draft(String eventId) => '/run-events/$eventId/participants/draft';
+  String submitDraft(String eventId) =>
+      '/run-events/$eventId/participants/draft/submit';
+  String createOrder(String eventId) =>
+      '/run-events/$eventId/participants/draft/create-order';
+  String verifyPayment(String eventId) =>
+      '/run-events/$eventId/participants/verify-payment';
+  String get me => '/run-event-participants/me';
+  String byId(String id) => '/run-event-participants/$id';
 }

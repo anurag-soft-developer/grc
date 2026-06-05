@@ -75,6 +75,18 @@ class RunEventsService {
     return RunEventModel.fromMap(response);
   }
 
+  Future<RunEventModel?> updateCustomQuestions(
+    String id,
+    UpdateRunEventCustomQuestionsInput input,
+  ) async {
+    final response = await _api.patch<Map<String, dynamic>>(
+      ApiConstants.runEvents.eventById(id),
+      data: input.toJson(),
+    );
+    if (response == null) return null;
+    return RunEventModel.fromMap(response);
+  }
+
   Future<RunEventModel?> publishEvent(String id) async {
     final response = await _api.patch<Map<String, dynamic>>(
       ApiConstants.runEvents.publish(id),

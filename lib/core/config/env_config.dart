@@ -6,6 +6,7 @@ class EnvConfig {
   static String get googleClientId => dotenv.env['GOOGLE_CLIENT_ID'] ?? '';
   static String get googlePlacesApiKey =>
       dotenv.env['GOOGLE_PLACES_API_KEY'] ?? '';
+  static String get razorpayKeyId => dotenv.env['RAZORPAY_KEY_ID'] ?? '';
 
   static Future<void> initialize() async {
     await dotenv.load(fileName: '.env');

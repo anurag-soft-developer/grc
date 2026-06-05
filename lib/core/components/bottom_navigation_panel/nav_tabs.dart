@@ -7,7 +7,7 @@ import 'package:grc/admin/events/my_events_screen.dart';
 import 'package:grc/events/events_screen.dart';
 import 'package:grc/home/home_placeholder_screen.dart';
 import 'package:grc/profile/profile_screen.dart';
-import 'package:grc/registrations/registrations_placeholder_screen.dart';
+import 'package:grc/registrations/registrations_screen.dart';
 
 class NavTab {
   final IconData icon;
@@ -56,7 +56,7 @@ final List<NavTab> kUserNavTabs = [
     icon: Icons.assignment_outlined,
     activeIcon: Icons.assignment,
     label: 'Registrations',
-    screenBuilder: () => const RegistrationsPlaceholderScreen(),
+    screenBuilder: () => const RegistrationsScreen(),
   ),
   NavTab(
     icon: Icons.person_outline,

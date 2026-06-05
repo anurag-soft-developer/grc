@@ -207,10 +207,9 @@ class EventFormScreen extends HookWidget {
                           onTap: () async {
                             final picked = await showDatePicker(
                               context: context,
-                              initialDate: controller.eventDate.value ??
-                                  DateTime.now().add(
-                                    const Duration(days: 7),
-                                  ),
+                              initialDate:
+                                  controller.eventDate.value ??
+                                  DateTime.now().add(const Duration(days: 7)),
                               firstDate: DateTime.now(),
                               lastDate: DateTime.now().add(
                                 const Duration(days: 365 * 2),
@@ -250,12 +249,12 @@ class EventFormScreen extends HookWidget {
                           contentPadding: EdgeInsets.zero,
                           title: const Text('Reporting time'),
                           subtitle: Text(controller.reportingTimeLabel),
-                          trailing:
-                              const Icon(Icons.access_time_outlined),
+                          trailing: const Icon(Icons.access_time_outlined),
                           onTap: () async {
                             final picked = await showTimePicker(
                               context: context,
-                              initialTime: controller.reportingTime.value ??
+                              initialTime:
+                                  controller.reportingTime.value ??
                                   TimeOfDay.now(),
                             );
                             if (picked != null) {

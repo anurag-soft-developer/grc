@@ -3,6 +3,7 @@ import 'package:grc/core/models/user/user_ref_field_instance.dart';
 import 'package:grc/core/models/user/user_ref_hook.dart';
 import 'package:grc/core/models/user/user_model.dart';
 
+import 'package:grc/registrations/model/custom_question_model.dart';
 part 'run_event_model.mapper.dart';
 
 @MappableClass()
@@ -53,6 +54,8 @@ class RunEventModel with RunEventModelMappable {
   final int? registeredCount;
   @MappableField(key: 'createdBy', hook: UserRefHook())
   final UserRefFieldInstance? createdBy;
+  final List<CustomQuestionModel> customQuestions;
+  final List<String> guidelines;
 
   const RunEventModel({
     this.id,
@@ -74,6 +77,8 @@ class RunEventModel with RunEventModelMappable {
     this.registrationsPaused = false,
     this.registeredCount,
     this.createdBy,
+    this.customQuestions = const [],
+    this.guidelines = const [],
   });
 
   /// UI label for status chip (closed overrides published).
@@ -185,6 +190,8 @@ class CreateRunEventInput {
   final double price;
   final int maxParticipants;
   final List<String> coverImages;
+  final List<String> guidelines;
+  final List<CustomQuestionModel> customQuestions;
 
   const CreateRunEventInput({
     required this.title,
@@ -199,6 +206,8 @@ class CreateRunEventInput {
     required this.price,
     required this.maxParticipants,
     this.coverImages = const [],
+    this.guidelines = const [],
+    this.customQuestions = const [],
   });
 
   Map<String, dynamic> toJson() => {
@@ -216,6 +225,32 @@ class CreateRunEventInput {
     'price': price,
     'maxParticipants': maxParticipants,
     if (coverImages.isNotEmpty) 'coverImages': coverImages,
+    'guidelines': guidelines,
+    'customQuestions':
+        customQuestions.map(CreateRunEventInput.customQuestionToJson).toList(),
+  };
+
+  static Map<String, dynamic> customQuestionToJson(CustomQuestionModel q) => {
+    'key': q.key,
+    'label': q.label,
+    'type': q.type.name,
+    if (q.options.isNotEmpty) 'options': q.options,
+    'required': q.required,
+    'order': q.order,
+  };
+}
+
+/// PATCH body for updating only custom registration questions.
+class UpdateRunEventCustomQuestionsInput {
+  final List<CustomQuestionModel> customQuestions;
+
+  const UpdateRunEventCustomQuestionsInput({
+    required this.customQuestions,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'customQuestions':
+        customQuestions.map(CreateRunEventInput.customQuestionToJson).toList(),
   };
 }
 
@@ -233,6 +268,8 @@ class UpdateRunEventInput {
   final double price;
   final int maxParticipants;
   final List<String> coverImages;
+  final List<String> guidelines;
+  final List<CustomQuestionModel> customQuestions;
 
   const UpdateRunEventInput({
     required this.title,
@@ -247,6 +284,8 @@ class UpdateRunEventInput {
     required this.price,
     required this.maxParticipants,
     this.coverImages = const [],
+    this.guidelines = const [],
+    this.customQuestions = const [],
   });
 
   Map<String, dynamic> toJson() => CreateRunEventInput(
@@ -262,5 +301,7 @@ class UpdateRunEventInput {
     price: price,
     maxParticipants: maxParticipants,
     coverImages: coverImages,
+    guidelines: guidelines,
+    customQuestions: customQuestions,
   ).toJson();
 }

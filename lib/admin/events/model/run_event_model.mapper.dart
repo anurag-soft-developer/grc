@@ -187,6 +187,7 @@ class RunEventModelMapper extends ClassMapperBase<RunEventModel> {
     if (_instance == null) {
       MapperContainer.globals.use(_instance = RunEventModelMapper._());
       RunEventLocationMapper.ensureInitialized();
+      CustomQuestionModelMapper.ensureInitialized();
     }
     return _instance!;
   }
@@ -311,6 +312,22 @@ class RunEventModelMapper extends ClassMapperBase<RunEventModel> {
     opt: true,
     hook: UserRefHook(),
   );
+  static List<CustomQuestionModel> _$customQuestions(RunEventModel v) =>
+      v.customQuestions;
+  static const Field<RunEventModel, List<CustomQuestionModel>>
+  _f$customQuestions = Field(
+    'customQuestions',
+    _$customQuestions,
+    opt: true,
+    def: const [],
+  );
+  static List<String> _$guidelines(RunEventModel v) => v.guidelines;
+  static const Field<RunEventModel, List<String>> _f$guidelines = Field(
+    'guidelines',
+    _$guidelines,
+    opt: true,
+    def: const [],
+  );
 
   @override
   final MappableFields<RunEventModel> fields = const {
@@ -333,6 +350,8 @@ class RunEventModelMapper extends ClassMapperBase<RunEventModel> {
     #registrationsPaused: _f$registrationsPaused,
     #registeredCount: _f$registeredCount,
     #createdBy: _f$createdBy,
+    #customQuestions: _f$customQuestions,
+    #guidelines: _f$guidelines,
   };
 
   static RunEventModel _instantiate(DecodingData data) {
@@ -356,6 +375,8 @@ class RunEventModelMapper extends ClassMapperBase<RunEventModel> {
       registrationsPaused: data.dec(_f$registrationsPaused),
       registeredCount: data.dec(_f$registeredCount),
       createdBy: data.dec(_f$createdBy),
+      customQuestions: data.dec(_f$customQuestions),
+      guidelines: data.dec(_f$guidelines),
     );
   }
 
@@ -424,6 +445,13 @@ abstract class RunEventModelCopyWith<$R, $In extends RunEventModel, $Out>
   RunEventLocationCopyWith<$R, RunEventLocation, RunEventLocation>?
   get location;
   ListCopyWith<$R, String, ObjectCopyWith<$R, String, String>> get coverImages;
+  ListCopyWith<
+    $R,
+    CustomQuestionModel,
+    CustomQuestionModelCopyWith<$R, CustomQuestionModel, CustomQuestionModel>
+  >
+  get customQuestions;
+  ListCopyWith<$R, String, ObjectCopyWith<$R, String, String>> get guidelines;
   $R call({
     String? id,
     String? title,
@@ -444,6 +472,8 @@ abstract class RunEventModelCopyWith<$R, $In extends RunEventModel, $Out>
     bool? registrationsPaused,
     int? registeredCount,
     UserRefFieldInstance? createdBy,
+    List<CustomQuestionModel>? customQuestions,
+    List<String>? guidelines,
   });
   RunEventModelCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(Then<$Out2, $R2> t);
 }
@@ -467,6 +497,24 @@ class _RunEventModelCopyWithImpl<$R, $Out>
     (v) => call(coverImages: v),
   );
   @override
+  ListCopyWith<
+    $R,
+    CustomQuestionModel,
+    CustomQuestionModelCopyWith<$R, CustomQuestionModel, CustomQuestionModel>
+  >
+  get customQuestions => ListCopyWith(
+    $value.customQuestions,
+    (v, t) => v.copyWith.$chain(t),
+    (v) => call(customQuestions: v),
+  );
+  @override
+  ListCopyWith<$R, String, ObjectCopyWith<$R, String, String>> get guidelines =>
+      ListCopyWith(
+        $value.guidelines,
+        (v, t) => ObjectCopyWith(v, $identity, t),
+        (v) => call(guidelines: v),
+      );
+  @override
   $R call({
     Object? id = $none,
     String? title,
@@ -487,6 +535,8 @@ class _RunEventModelCopyWithImpl<$R, $Out>
     bool? registrationsPaused,
     Object? registeredCount = $none,
     Object? createdBy = $none,
+    List<CustomQuestionModel>? customQuestions,
+    List<String>? guidelines,
   }) => $apply(
     FieldCopyWithData({
       if (id != $none) #id: id,
@@ -509,6 +559,8 @@ class _RunEventModelCopyWithImpl<$R, $Out>
         #registrationsPaused: registrationsPaused,
       if (registeredCount != $none) #registeredCount: registeredCount,
       if (createdBy != $none) #createdBy: createdBy,
+      if (customQuestions != null) #customQuestions: customQuestions,
+      if (guidelines != null) #guidelines: guidelines,
     }),
   );
   @override
@@ -535,6 +587,8 @@ class _RunEventModelCopyWithImpl<$R, $Out>
     ),
     registeredCount: data.get(#registeredCount, or: $value.registeredCount),
     createdBy: data.get(#createdBy, or: $value.createdBy),
+    customQuestions: data.get(#customQuestions, or: $value.customQuestions),
+    guidelines: data.get(#guidelines, or: $value.guidelines),
   );
 
   @override

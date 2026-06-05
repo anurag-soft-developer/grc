@@ -4,6 +4,7 @@ import 'package:flutter_query/flutter_query.dart';
 import 'package:get/get.dart';
 import 'package:grc/admin/events/model/run_event_model.dart';
 import 'package:grc/admin/events/run_events_service.dart';
+import 'package:grc/admin/events/questionnaires/event_questionnaires_preview_screen.dart';
 import 'package:grc/admin/form/event_form_binding.dart';
 import 'package:grc/admin/form/event_form_screen.dart';
 import 'package:grc/components/events/admin_event_actions.dart';
@@ -64,6 +65,19 @@ class EventDetailScreen extends HookWidget {
       }
     }
 
+    Future<void> openQuestionnaires() async {
+      final current = event.value;
+      if (current == null) return;
+
+      final updated = await Get.to<RunEventModel>(
+        () => const EventQuestionnairesPreviewScreen(),
+        arguments: current,
+      );
+      if (updated != null) {
+        event.value = updated;
+      }
+    }
+
     final data = event.value;
 
     Widget body;
@@ -90,12 +104,18 @@ class EventDetailScreen extends HookWidget {
       appBar: AppBar(
         title: const Text('Event details'),
         actions: [
-          if (data != null && isAdminMode)
+          if (data != null && isAdminMode) ...[
+            IconButton(
+              icon: const Icon(Icons.quiz_outlined),
+              tooltip: 'Questionnaires',
+              onPressed: openQuestionnaires,
+            ),
             IconButton(
               icon: const Icon(Icons.edit_outlined),
               tooltip: 'Edit event',
               onPressed: openEdit,
             ),
+          ],
         ],
       ),
       body: body,
