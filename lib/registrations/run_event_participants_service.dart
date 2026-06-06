@@ -125,10 +125,15 @@ class RunEventParticipantsService {
   Future<PaginatedRunEventParticipants> listMine({
     int page = 1,
     int limit = 10,
+    String segment = 'all',
   }) async {
     final response = await _api.get<Map<String, dynamic>>(
       ApiConstants.runEventParticipants.me,
-      queryParameters: {'page': page, 'limit': limit},
+      queryParameters: {
+        'page': page,
+        'limit': limit,
+        'segment': segment,
+      },
     );
     if (response == null) {
       throw Exception('Failed to load registrations');

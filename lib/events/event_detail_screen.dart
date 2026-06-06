@@ -12,6 +12,8 @@ import 'package:grc/components/events/user_event_actions.dart';
 import 'package:grc/core/auth/auth_state_controller.dart';
 import 'package:grc/core/components/query/mutation_loading_overlay.dart';
 import 'package:grc/core/config/constants.dart';
+import 'package:grc/core/utils/date_format_util.dart';
+import 'package:grc/core/utils/map_launch_util.dart';
 import 'package:grc/core/query/query_keys.dart';
 
 class EventDetailScreen extends HookWidget {
@@ -157,6 +159,8 @@ class _EventDetailBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final canOpenLocation = canOpenEventLocationInMaps(event.location);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -223,7 +227,7 @@ class _EventDetailBody extends StatelessWidget {
           _DetailRow(
             icon: Icons.calendar_today_outlined,
             label: 'Event date',
-            value: _formatDate(event.eventDate),
+            value: formatIsoDateOnly(event.eventDate),
           ),
           _DetailRow(
             icon: Icons.access_time_outlined,
@@ -234,6 +238,10 @@ class _EventDetailBody extends StatelessWidget {
             icon: Icons.location_on_outlined,
             label: 'Location',
             value: _locationLabel(event),
+            onTap: canOpenLocation
+                ? () => openEventLocationInMaps(event.location)
+                : null,
+            showChevron: canOpenLocation,
           ),
           _DetailRow(
             icon: Icons.payments_outlined,
@@ -250,15 +258,6 @@ class _EventDetailBody extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  static String _formatDate(String? iso) {
-    if (iso == null || iso.isEmpty) return '—';
-    try {
-      return DateTime.parse(iso).toLocal().toString().split(' ').first;
-    } catch (_) {
-      return iso.length >= 10 ? iso.substring(0, 10) : iso;
-    }
   }
 
   static String _locationLabel(RunEventModel event) {
@@ -317,16 +316,25 @@ class _DetailRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
+  final VoidCallback? onTap;
+  final bool showChevron;
 
   const _DetailRow({
     required this.icon,
     required this.label,
     required this.value,
+    this.onTap,
+    this.showChevron = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    final isTappable = onTap != null;
+    final valueColor = isTappable
+        ? const Color(AppColors.primary)
+        : const Color(AppColors.text);
+
+    final content = Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -347,15 +355,35 @@ class _DetailRow extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   value,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
+                    color: valueColor,
                   ),
                 ),
               ],
             ),
           ),
+          if (showChevron)
+            const Padding(
+              padding: EdgeInsets.only(top: 18),
+              child: Icon(
+                Icons.chevron_right_rounded,
+                color: Color(AppColors.textSecondary),
+              ),
+            ),
         ],
+      ),
+    );
+
+    if (!isTappable) return content;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: content,
       ),
     );
   }

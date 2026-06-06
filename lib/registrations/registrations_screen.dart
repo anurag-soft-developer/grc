@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_query/flutter_query.dart';
 import 'package:get/get.dart';
-import 'package:grc/core/config/app_colors.dart';
+import 'package:grc/components/home/home_section_message.dart';
+import 'package:grc/components/home/home_upcoming_slot_card.dart';
+import 'package:grc/core/components/bottom_navigation_panel/navigation_controller.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/query/query_keys.dart';
 import 'package:grc/registrations/model/run_event_participant_model.dart';
 import 'package:grc/registrations/run_event_participants_service.dart';
+
 Duration? _noRetry(int count, Object error) => null;
 
 class RegistrationsScreen extends HookWidget {
@@ -48,20 +51,35 @@ class RegistrationsScreen extends HookWidget {
       return const Center(child: CircularProgressIndicator());
     }
     if (query.isError && items.isEmpty) {
-      return Center(
-        child: Text(
-          query.error?.toString() ?? 'Failed to load registrations',
+      return RefreshIndicator(
+        onRefresh: () async => query.refetch(),
+        color: const Color(AppColors.primary),
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+          children: [
+            HomeSectionMessage(
+              message: 'Could not load your registrations',
+              actionLabel: 'Retry',
+              onAction: query.refetch,
+            ),
+          ],
         ),
       );
     }
     if (items.isEmpty) {
       return RefreshIndicator(
         onRefresh: () async => query.refetch(),
+        color: const Color(AppColors.primary),
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          children: const [
-            SizedBox(height: 120),
-            Center(child: Text('No registrations yet')),
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+          children: [
+            HomeSectionMessage(
+              message: 'No registrations yet',
+              actionLabel: 'Browse events',
+              onAction: () => Get.find<NavigationController>().changeTab(1),
+            ),
           ],
         ),
       );
@@ -69,6 +87,7 @@ class RegistrationsScreen extends HookWidget {
 
     return RefreshIndicator(
       onRefresh: () async => query.refetch(),
+      color: const Color(AppColors.primary),
       child: NotificationListener<ScrollNotification>(
         onNotification: (n) {
           if (n.metrics.extentAfter < 160 &&
@@ -80,7 +99,7 @@ class RegistrationsScreen extends HookWidget {
         },
         child: ListView.separated(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
           itemCount: items.length + (query.isFetchingNextPage ? 1 : 0),
           separatorBuilder: (_, __) => const SizedBox(height: 12),
           itemBuilder: (context, index) {
@@ -90,93 +109,9 @@ class RegistrationsScreen extends HookWidget {
                 child: Center(child: CircularProgressIndicator()),
               );
             }
-            return _RegistrationTile(participant: items[index]);
+            return HomeUpcomingSlotCard(participant: items[index]);
           },
         ),
-      ),
-    );
-  }
-}
-
-class _RegistrationTile extends StatelessWidget {
-  final RunEventParticipantModel participant;
-
-  const _RegistrationTile({required this.participant});
-
-  @override
-  Widget build(BuildContext context) {
-    final event = participant.runEventModel;
-    final title = event?.title ?? 'Event';
-    final date = event?.eventDate;
-    final status = participant.status ?? '';
-    final payment = participant.paymentStatus ?? '';
-
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          final id = participant.id;
-          if (id == null) return;
-          Get.toNamed(AppConstants.routes.registrationDetail, arguments: id);
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
-                ),
-              ),
-              if (date != null) ...[
-                const SizedBox(height: 4),
-                Text(
-                  _formatDate(date),
-                  style: const TextStyle(color: Color(AppColors.textSecondary)),
-                ),
-              ],
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children: [
-                  _chip(status),
-                  if (payment.isNotEmpty) _chip(payment),
-                  if (participant.totalAmount != null)
-                    _chip('₹${participant.totalAmount!.toStringAsFixed(0)}'),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _formatDate(String iso) {
-    try {
-      final d = DateTime.parse(iso).toLocal();
-      return '${d.day}/${d.month}/${d.year}';
-    } catch (_) {
-      return iso;
-    }
-  }
-
-  Widget _chip(String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(AppColors.background),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        label.replaceAll('_', ' '),
-        style: const TextStyle(fontSize: 12),
       ),
     );
   }

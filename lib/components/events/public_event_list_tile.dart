@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:grc/admin/events/model/run_event_model.dart';
 import 'package:grc/core/config/constants.dart';
+import 'package:grc/core/utils/date_format_util.dart';
 
 class PublicEventListTile extends StatelessWidget {
   final RunEventModel event;
@@ -15,15 +16,6 @@ class PublicEventListTile extends StatelessWidget {
       if (url.isNotEmpty) return url;
     }
     return null;
-  }
-
-  String _formatDate(String? iso) {
-    if (iso == null || iso.isEmpty) return '—';
-    try {
-      return DateTime.parse(iso).toLocal().toString().split(' ').first;
-    } catch (_) {
-      return iso.length >= 10 ? iso.substring(0, 10) : iso;
-    }
   }
 
   String get _locationLabel {
@@ -169,7 +161,7 @@ class PublicEventListTile extends StatelessWidget {
           const SizedBox(height: 8),
           _metaLine(
             Icons.calendar_today_outlined,
-            _formatDate(event.eventDate),
+            formatIsoDateOnly(event.eventDate),
           ),
           if (reportingTime != null && reportingTime.isNotEmpty)
             _metaLine(Icons.access_time_outlined, reportingTime),

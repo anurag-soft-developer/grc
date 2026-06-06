@@ -6,6 +6,7 @@ import 'package:grc/admin/events/model/run_event_model.dart';
 import 'package:grc/core/config/app_colors.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/query/query_keys.dart';
+import 'package:grc/core/utils/date_format_util.dart';
 import 'package:grc/registrations/model/run_event_participant_model.dart';
 import 'package:grc/registrations/run_event_participants_service.dart';
 
@@ -176,7 +177,7 @@ class _ParticipantTile extends StatelessWidget {
                     if (submitted != null) ...[
                       const SizedBox(height: 4),
                       Text(
-                        _formatDate(submitted),
+                        formatEventDateNumeric(submitted),
                         style: const TextStyle(
                           fontSize: 12,
                           color: Color(AppColors.textSecondary),
@@ -200,15 +201,6 @@ class _ParticipantTile extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _formatDate(String iso) {
-    try {
-      final d = DateTime.parse(iso).toLocal();
-      return '${d.day}/${d.month}/${d.year}';
-    } catch (_) {
-      return iso;
-    }
   }
 
   Widget _chip(String label) {

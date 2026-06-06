@@ -5,7 +5,7 @@ import 'package:grc/admin/dashboard/admin_dashboard_screen.dart';
 import 'package:grc/admin/events/my_events_controller.dart';
 import 'package:grc/admin/events/my_events_screen.dart';
 import 'package:grc/events/events_screen.dart';
-import 'package:grc/home/home_placeholder_screen.dart';
+import 'package:grc/home/home_screen.dart';
 import 'package:grc/profile/profile_screen.dart';
 import 'package:grc/registrations/registrations_screen.dart';
 
@@ -44,7 +44,7 @@ final List<NavTab> kUserNavTabs = [
     icon: Icons.home_outlined,
     activeIcon: Icons.home,
     label: 'Home',
-    screenBuilder: () => const HomePlaceholderScreen(),
+    screenBuilder: () => const HomeScreen(),
   ),
   NavTab(
     icon: Icons.event_outlined,

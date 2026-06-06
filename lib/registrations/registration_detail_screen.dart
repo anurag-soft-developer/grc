@@ -11,6 +11,7 @@ import 'package:grc/registrations/model/custom_question_model.dart';
 import 'package:grc/registrations/model/run_event_participant_model.dart';
 import 'package:grc/registrations/run_event_participants_service.dart';
 import 'package:grc/core/query/query_keys.dart';
+import 'package:grc/core/utils/date_format_util.dart';
 
 class RegistrationDetailScreen extends HookWidget {
   const RegistrationDetailScreen({super.key});
@@ -18,15 +19,12 @@ class RegistrationDetailScreen extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final participantId = Get.arguments as String?;
-    final payController = useMemoized(
-      () {
-        if (!Get.isRegistered<EventRegistrationController>()) {
-          Get.put(EventRegistrationController());
-        }
-        return Get.find<EventRegistrationController>();
-      },
-      const [],
-    );
+    final payController = useMemoized(() {
+      if (!Get.isRegistered<EventRegistrationController>()) {
+        Get.put(EventRegistrationController());
+      }
+      return Get.find<EventRegistrationController>();
+    }, const []);
 
     final detailQuery = useQuery<RunEventParticipantModel?, Object>(
       QueryKeys.registrationDetail(participantId ?? ''),
@@ -40,10 +38,7 @@ class RegistrationDetailScreen extends HookWidget {
 
     return Scaffold(
       backgroundColor: const Color(AppColors.background),
-      appBar: AppBar(
-        title: const Text('Registration'),
-        centerTitle: false,
-      ),
+      appBar: AppBar(title: const Text('Registration'), centerTitle: false),
       body: QueryAsyncBody<RunEventParticipantModel?, dynamic>(
         state: detailQuery,
         onRetry: detailQuery.refetch,
@@ -51,10 +46,7 @@ class RegistrationDetailScreen extends HookWidget {
           if (p == null) {
             return const Center(child: Text('Registration not found'));
           }
-          return _DetailContent(
-            participant: p,
-            payController: payController,
-          );
+          return _DetailContent(participant: p, payController: payController);
         },
       ),
     );
@@ -100,8 +92,10 @@ class _DetailContent extends StatelessWidget {
               }).toList(),
             ),
           ],
-          const SizedBox(height: 16),
-          _CompactEventSection(event: event),
+          if (event != null) ...[
+            const SizedBox(height: 16),
+            _CompactEventSection(event: event),
+          ],
           if (participant.isPendingPayment) ...[
             const SizedBox(height: 24),
             Obx(
@@ -136,8 +130,13 @@ class _PrimaryDetailsCard extends StatelessWidget {
     final user = participant.userModel;
     final avatar = participant.displayAvatar;
     final email = user?.email?.trim();
-    final phone = user?.phone?.trim();
     final contact = participant.displayContact;
+    final contactLabel = (email != null && email.isNotEmpty)
+        ? email
+        : (contact.isNotEmpty ? contact : null);
+    final contactIcon = (email != null && email.isNotEmpty)
+        ? Icons.email_outlined
+        : Icons.phone_outlined;
     final status = participant.status ?? 'unknown';
     final payment = participant.paymentStatus ?? 'pending';
     final tone = _statusTone(status, payment);
@@ -177,8 +176,7 @@ class _PrimaryDetailsCard extends StatelessWidget {
                 child: CircleAvatar(
                   radius: 36,
                   backgroundColor: const Color(AppColors.surface),
-                  backgroundImage:
-                      avatar != null ? NetworkImage(avatar) : null,
+                  backgroundImage: avatar != null ? NetworkImage(avatar) : null,
                   child: avatar != null
                       ? null
                       : Icon(
@@ -204,87 +202,64 @@ class _PrimaryDetailsCard extends StatelessWidget {
                         letterSpacing: -0.2,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 6,
-                      children: [
-                        _StatusChip(label: _label(status), color: tone.foreground),
-                        if (payment.isNotEmpty)
-                          _StatusChip(
-                            label: _label(payment),
+                    if (contactLabel != null) ...[
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Icon(
+                            contactIcon,
+                            size: 14,
                             color: const Color(AppColors.textSecondary),
                           ),
-                      ],
-                    ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              contactLabel,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Color(AppColors.textSecondary),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),
             ],
           ),
-          if (email != null && email.isNotEmpty ||
-              phone != null && phone.isNotEmpty ||
-              (contact.isNotEmpty && contact != email)) ...[
-            const SizedBox(height: 16),
-            const Divider(height: 1, color: Color(AppColors.divider)),
-            const SizedBox(height: 16),
-            if (email != null && email.isNotEmpty)
-              _CompactContactRow(
-                icon: Icons.email_outlined,
-                value: email,
-              ),
-            if (phone != null && phone.isNotEmpty)
-              _CompactContactRow(
-                icon: Icons.phone_outlined,
-                value: phone,
-              )
-            else if (contact.isNotEmpty && contact != email)
-              _CompactContactRow(
-                icon: Icons.alternate_email_rounded,
-                value: contact,
-              ),
-          ],
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
               color: tone.background,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               border: Border.all(color: tone.border),
             ),
             child: Row(
               children: [
-                Icon(tone.icon, size: 20, color: tone.foreground),
-                const SizedBox(width: 10),
+                Icon(tone.icon, size: 18, color: tone.foreground),
+                const SizedBox(width: 8),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        tone.title,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                          color: tone.foreground,
-                        ),
-                      ),
-                      Text(
-                        tone.subtitle,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: tone.foreground.withValues(alpha: 0.85),
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    tone.title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                      color: tone.foreground,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           const Text(
-            'Registration',
+            'Details',
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w700,
@@ -293,14 +268,19 @@ class _PrimaryDetailsCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          _CompactInfoRow(
-            label: 'Registration ID',
-            value: _shortId(participant.id),
+          // _CompactInfoRow(
+          //   label: 'Registration ID',
+          //   value: _shortId(participant.id),
+          // ),
+          _CompactInfoChipRow(
+            label: 'Status',
+            chipLabel: _label(participant.status),
+            chipColor: tone.foreground,
           ),
-          _CompactInfoRow(label: 'Status', value: _label(participant.status)),
-          _CompactInfoRow(
+          _CompactInfoChipRow(
             label: 'Payment',
-            value: _label(participant.paymentStatus),
+            chipLabel: _label(participant.paymentStatus),
+            chipColor: _paymentChipColor(participant.paymentStatus),
           ),
           if (participant.totalAmount != null)
             _CompactInfoRow(
@@ -312,18 +292,18 @@ class _PrimaryDetailsCard extends StatelessWidget {
           if (participant.submittedAt != null)
             _CompactInfoRow(
               label: 'Submitted',
-              value: _formatDateTime(participant.submittedAt!),
+              value: formatEventDateTime(participant.submittedAt),
             ),
           if (participant.paidAt != null)
             _CompactInfoRow(
               label: 'Paid on',
-              value: _formatDateTime(participant.paidAt!),
+              value: formatEventDateTime(participant.paidAt),
             ),
           if (participant.isPendingPayment &&
               participant.paymentExpiresAt != null)
             _CompactInfoRow(
               label: 'Pay before',
-              value: _formatDateTime(participant.paymentExpiresAt!),
+              value: formatEventDateTime(participant.paymentExpiresAt),
               valueColor: const Color(AppColors.error),
             ),
         ],
@@ -332,30 +312,67 @@ class _PrimaryDetailsCard extends StatelessWidget {
   }
 }
 
-class _CompactContactRow extends StatelessWidget {
-  final IconData icon;
-  final String value;
+class _CompactInfoChipRow extends StatelessWidget {
+  final String label;
+  final String chipLabel;
+  final Color chipColor;
 
-  const _CompactContactRow({required this.icon, required this.value});
+  const _CompactInfoChipRow({
+    required this.label,
+    required this.chipLabel,
+    required this.chipColor,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 10),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Icon(icon, size: 16, color: const Color(AppColors.textSecondary)),
-          const SizedBox(width: 8),
-          Expanded(
+          SizedBox(
+            width: 118,
             child: Text(
-              value,
+              label,
               style: const TextStyle(
-                fontSize: 14,
-                color: Color(AppColors.text),
+                fontSize: 13,
+                color: Color(AppColors.textSecondary),
               ),
             ),
           ),
+          Expanded(
+            child: _StatusChip(label: chipLabel, color: chipColor),
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class _StatusChip extends StatelessWidget {
+  final String label;
+  final Color color;
+
+  const _StatusChip({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: color,
+          ),
+        ),
       ),
     );
   }
@@ -406,113 +423,179 @@ class _CompactInfoRow extends StatelessWidget {
 }
 
 class _CompactEventSection extends StatelessWidget {
-  final RunEventModel? event;
+  final RunEventModel event;
 
   const _CompactEventSection({required this.event});
 
   @override
   Widget build(BuildContext context) {
-    final location = event?.location;
-    final locationLabel = location == null
-        ? null
-        : [
-            location.city,
-            location.state,
-          ].where((s) => s.isNotEmpty).join(', ');
+    final title = event.title;
+    final dateLabel = formatEventDate(event.eventDate);
+    final reportingTime = event.reportingTime?.trim();
+    final location = event.location;
+    final city = location?.city.isNotEmpty == true
+        ? location!.city
+        : event.cityLabel;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: const Color(AppColors.surface),
+    String? coverUrl;
+    for (final url in event.coverImages) {
+      if (url.isNotEmpty) {
+        coverUrl = url;
+        break;
+      }
+    }
+
+    return Material(
+      color: const Color(AppColors.surface),
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(AppColors.divider)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Event',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: Color(AppColors.textSecondary),
-              letterSpacing: 0.3,
-            ),
+        onTap: () =>
+            Get.toNamed(AppConstants.routes.eventDetail, arguments: event),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(AppColors.divider)),
           ),
-          const SizedBox(height: 8),
-          Text(
-            event?.title ?? 'Event',
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: Color(AppColors.text),
-            ),
-          ),
-          if (event?.eventDate != null) ...[
-            const SizedBox(height: 6),
-            _CompactEventMeta(
-              icon: Icons.calendar_today_outlined,
-              text: _formatDate(event!.eventDate!),
-            ),
-          ],
-          if (event?.reportingTime != null) ...[
-            const SizedBox(height: 4),
-            _CompactEventMeta(
-              icon: Icons.schedule_outlined,
-              text: 'Report by ${event!.reportingTime}',
-            ),
-          ],
-          if (locationLabel != null && locationLabel.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            _CompactEventMeta(
-              icon: Icons.location_on_outlined,
-              text: locationLabel,
-            ),
-          ],
-          if (location?.address != null && location!.address.isNotEmpty) ...[
-            const SizedBox(height: 2),
-            Padding(
-              padding: const EdgeInsets.only(left: 22),
-              child: Text(
-                location.address,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Color(AppColors.textSecondary),
-                  height: 1.35,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _EventCoverThumb(url: coverUrl),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Event',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Color(AppColors.textSecondary),
+                          letterSpacing: 0.4,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: Color(AppColors.text),
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 6),
+                      _EventMetaRow(
+                        icon: Icons.calendar_today_outlined,
+                        text: dateLabel,
+                      ),
+                      if (reportingTime != null && reportingTime.isNotEmpty)
+                        _EventMetaRow(
+                          icon: Icons.access_time_outlined,
+                          text: reportingTime,
+                        ),
+                      if (city.isNotEmpty)
+                        _EventMetaRow(
+                          icon: Icons.location_on_outlined,
+                          text: city,
+                        ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'View event details',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(
+                            AppColors.primary,
+                          ).withValues(alpha: 0.9),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+                const Padding(
+                  padding: EdgeInsets.only(top: 2),
+                  child: Icon(
+                    Icons.chevron_right_rounded,
+                    color: Color(AppColors.textSecondary),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ],
+          ),
+        ),
       ),
     );
   }
 }
 
-class _CompactEventMeta extends StatelessWidget {
-  final IconData icon;
-  final String text;
+class _EventCoverThumb extends StatelessWidget {
+  final String? url;
 
-  const _CompactEventMeta({required this.icon, required this.text});
+  const _EventCoverThumb({this.url});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 14, color: const Color(AppColors.textSecondary)),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            text,
-            style: const TextStyle(
-              fontSize: 13,
-              color: Color(AppColors.textSecondary),
+    const size = 72.0;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: url != null
+          ? Image.network(
+              url!,
+              width: size,
+              height: size,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => _placeholder(size),
+            )
+          : _placeholder(size),
+    );
+  }
+
+  Widget _placeholder(double size) {
+    return Container(
+      width: size,
+      height: size,
+      color: const Color(AppColors.divider),
+      child: const Icon(
+        Icons.directions_run_outlined,
+        color: Color(AppColors.textSecondary),
+      ),
+    );
+  }
+}
+
+class _EventMetaRow extends StatelessWidget {
+  final IconData icon;
+  final String text;
+
+  const _EventMetaRow({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 3),
+      child: Row(
+        children: [
+          Icon(icon, size: 13, color: const Color(AppColors.textSecondary)),
+          const SizedBox(width: 5),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Color(AppColors.textSecondary),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -629,35 +712,8 @@ class _DetailTile extends StatelessWidget {
   }
 }
 
-class _StatusChip extends StatelessWidget {
-  final String label;
-  final Color color;
-
-  const _StatusChip({required this.label, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: color,
-        ),
-      ),
-    );
-  }
-}
-
 class _StatusTone {
   final String title;
-  final String subtitle;
   final IconData icon;
   final Color foreground;
   final Color background;
@@ -665,7 +721,6 @@ class _StatusTone {
 
   const _StatusTone({
     required this.title,
-    required this.subtitle,
     required this.icon,
     required this.foreground,
     required this.background,
@@ -677,7 +732,6 @@ _StatusTone _statusTone(String status, String payment) {
   if (status == 'submitted' && payment == 'paid') {
     return const _StatusTone(
       title: 'Registration confirmed',
-      subtitle: 'You are registered for this event',
       icon: Icons.verified_rounded,
       foreground: Color(AppColors.success),
       background: Color(0xFFECFDF5),
@@ -687,7 +741,6 @@ _StatusTone _statusTone(String status, String payment) {
   if (status == 'pending_payment') {
     return const _StatusTone(
       title: 'Payment pending',
-      subtitle: 'Complete payment to confirm your spot',
       icon: Icons.hourglass_top_rounded,
       foreground: Color(AppColors.primary),
       background: Color(0xFFEEF2FF),
@@ -697,7 +750,6 @@ _StatusTone _statusTone(String status, String payment) {
   if (status == 'cancelled') {
     return const _StatusTone(
       title: 'Registration cancelled',
-      subtitle: 'This registration is no longer active',
       icon: Icons.cancel_outlined,
       foreground: Color(AppColors.error),
       background: Color(0xFFFEF2F2),
@@ -707,7 +759,6 @@ _StatusTone _statusTone(String status, String payment) {
   if (status == 'draft') {
     return const _StatusTone(
       title: 'Draft registration',
-      subtitle: 'Finish and submit your registration',
       icon: Icons.edit_note_rounded,
       foreground: Color(AppColors.textSecondary),
       background: Color(AppColors.surface),
@@ -716,7 +767,6 @@ _StatusTone _statusTone(String status, String payment) {
   }
   return _StatusTone(
     title: _label(status),
-    subtitle: 'Payment: ${_label(payment)}',
     icon: Icons.info_outline_rounded,
     foreground: const Color(AppColors.secondary),
     background: const Color(0xFFF0FDFA),
@@ -726,43 +776,29 @@ _StatusTone _statusTone(String status, String payment) {
 
 String _label(String? value) {
   if (value == null || value.isEmpty) return '—';
-  return value.replaceAll('_', ' ');
+  return value.replaceAll('_', ' ').capitalizeFirst ?? '';
 }
 
-String _shortId(String? id) {
-  if (id == null || id.isEmpty) return '—';
-  if (id.length <= 8) return id.toUpperCase();
-  return id.substring(id.length - 8).toUpperCase();
-}
-
-String _formatDate(String iso) {
-  try {
-    final d = DateTime.parse(iso).toLocal();
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-    ];
-    return '${d.day} ${months[d.month - 1]} ${d.year}';
-  } catch (_) {
-    return iso;
+Color _paymentChipColor(String? paymentStatus) {
+  switch (paymentStatus) {
+    case 'paid':
+      return const Color(AppColors.success);
+    case 'pending':
+      return const Color(AppColors.primary);
+    case 'failed':
+      return const Color(AppColors.error);
+    case 'refunded':
+      return const Color(AppColors.textSecondary);
+    default:
+      return const Color(AppColors.textSecondary);
   }
 }
 
-String _formatDateTime(String iso) {
-  try {
-    final d = DateTime.parse(iso).toLocal();
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-    ];
-    final hour = d.hour > 12 ? d.hour - 12 : (d.hour == 0 ? 12 : d.hour);
-    final period = d.hour >= 12 ? 'PM' : 'AM';
-    final minute = d.minute.toString().padLeft(2, '0');
-    return '${d.day} ${months[d.month - 1]} ${d.year}, $hour:$minute $period';
-  } catch (_) {
-    return iso;
-  }
-}
+// String _shortId(String? id) {
+//   if (id == null || id.isEmpty) return '—';
+//   if (id.length <= 8) return id.toUpperCase();
+//   return id.substring(id.length - 8).toUpperCase();
+// }
 
 String _formatAnswer(dynamic raw) {
   if (raw == null) return '—';
