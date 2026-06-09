@@ -15,6 +15,7 @@ class AuthStateController extends GetxController {
 
   final Rx<UserModel?> _user = Rx<UserModel?>(null);
   final RxBool _isLoggedIn = false.obs;
+  final RxBool isSigningOut = false.obs;
   final Rx<AppMode> appMode = AppMode.user.obs;
 
   UserModel? get user => _user.value;
@@ -77,8 +78,14 @@ class AuthStateController extends GetxController {
   }
 
   Future<void> signOut() async {
-    await _authRepository.logout();
-    clearSession();
-    Get.offAllNamed(AppConstants.routes.login);
+    if (isSigningOut.value) return;
+    isSigningOut.value = true;
+    try {
+      await _authRepository.logout();
+      clearSession();
+      Get.offAllNamed(AppConstants.routes.login);
+    } finally {
+      isSigningOut.value = false;
+    }
   }
 }

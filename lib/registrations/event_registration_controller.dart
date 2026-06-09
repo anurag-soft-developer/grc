@@ -140,6 +140,11 @@ class EventRegistrationController extends GetxController {
         );
         return;
       }
+      if (customQuestions.isEmpty) {
+        await submitAndContinue();
+        await _invalidateEventRegistrationStatus();
+        return;
+      }
       isLoading.value = false;
       await Get.toNamed(AppConstants.routes.registrationForm);
       await _invalidateEventRegistrationStatus();

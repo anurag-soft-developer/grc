@@ -8,6 +8,7 @@ import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/models/user/user_model.dart';
 import 'package:grc/core/query/query_keys.dart';
 import 'package:grc/core/repositories/user_repository.dart';
+import 'package:grc/components/shared/loading_overlay.dart';
 
 /// Profile tab inside main shell (uses cached user + optional refetch).
 class ProfileTabScreen extends HookWidget {
@@ -74,80 +75,93 @@ class ProfileContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final authState = Get.find<AuthStateController>();
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-      children: [
-        if (user.isEmailVerified != true) ...[
-          _VerifyEmailBanner(email: user.email),
-          const SizedBox(height: 20),
-        ],
-        _ProfileHeaderCard(user: user),
-        const SizedBox(height: 20),
-        Obx(() {
-          if (!authState.isAdmin) return const SizedBox.shrink();
-          final adminMode = authState.isAdminMode;
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _ProfileSectionCard(
-                children: [
-                  SwitchListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 4,
-                    ),
-                    secondary: _ColorfulIcon(
-                      icon: adminMode
-                          ? Icons.admin_panel_settings_rounded
-                          : Icons.person_rounded,
-                      color: const Color(0xFF7C3AED),
-                    ),
-                    title: Text(adminMode ? 'Admin mode' : 'User mode'),
-                    subtitle: Text(
-                      adminMode
-                          ? 'Switch to user mode'
-                          : 'Switch to admin mode',
-                      style: const TextStyle(
-                        color: Color(AppColors.textSecondary),
-                      ),
-                    ),
-                    value: adminMode,
-                    onChanged: (_) => authState.setAppMode(
-                      adminMode ? AppMode.user : AppMode.admin,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-            ],
-          );
-        }),
-        _ProfileSectionCard(
+    return Obx(
+      () => LoadingOverlay(
+        isLoading: authState.isSigningOut.value,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
           children: [
-            _ProfileActionTile(
-              icon: Icons.edit_rounded,
-              color: const Color(AppColors.primary),
-              title: 'Edit profile',
-              onTap: () => Get.toNamed(AppConstants.routes.editProfile),
-            ),
-            const _ProfileTileDivider(),
-            _ProfileActionTile(
-              icon: Icons.settings_rounded,
-              color: const Color(AppColors.secondary),
-              title: 'Settings',
-              onTap: () => Get.toNamed(AppConstants.routes.settings),
-            ),
-            const _ProfileTileDivider(),
-            _ProfileActionTile(
-              icon: Icons.logout_rounded,
-              color: const Color(AppColors.error),
-              title: 'Sign out',
-              titleColor: const Color(AppColors.error),
-              onTap: authState.signOut,
+            if (user.isEmailVerified != true) ...[
+              _VerifyEmailBanner(email: user.email),
+              const SizedBox(height: 20),
+            ],
+            _ProfileHeaderCard(user: user),
+            const SizedBox(height: 20),
+            Obx(() {
+              if (!authState.isAdmin) return const SizedBox.shrink();
+              final adminMode = authState.isAdminMode;
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _ProfileSectionCard(
+                    children: [
+                      SwitchListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 4,
+                        ),
+                        secondary: _ColorfulIcon(
+                          icon: adminMode
+                              ? Icons.admin_panel_settings_rounded
+                              : Icons.person_rounded,
+                          color: const Color(0xFF7C3AED),
+                        ),
+                        title: Text(adminMode ? 'Admin mode' : 'User mode'),
+                        subtitle: Text(
+                          adminMode
+                              ? 'Switch to user mode'
+                              : 'Switch to admin mode',
+                          style: const TextStyle(
+                            color: Color(AppColors.textSecondary),
+                          ),
+                        ),
+                        value: adminMode,
+                        onChanged: authState.isSigningOut.value
+                            ? null
+                            : (_) => authState.setAppMode(
+                                adminMode ? AppMode.user : AppMode.admin,
+                              ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              );
+            }),
+            _ProfileSectionCard(
+              children: [
+                _ProfileActionTile(
+                  icon: Icons.edit_rounded,
+                  color: const Color(AppColors.primary),
+                  title: 'Edit profile',
+                  onTap: authState.isSigningOut.value
+                      ? null
+                      : () => Get.toNamed(AppConstants.routes.editProfile),
+                ),
+                const _ProfileTileDivider(),
+                _ProfileActionTile(
+                  icon: Icons.settings_rounded,
+                  color: const Color(AppColors.secondary),
+                  title: 'Settings',
+                  onTap: authState.isSigningOut.value
+                      ? null
+                      : () => Get.toNamed(AppConstants.routes.settings),
+                ),
+                const _ProfileTileDivider(),
+                _ProfileActionTile(
+                  icon: Icons.logout_rounded,
+                  color: const Color(AppColors.error),
+                  title: authState.isSigningOut.value
+                      ? 'Signing out...'
+                      : 'Sign out',
+                  titleColor: const Color(AppColors.error),
+                  onTap: authState.isSigningOut.value ? null : authState.signOut,
+                ),
+              ],
             ),
           ],
         ),
-      ],
+      ),
     );
   }
 }
@@ -401,14 +415,14 @@ class _ProfileActionTile extends StatelessWidget {
   final Color color;
   final String title;
   final Color? titleColor;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const _ProfileActionTile({
     required this.icon,
     required this.color,
     required this.title,
     this.titleColor,
-    required this.onTap,
+    this.onTap,
   });
 
   @override

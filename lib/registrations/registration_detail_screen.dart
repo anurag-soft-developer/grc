@@ -18,7 +18,12 @@ class RegistrationDetailScreen extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final participantId = Get.arguments as String?;
+    // Capture once — Get.arguments is global and changes when child routes
+    // (e.g. event detail) are pushed, so re-reading on rebuild causes cast errors.
+    final participantId = useMemoized(() {
+      final args = Get.arguments;
+      return args is String ? args : null;
+    });
     final payController = useMemoized(() {
       if (!Get.isRegistered<EventRegistrationController>()) {
         Get.put(EventRegistrationController());

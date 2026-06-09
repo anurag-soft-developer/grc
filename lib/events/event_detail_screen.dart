@@ -9,6 +9,9 @@ import 'package:grc/admin/form/event_form_binding.dart';
 import 'package:grc/admin/form/event_form_screen.dart';
 import 'package:grc/components/events/admin_event_actions.dart';
 import 'package:grc/components/events/user_event_actions.dart';
+import 'package:grc/components/shared/loading_overlay.dart';
+import 'package:grc/registrations/event_registration_binding.dart';
+import 'package:grc/registrations/event_registration_controller.dart';
 import 'package:grc/core/auth/auth_state_controller.dart';
 import 'package:grc/core/components/query/mutation_loading_overlay.dart';
 import 'package:grc/core/config/constants.dart';
@@ -143,11 +146,21 @@ class EventDetailScreen extends HookWidget {
       );
     }
 
-    return Column(
-      children: [
-        Expanded(child: _EventDetailBody(event: data)),
-        UserEventActions(event: data),
-      ],
+    if (!Get.isRegistered<EventRegistrationController>()) {
+      EventRegistrationBinding().dependencies();
+    }
+    final registrationController = Get.find<EventRegistrationController>();
+
+    return Obx(
+      () => LoadingOverlay(
+        isLoading: registrationController.isLoading.value,
+        child: Column(
+          children: [
+            Expanded(child: _EventDetailBody(event: data)),
+            UserEventActions(event: data),
+          ],
+        ),
+      ),
     );
   }
 }
