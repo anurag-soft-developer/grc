@@ -6,6 +6,7 @@ import 'package:grc/admin/form/event_form_screen.dart';
 import 'package:grc/admin/events/model/run_event_model.dart';
 import 'package:grc/admin/events/run_events_service.dart';
 import 'package:grc/components/admin/event_list_tile.dart';
+import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/query/query_keys.dart';
 
@@ -25,9 +26,8 @@ class MyEventsScreen extends HookWidget {
       },
     );
 
-    final allEvents = eventsQuery.data?.pages
-            .expand((p) => p.data)
-            .toList() ??
+    final allEvents =
+        eventsQuery.data?.pages.expand((p) => p.data).toList() ??
         const <RunEventModel>[];
 
     return Scaffold(
@@ -72,16 +72,19 @@ class MyEventsScreen extends HookWidget {
       return RefreshIndicator(
         onRefresh: () async => eventsQuery.refetch(),
         color: const Color(AppColors.primary),
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          children: const [
-            SizedBox(
-              height: 240,
-              child: Center(
-                child: Text('No events yet. Tap + to create one.'),
+        child: AdaptivePageContainer(
+          maxWidth: 1020,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: const [
+              SizedBox(
+                height: 240,
+                child: Center(
+                  child: Text('No events yet. Tap + to create one.'),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }
@@ -102,7 +105,8 @@ class MyEventsScreen extends HookWidget {
         child: ListView.builder(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(16),
-          itemCount: allEvents.length + (eventsQuery.isFetchingNextPage ? 1 : 0),
+          itemCount:
+              allEvents.length + (eventsQuery.isFetchingNextPage ? 1 : 0),
           itemBuilder: (context, index) {
             if (index >= allEvents.length) {
               return const Padding(
@@ -116,7 +120,12 @@ class MyEventsScreen extends HookWidget {
                 ),
               );
             }
-            return AdminEventListTile(event: allEvents[index]);
+            return Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1020),
+                child: AdminEventListTile(event: allEvents[index]),
+              ),
+            );
           },
         ),
       ),

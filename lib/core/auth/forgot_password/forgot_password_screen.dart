@@ -4,6 +4,7 @@ import 'package:flutter_query/flutter_query.dart';
 import 'package:get/get.dart';
 import 'package:grc/components/forgot_password/forgot_password_email_step.dart';
 import 'package:grc/components/forgot_password/forgot_password_otp_step.dart';
+import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/query/query_keys.dart';
 import 'package:grc/core/repositories/auth_repository.dart';
@@ -24,7 +25,9 @@ class ForgotPasswordScreen extends HookWidget {
       onSuccess: (ok, addr, _, __) {
         if (ok) {
           email.value = addr;
-          ExceptionHandler.showSuccessToast(AppConstants.successMessages.otpSent);
+          ExceptionHandler.showSuccessToast(
+            AppConstants.successMessages.otpSent,
+          );
           pageController.nextPage(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
@@ -52,29 +55,32 @@ class ForgotPasswordScreen extends HookWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Reset password')),
-      body: PageView(
-        controller: pageController,
-        physics: const NeverScrollableScrollPhysics(),
-        children: [
-          ForgotPasswordEmailStep(
-            mutationKey: QueryKeys.forgotPassword,
-            onSubmit: (addr) => sendOtpMutation.mutate(addr),
-          ),
-          ForgotPasswordOtpStep(
-            email: email.value,
-            mutationKey: QueryKeys.resetPassword,
-            onBack: () => pageController.previousPage(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
+      body: AdaptivePageContainer(
+        maxWidth: 760,
+        child: PageView(
+          controller: pageController,
+          physics: const NeverScrollableScrollPhysics(),
+          children: [
+            ForgotPasswordEmailStep(
+              mutationKey: QueryKeys.forgotPassword,
+              onSubmit: (addr) => sendOtpMutation.mutate(addr),
             ),
-            onSubmit: (otp, password) => resetMutation.mutate({
-              'email': email.value,
-              'otp': otp,
-              'password': password,
-            }),
-            onResend: () => sendOtpMutation.mutate(email.value),
-          ),
-        ],
+            ForgotPasswordOtpStep(
+              email: email.value,
+              mutationKey: QueryKeys.resetPassword,
+              onBack: () => pageController.previousPage(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+              ),
+              onSubmit: (otp, password) => resetMutation.mutate({
+                'email': email.value,
+                'otp': otp,
+                'password': password,
+              }),
+              onResend: () => sendOtpMutation.mutate(email.value),
+            ),
+          ],
+        ),
       ),
     );
   }

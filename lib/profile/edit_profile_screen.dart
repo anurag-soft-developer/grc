@@ -6,6 +6,7 @@ import 'package:grc/components/shared/avatar_image_input.dart';
 import 'package:grc/components/shared/custom_button.dart';
 import 'package:grc/components/shared/custom_text_field.dart';
 import 'package:grc/core/auth/auth_state_controller.dart';
+import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/components/query/mutation_loading_overlay.dart';
 import 'package:grc/core/models/user/user_model.dart';
 import 'package:grc/core/query/query_keys.dart';
@@ -35,7 +36,8 @@ class EditProfileScreen extends HookWidget {
           throw Exception('Validation failed');
         }
 
-        String? avatarUrl = await avatarKey.currentState?.uploadPendingIfNeeded();
+        String? avatarUrl = await avatarKey.currentState
+            ?.uploadPendingIfNeeded();
         if (avatarUrl == null && controller.avatarImageUrls.isNotEmpty) {
           final u = controller.avatarImageUrls.first;
           if (u.startsWith('http')) avatarUrl = u;
@@ -48,7 +50,8 @@ class EditProfileScreen extends HookWidget {
           avatar: avatarUrl,
         );
 
-        if (updated != null && controller.pendingRemoteAvatarDeletes.isNotEmpty) {
+        if (updated != null &&
+            controller.pendingRemoteAvatarDeletes.isNotEmpty) {
           final keys = controller.pendingRemoteAvatarDeletes
               .map(MediaUploadService.inferObjectKeyFromPublicUrl)
               .whereType<String>()
@@ -75,40 +78,52 @@ class EditProfileScreen extends HookWidget {
       appBar: AppBar(title: const Text('Edit profile')),
       body: MutationLoadingOverlay(
         mutationKey: QueryKeys.updateProfile,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: controller.formKey,
-            child: Column(
-              children: [
-                AvatarImageInput(
-                  key: avatarKey,
-                  imageUrls: controller.avatarImageUrls,
-                  onDeferredRemoteRemoval: controller.queueRemoteAvatarDeletion,
+        child: AdaptivePageContainer(
+          maxWidth: 860,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Form(
+              key: controller.formKey,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Theme.of(context).dividerColor),
                 ),
-                const SizedBox(height: 24),
-                CustomTextField(
-                  controller: controller.fullNameController,
-                  labelText: 'Full name',
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    AvatarImageInput(
+                      key: avatarKey,
+                      imageUrls: controller.avatarImageUrls,
+                      onDeferredRemoteRemoval:
+                          controller.queueRemoteAvatarDeletion,
+                    ),
+                    const SizedBox(height: 24),
+                    CustomTextField(
+                      controller: controller.fullNameController,
+                      labelText: 'Full name',
+                    ),
+                    const SizedBox(height: 16),
+                    CustomTextField(
+                      controller: controller.phoneController,
+                      labelText: 'Phone',
+                      keyboardType: TextInputType.phone,
+                    ),
+                    const SizedBox(height: 16),
+                    CustomTextField(
+                      controller: controller.bioController,
+                      labelText: 'Bio',
+                      maxLines: 4,
+                    ),
+                    const SizedBox(height: 24),
+                    CustomButton(
+                      text: 'Save',
+                      onPressed: () => saveMutation.mutate(null),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
-                CustomTextField(
-                  controller: controller.phoneController,
-                  labelText: 'Phone',
-                  keyboardType: TextInputType.phone,
-                ),
-                const SizedBox(height: 16),
-                CustomTextField(
-                  controller: controller.bioController,
-                  labelText: 'Bio',
-                  maxLines: 4,
-                ),
-                const SizedBox(height: 24),
-                CustomButton(
-                  text: 'Save',
-                  onPressed: () => saveMutation.mutate(null),
-                ),
-              ],
+              ),
             ),
           ),
         ),

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:flutter_query/flutter_query.dart';
 import 'package:get/get.dart';
 import 'package:grc/core/binding/initial_binding.dart';
@@ -8,6 +10,12 @@ import 'package:grc/core/routes/app_routes.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  if (kIsWeb) {
+    // Use clean path URLs on web instead of hash-based URLs.
+    usePathUrlStrategy();
+  }
+
   await EnvConfig.initialize();
 
   final queryClient = QueryClient();
@@ -20,7 +28,7 @@ void main() async {
         theme: _lightTheme,
         initialBinding: InitialBinding(queryClient: queryClient),
         getPages: AppRoutes.routes,
-        initialRoute: '/',
+        initialRoute: AppRoutes.splashRoute,
         debugShowCheckedModeBanner: false,
         defaultTransition: Transition.cupertino,
       ),

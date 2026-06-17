@@ -33,36 +33,44 @@ class _ForgotPasswordEmailStepState extends State<ForgotPasswordEmailStep> {
   Widget build(BuildContext context) {
     return MutationLoadingOverlay(
       mutationKey: widget.mutationKey,
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Form(
           key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Enter your email',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              const Text('We will send a reset OTP to your inbox.'),
-              const SizedBox(height: 32),
-              CustomTextField(
-                controller: _emailController,
-                labelText: 'Email',
-                keyboardType: TextInputType.emailAddress,
-                validator: Validators.validateEmail,
-              ),
-              const SizedBox(height: 24),
-              CustomButton(
-                text: 'Send OTP',
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    widget.onSubmit(_emailController.text.trim());
-                  }
-                },
-              ),
-            ],
+          child: Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Theme.of(context).dividerColor),
+            ),
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Enter your email',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                const Text('We will send a reset OTP to your inbox.'),
+                const SizedBox(height: 32),
+                CustomTextField(
+                  controller: _emailController,
+                  labelText: 'Email',
+                  keyboardType: TextInputType.emailAddress,
+                  validator: Validators.validateEmail,
+                ),
+                const SizedBox(height: 24),
+                CustomButton(
+                  text: 'Send OTP',
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      widget.onSubmit(_emailController.text.trim());
+                    }
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),

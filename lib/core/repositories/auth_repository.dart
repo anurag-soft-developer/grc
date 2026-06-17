@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:dio/dio.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:grc/core/config/api_constants.dart';
 import 'package:grc/core/config/constants.dart';
@@ -7,6 +8,7 @@ import 'package:grc/core/models/user/user_model.dart';
 import 'package:grc/core/services/api_service.dart';
 import 'package:grc/core/services/auth_storage_service.dart';
 import 'package:grc/core/utils/exception_handler.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AuthRepository {
   final ApiService _api = ApiService();
@@ -29,9 +31,16 @@ class AuthRepository {
     }
   }
 
-  Future<AuthStatusResponse?> getAuthStatus() async {
+  Future<AuthStatusResponse?> getAuthStatus({
+    String? accessTokenOverride,
+  }) async {
+    final options = accessTokenOverride == null
+        ? null
+        : Options(headers: {'Authorization': 'Bearer $accessTokenOverride'});
+
     final response = await _api.get<Map<String, dynamic>>(
       ApiConstants.auth.status,
+      options: options,
     );
     if (response == null) return null;
     return AuthStatusResponse.fromMap(response);
@@ -96,6 +105,22 @@ class AuthRepository {
 
   Future<UserModel?> signInWithGoogle() async {
     try {
+      if (kIsWeb) {
+        final oauthUri = Uri.parse(
+          '${ApiConstants.baseUrl}${ApiConstants.auth.google}',
+        );
+        final launched = await launchUrl(
+          oauthUri,
+          mode: LaunchMode.externalApplication,
+          webOnlyWindowName: '_self',
+        );
+
+        if (!launched) {
+          ExceptionHandler.showErrorToast('Could not start Google Sign-In');
+        }
+        return null;
+      }
+
       await _googleSignIn.initialize(serverClientId: EnvConfig.googleClientId);
 
       final GoogleSignInAccount user = await _googleSignIn.authenticate();

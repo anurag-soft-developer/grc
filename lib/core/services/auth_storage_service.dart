@@ -53,10 +53,7 @@ class AuthStorageService {
 
   Future<void> saveUser(UserModel user) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      AppConstants.storageKeys.userData,
-      user.toJson(),
-    );
+    await prefs.setString(AppConstants.storageKeys.userData, user.toJson());
   }
 
   Future<UserModel?> getUserFromPreferences() async {

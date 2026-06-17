@@ -42,53 +42,67 @@ class _ForgotPasswordOtpStepState extends State<ForgotPasswordOtpStep> {
   Widget build(BuildContext context) {
     return MutationLoadingOverlay(
       mutationKey: widget.mutationKey,
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Form(
           key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              IconButton(onPressed: widget.onBack, icon: const Icon(Icons.arrow_back)),
-              Text('Reset password for ${widget.email}'),
-              const SizedBox(height: 24),
-              CustomTextField(
-                controller: _otpController,
-                labelText: 'OTP',
-                keyboardType: TextInputType.number,
-                validator: (v) => Validators.validateOtp(v),
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                controller: _passwordController,
-                labelText: 'New password',
-                obscureText: true,
-                validator: Validators.validateSignupPassword,
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                controller: _confirmController,
-                labelText: 'Confirm password',
-                obscureText: true,
-                validator: (v) => Validators.validateConfirmPassword(
-                  v,
-                  _passwordController.text,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Theme.of(context).dividerColor),
+            ),
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                IconButton(
+                  onPressed: widget.onBack,
+                  icon: const Icon(Icons.arrow_back),
                 ),
-              ),
-              const SizedBox(height: 24),
-              CustomButton(
-                text: 'Reset password',
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    widget.onSubmit(
-                      _otpController.text.trim(),
-                      _passwordController.text.trim(),
-                    );
-                  }
-                },
-              ),
-              TextButton(onPressed: widget.onResend, child: const Text('Resend OTP')),
-            ],
+                Text('Reset password for ${widget.email}'),
+                const SizedBox(height: 24),
+                CustomTextField(
+                  controller: _otpController,
+                  labelText: 'OTP',
+                  keyboardType: TextInputType.number,
+                  validator: (v) => Validators.validateOtp(v),
+                ),
+                const SizedBox(height: 16),
+                CustomTextField(
+                  controller: _passwordController,
+                  labelText: 'New password',
+                  obscureText: true,
+                  validator: Validators.validateSignupPassword,
+                ),
+                const SizedBox(height: 16),
+                CustomTextField(
+                  controller: _confirmController,
+                  labelText: 'Confirm password',
+                  obscureText: true,
+                  validator: (v) => Validators.validateConfirmPassword(
+                    v,
+                    _passwordController.text,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                CustomButton(
+                  text: 'Reset password',
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      widget.onSubmit(
+                        _otpController.text.trim(),
+                        _passwordController.text.trim(),
+                      );
+                    }
+                  },
+                ),
+                TextButton(
+                  onPressed: widget.onResend,
+                  child: const Text('Resend OTP'),
+                ),
+              ],
+            ),
           ),
         ),
       ),

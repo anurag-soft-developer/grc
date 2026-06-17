@@ -4,6 +4,7 @@ import 'package:flutter_query/flutter_query.dart';
 import 'package:get/get.dart';
 import 'package:grc/admin/events/model/run_event_model.dart';
 import 'package:grc/components/shared/custom_button.dart';
+import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/components/query/query_async_body.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/registrations/event_registration_controller.dart';
@@ -76,50 +77,76 @@ class _DetailContent extends StatelessWidget {
       return raw != null && raw != '' && !(raw is List && raw.isEmpty);
     }).toList();
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _PrimaryDetailsCard(participant: participant),
-          if (answeredQuestions.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            _SectionCard(
-              title: 'Your answers',
-              icon: Icons.quiz_outlined,
-              children: answeredQuestions.map((q) {
-                final raw = participant.customQuestionResponses[q.key];
-                return _DetailTile(
-                  icon: Icons.chat_bubble_outline_rounded,
-                  label: q.label,
-                  value: _formatAnswer(raw),
-                );
-              }).toList(),
-            ),
-          ],
-          if (event != null) ...[
-            const SizedBox(height: 16),
-            _CompactEventSection(event: event),
-          ],
-          if (participant.isPendingPayment) ...[
-            const SizedBox(height: 24),
-            Obx(
-              () => CustomButton(
-                text: payController.isSubmitting.value
-                    ? 'Please wait...'
-                    : 'Pay now',
-                icon: const Icon(
-                  Icons.lock_rounded,
-                  size: 20,
-                  color: Colors.white,
-                ),
-                onPressed: payController.isSubmitting.value
-                    ? null
-                    : () => payController.payNowFromDetail(participant),
-              ),
-            ),
-          ],
-        ],
+    final sideContent = <Widget>[
+      if (answeredQuestions.isNotEmpty)
+        _SectionCard(
+          title: 'Your answers',
+          icon: Icons.quiz_outlined,
+          children: answeredQuestions.map((q) {
+            final raw = participant.customQuestionResponses[q.key];
+            return _DetailTile(
+              icon: Icons.chat_bubble_outline_rounded,
+              label: q.label,
+              value: _formatAnswer(raw),
+            );
+          }).toList(),
+        ),
+      if (event != null) ...[
+        if (answeredQuestions.isNotEmpty) const SizedBox(height: 16),
+        _CompactEventSection(event: event),
+      ],
+      if (participant.isPendingPayment) ...[
+        if (answeredQuestions.isNotEmpty || event != null)
+          const SizedBox(height: 24),
+        Obx(
+          () => CustomButton(
+            text: payController.isSubmitting.value
+                ? 'Please wait...'
+                : 'Pay now',
+            icon: const Icon(Icons.lock_rounded, size: 20, color: Colors.white),
+            onPressed: payController.isSubmitting.value
+                ? null
+                : () => payController.payNowFromDetail(participant),
+          ),
+        ),
+      ],
+    ];
+
+    return AdaptivePageContainer(
+      maxWidth: 1160,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth >= 960;
+          return SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+            child: isWide
+                ? Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 5,
+                        child: _PrimaryDetailsCard(participant: participant),
+                      ),
+                      const SizedBox(width: 20),
+                      Expanded(
+                        flex: 4,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: sideContent,
+                        ),
+                      ),
+                    ],
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _PrimaryDetailsCard(participant: participant),
+                      if (sideContent.isNotEmpty) const SizedBox(height: 16),
+                      ...sideContent,
+                    ],
+                  ),
+          );
+        },
       ),
     );
   }

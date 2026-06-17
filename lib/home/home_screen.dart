@@ -7,6 +7,7 @@ import 'package:grc/admin/events/run_events_service.dart';
 import 'package:grc/components/home/home_registered_slots_section.dart';
 import 'package:grc/components/home/home_upcoming_events_carousel.dart';
 import 'package:grc/core/components/bottom_navigation_panel/navigation_controller.dart';
+import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/query/query_keys.dart';
 import 'package:grc/registrations/model/run_event_participant_model.dart';
@@ -59,56 +60,58 @@ class HomeScreen extends HookWidget {
           : RefreshIndicator(
               onRefresh: onRefresh,
               color: const Color(AppColors.primary),
-              child: ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.only(bottom: 24),
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(20, 8, 20, 12),
-                    child: Text(
-                      'Upcoming events',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Color(AppColors.text),
+              child: AdaptivePageContainer(
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.only(bottom: 24),
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(20, 8, 20, 12),
+                      child: Text(
+                        'Upcoming events',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Color(AppColors.text),
+                        ),
                       ),
                     ),
-                  ),
-                  HomeUpcomingEventsCarousel(
-                    events: events,
-                    isLoading: eventsQuery.isLoading && events.isEmpty,
-                    isError: eventsQuery.isError && events.isEmpty,
-                    onRetry: eventsQuery.refetch,
-                  ),
-                  const SizedBox(height: 28),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Your registrations',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Color(AppColors.text),
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () =>
-                              Get.find<NavigationController>().changeTab(2),
-                          child: const Text('View all'),
-                        ),
-                      ],
+                    HomeUpcomingEventsCarousel(
+                      events: events,
+                      isLoading: eventsQuery.isLoading && events.isEmpty,
+                      isError: eventsQuery.isError && events.isEmpty,
+                      onRetry: eventsQuery.refetch,
                     ),
-                  ),
-                  HomeRegisteredSlotsSection(
-                    slots: slots,
-                    isLoading: registrationsQuery.isLoading && slots.isEmpty,
-                    isError: registrationsQuery.isError && slots.isEmpty,
-                    onRetry: registrationsQuery.refetch,
-                  ),
-                ],
+                    const SizedBox(height: 28),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Your registrations',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Color(AppColors.text),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () =>
+                                Get.find<NavigationController>().changeTab(2),
+                            child: const Text('View all'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    HomeRegisteredSlotsSection(
+                      slots: slots,
+                      isLoading: registrationsQuery.isLoading && slots.isEmpty,
+                      isError: registrationsQuery.isError && slots.isEmpty,
+                      onRetry: registrationsQuery.refetch,
+                    ),
+                  ],
+                ),
               ),
             ),
     );

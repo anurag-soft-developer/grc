@@ -1,4 +1,3 @@
-import 'package:grc/core/config/app_colors.dart';
 import 'package:grc/core/config/env_config.dart';
 
 export 'app_colors.dart';
@@ -16,6 +15,7 @@ class AppConstants {
 class Routes {
   const Routes();
 
+  final String authCallback = '/auth/callback';
   final String login = '/login';
   final String signup = '/signup';
   final String forgotPassword = '/forgot-password';

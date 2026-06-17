@@ -69,65 +69,102 @@ class SignupScreen extends HookWidget {
         child: MutationLoadingOverlay(
           mutationKey: QueryKeys.googleSignIn,
           child: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Form(
-                key: controller.formKey,
-                child: Column(
-                  children: [
-                    CustomTextField(
-                      controller: controller.fullNameController,
-                      labelText: 'Full name',
-                      validator: Validators.validateFullName,
-                    ),
-                    const SizedBox(height: 16),
-                    CustomTextField(
-                      controller: controller.emailController,
-                      labelText: 'Email',
-                      keyboardType: TextInputType.emailAddress,
-                      validator: Validators.validateEmail,
-                    ),
-                    const SizedBox(height: 16),
-                    CustomTextField(
-                      controller: controller.phoneController,
-                      labelText: 'Phone (optional)',
-                      keyboardType: TextInputType.phone,
-                    ),
-                    const SizedBox(height: 16),
-                    CustomTextField(
-                      controller: controller.passwordController,
-                      labelText: 'Password',
-                      obscureText: true,
-                      validator: Validators.validateSignupPassword,
-                    ),
-                    const SizedBox(height: 16),
-                    CustomTextField(
-                      controller: controller.confirmPasswordController,
-                      labelText: 'Confirm password',
-                      obscureText: true,
-                      validator: (v) => Validators.validateConfirmPassword(
-                        v,
-                        controller.passwordController.text,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 900;
+
+                return SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isWide ? 40 : 24,
+                    vertical: isWide ? 32 : 24,
+                  ),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 520),
+                      child: Container(
+                        padding: const EdgeInsets.all(28),
+                        decoration: BoxDecoration(
+                          color: const Color(AppColors.surface),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: const Color(AppColors.divider),
+                          ),
+                          boxShadow: isWide
+                              ? const [
+                                  BoxShadow(
+                                    color: Color(0x16000000),
+                                    blurRadius: 24,
+                                    offset: Offset(0, 10),
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: Form(
+                          key: controller.formKey,
+                          child: Column(
+                            children: [
+                              CustomTextField(
+                                controller: controller.fullNameController,
+                                labelText: 'Full name',
+                                validator: Validators.validateFullName,
+                              ),
+                              const SizedBox(height: 16),
+                              CustomTextField(
+                                controller: controller.emailController,
+                                labelText: 'Email',
+                                keyboardType: TextInputType.emailAddress,
+                                validator: Validators.validateEmail,
+                              ),
+                              const SizedBox(height: 16),
+                              CustomTextField(
+                                controller: controller.phoneController,
+                                labelText: 'Phone (optional)',
+                                keyboardType: TextInputType.phone,
+                              ),
+                              const SizedBox(height: 16),
+                              CustomTextField(
+                                controller: controller.passwordController,
+                                labelText: 'Password',
+                                obscureText: true,
+                                validator: Validators.validateSignupPassword,
+                              ),
+                              const SizedBox(height: 16),
+                              CustomTextField(
+                                controller:
+                                    controller.confirmPasswordController,
+                                labelText: 'Confirm password',
+                                obscureText: true,
+                                validator: (v) =>
+                                    Validators.validateConfirmPassword(
+                                      v,
+                                      controller.passwordController.text,
+                                    ),
+                              ),
+                              const SizedBox(height: 24),
+                              CustomButton(
+                                text: 'Create account',
+                                onPressed: () => registerMutation.mutate(null),
+                              ),
+                              const SizedBox(height: 16),
+                              CustomButton(
+                                text: 'Continue with Google',
+                                isOutlined: true,
+                                onPressed: () => googleMutation.mutate(null),
+                              ),
+                              TextButton(
+                                onPressed: controller.goToLogin,
+                                child: const Text(
+                                  'Already have an account? Sign in',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    CustomButton(
-                      text: 'Create account',
-                      onPressed: () => registerMutation.mutate(null),
-                    ),
-                    const SizedBox(height: 16),
-                    CustomButton(
-                      text: 'Continue with Google',
-                      isOutlined: true,
-                      onPressed: () => googleMutation.mutate(null),
-                    ),
-                    TextButton(
-                      onPressed: controller.goToLogin,
-                      child: const Text('Already have an account? Sign in'),
-                    ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             ),
           ),
         ),

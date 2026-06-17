@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:grc/components/shared/custom_button.dart';
 import 'package:grc/components/shared/custom_text_field.dart';
 import 'package:grc/core/auth/auth_state_controller.dart';
+import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/components/query/mutation_loading_overlay.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/models/user/user_model.dart';
@@ -31,7 +32,9 @@ class TwoFactorScreen extends HookWidget {
       onSuccess: (ok, _, __, ___) {
         if (ok) {
           otpSent.value = true;
-          ExceptionHandler.showSuccessToast(AppConstants.successMessages.otpSent);
+          ExceptionHandler.showSuccessToast(
+            AppConstants.successMessages.otpSent,
+          );
         }
       },
     );
@@ -55,35 +58,46 @@ class TwoFactorScreen extends HookWidget {
       appBar: AppBar(title: const Text('Two-factor authentication')),
       body: MutationLoadingOverlay(
         mutationKey: QueryKeys.updateTwoFactor,
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                enabled
-                    ? '2FA is currently enabled. Enter OTP to disable.'
-                    : 'Enable 2FA with an email OTP.',
+        child: AdaptivePageContainer(
+          maxWidth: 760,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Theme.of(context).dividerColor),
               ),
-              const SizedBox(height: 24),
-              if (!otpSent.value)
-                CustomButton(
-                  text: 'Send OTP',
-                  onPressed: () => sendOtpMutation.mutate(null),
-                ),
-              if (otpSent.value) ...[
-                CustomTextField(
-                  controller: otpController,
-                  labelText: 'OTP',
-                  validator: (v) => Validators.validateOtp(v),
-                ),
-                const SizedBox(height: 16),
-                CustomButton(
-                  text: enabled ? 'Disable 2FA' : 'Enable 2FA',
-                  onPressed: () => updateMutation.mutate(!enabled),
-                ),
-              ],
-            ],
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    enabled
+                        ? '2FA is currently enabled. Enter OTP to disable.'
+                        : 'Enable 2FA with an email OTP.',
+                  ),
+                  const SizedBox(height: 24),
+                  if (!otpSent.value)
+                    CustomButton(
+                      text: 'Send OTP',
+                      onPressed: () => sendOtpMutation.mutate(null),
+                    ),
+                  if (otpSent.value) ...[
+                    CustomTextField(
+                      controller: otpController,
+                      labelText: 'OTP',
+                      validator: (v) => Validators.validateOtp(v),
+                    ),
+                    const SizedBox(height: 16),
+                    CustomButton(
+                      text: enabled ? 'Disable 2FA' : 'Enable 2FA',
+                      onPressed: () => updateMutation.mutate(!enabled),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ),
         ),
       ),

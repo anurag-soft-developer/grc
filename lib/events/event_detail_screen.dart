@@ -13,6 +13,7 @@ import 'package:grc/components/shared/loading_overlay.dart';
 import 'package:grc/registrations/event_registration_binding.dart';
 import 'package:grc/registrations/event_registration_controller.dart';
 import 'package:grc/core/auth/auth_state_controller.dart';
+import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/components/query/mutation_loading_overlay.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/utils/date_format_util.dart';
@@ -174,101 +175,131 @@ class _EventDetailBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final canOpenLocation = canOpenEventLocationInMaps(event.location);
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (event.coverImages.isNotEmpty) ...[
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final imageWidth = constraints.maxWidth;
-                return SizedBox(
-                  height: 200,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: event.coverImages.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 12),
-                    itemBuilder: (context, index) {
-                      final url = event.coverImages[index];
-                      if (url.isEmpty) return const SizedBox.shrink();
-                      return ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.network(
-                          url,
-                          width: imageWidth,
-                          height: 200,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(
+    return AdaptivePageContainer(
+      maxWidth: 1140,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (event.coverImages.isNotEmpty) ...[
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final imageWidth = constraints.maxWidth;
+                  return SizedBox(
+                    height: 260,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: event.coverImages.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 12),
+                      itemBuilder: (context, index) {
+                        final url = event.coverImages[index];
+                        if (url.isEmpty) return const SizedBox.shrink();
+                        return ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            url,
                             width: imageWidth,
-                            height: 200,
-                            color: const Color(AppColors.divider),
-                            child: const Icon(Icons.broken_image),
+                            height: 260,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              width: imageWidth,
+                              height: 260,
+                              color: const Color(AppColors.divider),
+                              child: const Icon(Icons.broken_image),
+                            ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 24),
+            ],
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    event.title,
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                );
-              },
+                ),
+                _StatusChip(status: event.displayStatusLabel),
+              ],
             ),
-            const SizedBox(height: 24),
-          ],
-          Row(
-            children: [
-              Expanded(
+            const SizedBox(height: 16),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 860),
                 child: Text(
-                  event.title,
+                  event.description,
                   style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
+                    color: Color(AppColors.textSecondary),
+                    height: 1.5,
                   ),
                 ),
               ),
-              _StatusChip(status: event.displayStatusLabel),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            event.description,
-            style: const TextStyle(
-              color: Color(AppColors.textSecondary),
-              height: 1.5,
             ),
-          ),
-          const SizedBox(height: 24),
-          _DetailRow(
-            icon: Icons.calendar_today_outlined,
-            label: 'Event date',
-            value: formatIsoDateOnly(event.eventDate),
-          ),
-          _DetailRow(
-            icon: Icons.access_time_outlined,
-            label: 'Reporting time',
-            value: event.reportingTime ?? '—',
-          ),
-          _DetailRow(
-            icon: Icons.location_on_outlined,
-            label: 'Location',
-            value: _locationLabel(event),
-            onTap: canOpenLocation
-                ? () => openEventLocationInMaps(event.location)
-                : null,
-            showChevron: canOpenLocation,
-          ),
-          _DetailRow(
-            icon: Icons.payments_outlined,
-            label: 'Price',
-            value: event.price != null
-                ? '₹${event.price!.toStringAsFixed(0)}'
-                : '—',
-          ),
-          _DetailRow(
-            icon: Icons.groups_outlined,
-            label: 'Max participants',
-            value: event.maxParticipants?.toString() ?? '—',
-          ),
-        ],
+            const SizedBox(height: 24),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final twoCol = constraints.maxWidth >= 860;
+                final tiles = [
+                  _DetailRow(
+                    icon: Icons.calendar_today_outlined,
+                    label: 'Event date',
+                    value: formatIsoDateOnly(event.eventDate),
+                  ),
+                  _DetailRow(
+                    icon: Icons.access_time_outlined,
+                    label: 'Reporting time',
+                    value: event.reportingTime ?? '—',
+                  ),
+                  _DetailRow(
+                    icon: Icons.location_on_outlined,
+                    label: 'Location',
+                    value: _locationLabel(event),
+                    onTap: canOpenLocation
+                        ? () => openEventLocationInMaps(event.location)
+                        : null,
+                    showChevron: canOpenLocation,
+                  ),
+                  _DetailRow(
+                    icon: Icons.payments_outlined,
+                    label: 'Price',
+                    value: event.price != null
+                        ? '₹${event.price!.toStringAsFixed(0)}'
+                        : '—',
+                  ),
+                  _DetailRow(
+                    icon: Icons.groups_outlined,
+                    label: 'Max participants',
+                    value: event.maxParticipants?.toString() ?? '—',
+                  ),
+                ];
+
+                if (!twoCol) {
+                  return Column(children: tiles);
+                }
+
+                final itemWidth = (constraints.maxWidth - 16) / 2;
+                return Wrap(
+                  spacing: 16,
+                  runSpacing: 0,
+                  children: [
+                    for (final tile in tiles)
+                      SizedBox(width: itemWidth, child: tile),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

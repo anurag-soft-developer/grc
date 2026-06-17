@@ -3,6 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_query/flutter_query.dart';
 import 'package:get/get.dart';
 import 'package:grc/core/auth/auth_state_controller.dart';
+import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/components/query/query_async_body.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/models/user/user_model.dart';
@@ -78,88 +79,93 @@ class ProfileContent extends StatelessWidget {
     return Obx(
       () => LoadingOverlay(
         isLoading: authState.isSigningOut.value,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-          children: [
-            if (user.isEmailVerified != true) ...[
-              _VerifyEmailBanner(email: user.email),
-              const SizedBox(height: 20),
-            ],
-            _ProfileHeaderCard(user: user),
-            const SizedBox(height: 20),
-            Obx(() {
-              if (!authState.isAdmin) return const SizedBox.shrink();
-              final adminMode = authState.isAdminMode;
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _ProfileSectionCard(
-                    children: [
-                      SwitchListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 4,
-                        ),
-                        secondary: _ColorfulIcon(
-                          icon: adminMode
-                              ? Icons.admin_panel_settings_rounded
-                              : Icons.person_rounded,
-                          color: const Color(0xFF7C3AED),
-                        ),
-                        title: Text(adminMode ? 'Admin mode' : 'User mode'),
-                        subtitle: Text(
-                          adminMode
-                              ? 'Switch to user mode'
-                              : 'Switch to admin mode',
-                          style: const TextStyle(
-                            color: Color(AppColors.textSecondary),
-                          ),
-                        ),
-                        value: adminMode,
-                        onChanged: authState.isSigningOut.value
-                            ? null
-                            : (_) => authState.setAppMode(
-                                adminMode ? AppMode.user : AppMode.admin,
-                              ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                ],
-              );
-            }),
-            _ProfileSectionCard(
-              children: [
-                _ProfileActionTile(
-                  icon: Icons.edit_rounded,
-                  color: const Color(AppColors.primary),
-                  title: 'Edit profile',
-                  onTap: authState.isSigningOut.value
-                      ? null
-                      : () => Get.toNamed(AppConstants.routes.editProfile),
-                ),
-                const _ProfileTileDivider(),
-                _ProfileActionTile(
-                  icon: Icons.settings_rounded,
-                  color: const Color(AppColors.secondary),
-                  title: 'Settings',
-                  onTap: authState.isSigningOut.value
-                      ? null
-                      : () => Get.toNamed(AppConstants.routes.settings),
-                ),
-                const _ProfileTileDivider(),
-                _ProfileActionTile(
-                  icon: Icons.logout_rounded,
-                  color: const Color(AppColors.error),
-                  title: authState.isSigningOut.value
-                      ? 'Signing out...'
-                      : 'Sign out',
-                  titleColor: const Color(AppColors.error),
-                  onTap: authState.isSigningOut.value ? null : authState.signOut,
-                ),
+        child: AdaptivePageContainer(
+          maxWidth: 860,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+            children: [
+              if (user.isEmailVerified != true) ...[
+                _VerifyEmailBanner(email: user.email),
+                const SizedBox(height: 20),
               ],
-            ),
-          ],
+              _ProfileHeaderCard(user: user),
+              const SizedBox(height: 20),
+              Obx(() {
+                if (!authState.isAdmin) return const SizedBox.shrink();
+                final adminMode = authState.isAdminMode;
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _ProfileSectionCard(
+                      children: [
+                        SwitchListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 4,
+                          ),
+                          secondary: _ColorfulIcon(
+                            icon: adminMode
+                                ? Icons.admin_panel_settings_rounded
+                                : Icons.person_rounded,
+                            color: const Color(0xFF7C3AED),
+                          ),
+                          title: Text(adminMode ? 'Admin mode' : 'User mode'),
+                          subtitle: Text(
+                            adminMode
+                                ? 'Switch to user mode'
+                                : 'Switch to admin mode',
+                            style: const TextStyle(
+                              color: Color(AppColors.textSecondary),
+                            ),
+                          ),
+                          value: adminMode,
+                          onChanged: authState.isSigningOut.value
+                              ? null
+                              : (_) => authState.setAppMode(
+                                  adminMode ? AppMode.user : AppMode.admin,
+                                ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                );
+              }),
+              _ProfileSectionCard(
+                children: [
+                  _ProfileActionTile(
+                    icon: Icons.edit_rounded,
+                    color: const Color(AppColors.primary),
+                    title: 'Edit profile',
+                    onTap: authState.isSigningOut.value
+                        ? null
+                        : () => Get.toNamed(AppConstants.routes.editProfile),
+                  ),
+                  const _ProfileTileDivider(),
+                  _ProfileActionTile(
+                    icon: Icons.settings_rounded,
+                    color: const Color(AppColors.secondary),
+                    title: 'Settings',
+                    onTap: authState.isSigningOut.value
+                        ? null
+                        : () => Get.toNamed(AppConstants.routes.settings),
+                  ),
+                  const _ProfileTileDivider(),
+                  _ProfileActionTile(
+                    icon: Icons.logout_rounded,
+                    color: const Color(AppColors.error),
+                    title: authState.isSigningOut.value
+                        ? 'Signing out...'
+                        : 'Sign out',
+                    titleColor: const Color(AppColors.error),
+                    onTap: authState.isSigningOut.value
+                        ? null
+                        : authState.signOut,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -214,9 +220,9 @@ class _ProfileHeaderCard extends StatelessWidget {
                   : Icon(
                       Icons.person_rounded,
                       size: 44,
-                      color: const Color(AppColors.primary).withValues(
-                        alpha: 0.6,
-                      ),
+                      color: const Color(
+                        AppColors.primary,
+                      ).withValues(alpha: 0.6),
                     ),
             ),
           ),
@@ -380,10 +386,7 @@ class _VerifyEmailBanner extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: Color(0xFFF97316),
-              ),
+              const Icon(Icons.chevron_right_rounded, color: Color(0xFFF97316)),
             ],
           ),
         ),

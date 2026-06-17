@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:grc/core/auth/forgot_password/forgot_password_screen.dart';
+import 'package:grc/core/auth/login/google_auth_callback_screen.dart';
 import 'package:grc/core/auth/login/login_screen.dart';
 import 'package:grc/core/auth/signup/signup_screen.dart';
 import 'package:grc/core/auth/verify_email/verify_email_screen.dart';
@@ -9,21 +10,25 @@ import 'package:grc/core/guards/auth_guard.dart';
 
 final authRoutes = [
   GetPage(
+    name: AppConstants.routes.authCallback,
+    page: () => const GoogleAuthCallbackScreen(),
+  ),
+  GetPage(
     name: AppConstants.routes.login,
     page: () => const LoginScreen(),
     binding: LoginBinding(),
-    middlewares: [PublicGuard()],
+    middlewares: [PublicSessionMiddleware()],
   ),
   GetPage(
     name: AppConstants.routes.signup,
     page: () => const SignupScreen(),
     binding: SignupBinding(),
-    middlewares: [PublicGuard()],
+    middlewares: [PublicSessionMiddleware()],
   ),
   GetPage(
     name: AppConstants.routes.forgotPassword,
     page: () => const ForgotPasswordScreen(),
-    middlewares: [PublicGuard()],
+    middlewares: [PublicSessionMiddleware()],
   ),
   GetPage(
     name: AppConstants.routes.verifyEmail,

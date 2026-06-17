@@ -22,6 +22,7 @@ class ApiConstants {
 class AuthEndpoints {
   const AuthEndpoints();
 
+  String get google => '/auth/google';
   String get login => '/auth/login';
   String get verifyLoginOtp => '/auth/login/verify-otp';
   String get register => '/auth/register';
@@ -62,8 +63,7 @@ class RunEventEndpoints {
   String publish(String id) => '/run-events/$id/publish';
   String close(String id) => '/run-events/$id/close';
   String archive(String id) => '/run-events/$id/archive';
-  String pauseRegistrations(String id) =>
-      '/run-events/$id/pause-registrations';
+  String pauseRegistrations(String id) => '/run-events/$id/pause-registrations';
   String resumeRegistrations(String id) =>
       '/run-events/$id/resume-registrations';
   String registrationContext(String eventId) =>

@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:grc/components/shared/custom_button.dart';
 import 'package:grc/components/shared/custom_text_field.dart';
 import 'package:grc/core/auth/auth_state_controller.dart';
+import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/components/query/mutation_loading_overlay.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/query/query_keys.dart';
@@ -54,8 +55,7 @@ class ChangePasswordScreen extends HookWidget {
         }
         return authRepo.changePassword(
           newPassword: newPassword.text.trim(),
-          currentPassword:
-              hasPassword ? currentPassword.text.trim() : null,
+          currentPassword: hasPassword ? currentPassword.text.trim() : null,
           otp: needsOtpForVerification ? otpController.text.trim() : null,
         );
       },
@@ -72,91 +72,106 @@ class ChangePasswordScreen extends HookWidget {
       appBar: AppBar(title: const Text('Change password')),
       body: MutationLoadingOverlay(
         mutationKey: QueryKeys.changePassword,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (needsOtpForVerification) ...[
-                  Text(
-                    twoFactorOn && hasPassword
-                        ? 'Two-factor authentication is on. Enter the code we email you, plus your current password.'
-                        : twoFactorOn
+        child: AdaptivePageContainer(
+          maxWidth: 860,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Form(
+              key: formKey,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Theme.of(context).dividerColor),
+                ),
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (needsOtpForVerification) ...[
+                      Text(
+                        twoFactorOn && hasPassword
+                            ? 'Two-factor authentication is on. Enter the code we email you, plus your current password.'
+                            : twoFactorOn
                             ? 'Two-factor authentication is on. Enter the code we email you.'
                             : 'You signed in without a password. Enter the code we email you to set a new password.',
-                    style: const TextStyle(
-                      color: Color(AppColors.textSecondary),
-                      fontSize: 14,
+                        style: const TextStyle(
+                          color: Color(AppColors.textSecondary),
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      CustomTextField(
+                        controller: otpController,
+                        labelText: 'Verification code',
+                        hintText: '${AppConstants.otp.length}-digit code',
+                        keyboardType: TextInputType.number,
+                        validator: Validators.validateOtp,
+                      ),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: sendOtpMutation.isPending
+                              ? null
+                              : () {
+                                  sendOtpMutation.mutate(null);
+                                  if (initialOtpSent.value) {
+                                    ExceptionHandler.showSuccessToast(
+                                      AppConstants.successMessages.otpSent,
+                                    );
+                                  }
+                                },
+                          child: sendOtpMutation.isPending
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text(
+                                  initialOtpSent.value
+                                      ? 'Resend code'
+                                      : 'Send code',
+                                ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                    if (hasPassword) ...[
+                      CustomTextField(
+                        controller: currentPassword,
+                        labelText: 'Current password',
+                        obscureText: true,
+                        validator: (v) =>
+                            Validators.validateRequired(v, 'Current password'),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                    CustomTextField(
+                      controller: newPassword,
+                      labelText: 'New password',
+                      obscureText: true,
+                      validator: Validators.validateSignupPassword,
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  CustomTextField(
-                    controller: otpController,
-                    labelText: 'Verification code',
-                    hintText: '${AppConstants.otp.length}-digit code',
-                    keyboardType: TextInputType.number,
-                    validator: Validators.validateOtp,
-                  ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: sendOtpMutation.isPending
-                          ? null
-                          : () {
-                              sendOtpMutation.mutate(null);
-                              if (initialOtpSent.value) {
-                                ExceptionHandler.showSuccessToast(
-                                  AppConstants.successMessages.otpSent,
-                                );
-                              }
-                            },
-                      child: sendOtpMutation.isPending
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : Text(
-                              initialOtpSent.value ? 'Resend code' : 'Send code',
-                            ),
+                    const SizedBox(height: 16),
+                    CustomTextField(
+                      controller: confirmPassword,
+                      labelText: 'Confirm new password',
+                      obscureText: true,
+                      validator: (v) => Validators.validateConfirmPassword(
+                        v,
+                        newPassword.text,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                ],
-                if (hasPassword) ...[
-                  CustomTextField(
-                    controller: currentPassword,
-                    labelText: 'Current password',
-                    obscureText: true,
-                    validator: (v) =>
-                        Validators.validateRequired(v, 'Current password'),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-                CustomTextField(
-                  controller: newPassword,
-                  labelText: 'New password',
-                  obscureText: true,
-                  validator: Validators.validateSignupPassword,
+                    const SizedBox(height: 32),
+                    CustomButton(
+                      text: 'Update password',
+                      onPressed: () => changeMutation.mutate(null),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
-                CustomTextField(
-                  controller: confirmPassword,
-                  labelText: 'Confirm new password',
-                  obscureText: true,
-                  validator: (v) => Validators.validateConfirmPassword(
-                    v,
-                    newPassword.text,
-                  ),
-                ),
-                const SizedBox(height: 32),
-                CustomButton(
-                  text: 'Update password',
-                  onPressed: () => changeMutation.mutate(null),
-                ),
-              ],
+              ),
             ),
           ),
         ),

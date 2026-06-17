@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:grc/components/shared/custom_button.dart';
+import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/config/app_colors.dart';
 import 'package:grc/registrations/event_registration_controller.dart';
 import 'package:grc/components/registration/registration_form_fields.dart';
@@ -31,30 +32,44 @@ class EventRegistrationFormScreen extends StatelessWidget {
         return Column(
           children: [
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(12, 16, 12, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    RegistrationCustomQuestions(
-                      questions: controller.customQuestions,
-                      controller: controller,
+              child: AdaptivePageContainer(
+                maxWidth: 920,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(12, 16, 12, 24),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color(AppColors.surface),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(AppColors.divider)),
                     ),
-                  ],
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        RegistrationCustomQuestions(
+                          questions: controller.customQuestions,
+                          controller: controller,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
             SafeArea(
               top: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-                child: CustomButton(
-                  text: controller.isSubmitting.value
-                      ? 'Please wait...'
-                      : 'Continue',
-                  onPressed: controller.isSubmitting.value
-                      ? null
-                      : controller.submitAndContinue,
+              child: AdaptivePageContainer(
+                maxWidth: 920,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                  child: CustomButton(
+                    text: controller.isSubmitting.value
+                        ? 'Please wait...'
+                        : 'Continue',
+                    onPressed: controller.isSubmitting.value
+                        ? null
+                        : controller.submitAndContinue,
+                  ),
                 ),
               ),
             ),

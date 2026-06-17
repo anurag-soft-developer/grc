@@ -4,6 +4,7 @@ import 'package:flutter_query/flutter_query.dart';
 import 'package:grc/admin/events/model/run_event_model.dart';
 import 'package:grc/admin/events/run_events_service.dart';
 import 'package:grc/components/events/public_event_list_tile.dart';
+import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/query/query_keys.dart';
 
@@ -170,10 +171,13 @@ class _EventsTabContent extends HookWidget {
       return RefreshIndicator(
         onRefresh: () async => query.refetch(),
         color: const Color(AppColors.primary),
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
-          children: [emptyWidget],
+        child: AdaptivePageContainer(
+          maxWidth: 980,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16),
+            children: [emptyWidget],
+          ),
         ),
       );
     }
@@ -207,7 +211,13 @@ class _EventsTabContent extends HookWidget {
                 ),
               );
             }
-            return PublicEventListTile(event: events[index]);
+
+            return Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 980),
+                child: PublicEventListTile(event: events[index]),
+              ),
+            );
           },
         ),
       ),

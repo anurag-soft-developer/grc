@@ -80,88 +80,131 @@ class LoginScreen extends HookWidget {
           child: MutationLoadingOverlay(
             mutationKey: QueryKeys.googleSignIn,
             child: SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Form(
-                  key: controller.loginFormKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 40),
-                      const Text(
-                        'Welcome back',
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Color(AppColors.text),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Sign in to GRC runs',
-                        style: TextStyle(color: Color(AppColors.textSecondary)),
-                      ),
-                      const SizedBox(height: 40),
-                      CustomTextField(
-                        controller: controller.emailController,
-                        labelText: 'Email',
-                        keyboardType: TextInputType.emailAddress,
-                        prefixIcon: const Icon(Icons.email_outlined),
-                        validator: Validators.validateEmail,
-                      ),
-                      const SizedBox(height: 24),
-                      CustomTextField(
-                        controller: controller.passwordController,
-                        labelText: 'Password',
-                        obscureText: true,
-                        prefixIcon: const Icon(Icons.lock_outline),
-                        validator: Validators.validateLoginPassword,
-                      ),
-                      const SizedBox(height: 16),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: controller.goToForgotPassword,
-                          child: const Text('Forgot password?'),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      CustomButton(
-                        text: 'Sign in',
-                        onPressed: () => loginMutation.mutate(null),
-                      ),
-                      const SizedBox(height: 16),
-                      CustomButton(
-                        text: 'Continue with Google',
-                        isOutlined: true,
-                        icon: Container(
-                          width: 20,
-                          height: 20,
-                          decoration: const BoxDecoration(
-                            image: DecorationImage(
-                              image: NetworkImage(
-                                'https://developers.google.com/identity/images/g-logo.png',
-                              ),
-                              fit: BoxFit.cover,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isWide = constraints.maxWidth >= 900;
+
+                  return SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isWide ? 40 : 24,
+                      vertical: isWide ? 32 : 24,
+                    ),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 520),
+                        child: Container(
+                          padding: const EdgeInsets.all(28),
+                          decoration: BoxDecoration(
+                            color: const Color(AppColors.surface),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: const Color(AppColors.divider),
+                            ),
+                            boxShadow: isWide
+                                ? const [
+                                    BoxShadow(
+                                      color: Color(0x16000000),
+                                      blurRadius: 24,
+                                      offset: Offset(0, 10),
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                          child: Form(
+                            key: controller.loginFormKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Welcome back',
+                                  style: TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(AppColors.text),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                const Text(
+                                  'Sign in to GRC runs',
+                                  style: TextStyle(
+                                    color: Color(AppColors.textSecondary),
+                                  ),
+                                ),
+                                const SizedBox(height: 32),
+                                CustomTextField(
+                                  controller: controller.emailController,
+                                  labelText: 'Email',
+                                  keyboardType: TextInputType.emailAddress,
+                                  prefixIcon: const Icon(Icons.email_outlined),
+                                  validator: Validators.validateEmail,
+                                ),
+                                const SizedBox(height: 24),
+                                CustomTextField(
+                                  controller: controller.passwordController,
+                                  labelText: 'Password',
+                                  obscureText: true,
+                                  prefixIcon: const Icon(Icons.lock_outline),
+                                  validator: Validators.validateLoginPassword,
+                                ),
+                                const SizedBox(height: 16),
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton(
+                                    onPressed: controller.goToForgotPassword,
+                                    child: const Text('Forgot password?'),
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                CustomButton(
+                                  text: 'Sign in',
+                                  onPressed: () => loginMutation.mutate(null),
+                                ),
+                                const SizedBox(height: 16),
+                                CustomButton(
+                                  text: 'Continue with Google',
+                                  isOutlined: true,
+                                  icon: Container(
+                                    width: 20,
+                                    height: 20,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: const Color(0xFFE0E0E0),
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'G',
+                                      style: TextStyle(
+                                        color: Color(0xFF4285F4),
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 12,
+                                        height: 1,
+                                      ),
+                                    ),
+                                  ),
+                                  onPressed: () => googleMutation.mutate(null),
+                                ),
+                                const SizedBox(height: 24),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Text('New here? '),
+                                    TextButton(
+                                      onPressed: controller.goToSignup,
+                                      child: const Text('Join GRC runs'),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                        onPressed: () => googleMutation.mutate(null),
                       ),
-                      const SizedBox(height: 24),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text('New here? '),
-                          TextButton(
-                            onPressed: controller.goToSignup,
-                            child: const Text('Join GRC runs'),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                },
               ),
             ),
           ),

@@ -3,6 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_query/flutter_query.dart';
 import 'package:get/get.dart';
 import 'package:grc/admin/events/model/run_event_model.dart';
+import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/config/app_colors.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/query/query_keys.dart';
@@ -85,29 +86,32 @@ class EventParticipantsScreen extends HookWidget {
 
     return RefreshIndicator(
       onRefresh: () async => query.refetch(),
-      child: NotificationListener<ScrollNotification>(
-        onNotification: (n) {
-          if (n.metrics.extentAfter < 160 &&
-              query.hasNextPage &&
-              !query.isFetchingNextPage) {
-            query.fetchNextPage();
-          }
-          return false;
-        },
-        child: ListView.separated(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
-          itemCount: items.length + (query.isFetchingNextPage ? 1 : 0),
-          separatorBuilder: (_, __) => const SizedBox(height: 12),
-          itemBuilder: (context, index) {
-            if (index >= items.length) {
-              return const Padding(
-                padding: EdgeInsets.all(16),
-                child: Center(child: CircularProgressIndicator()),
-              );
+      child: AdaptivePageContainer(
+        maxWidth: 1120,
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (n) {
+            if (n.metrics.extentAfter < 160 &&
+                query.hasNextPage &&
+                !query.isFetchingNextPage) {
+              query.fetchNextPage();
             }
-            return _ParticipantTile(participant: items[index]);
+            return false;
           },
+          child: ListView.separated(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16),
+            itemCount: items.length + (query.isFetchingNextPage ? 1 : 0),
+            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              if (index >= items.length) {
+                return const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              return _ParticipantTile(participant: items[index]);
+            },
+          ),
         ),
       ),
     );
@@ -121,6 +125,7 @@ class _ParticipantTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isWide = MediaQuery.sizeOf(context).width >= 1000;
     final name = participant.displayFullName;
     final contact = participant.displayContact;
     final avatar = participant.displayAvatar;
@@ -139,65 +144,131 @@ class _ParticipantTile extends StatelessWidget {
         },
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: const Color(AppColors.background),
-                backgroundImage: avatar != null ? NetworkImage(avatar) : null,
-                child: avatar != null
-                    ? null
-                    : const Icon(
-                        Icons.person_rounded,
-                        color: Color(AppColors.textSecondary),
-                      ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          child: isWide
+              ? Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundColor: const Color(AppColors.background),
+                      backgroundImage: avatar != null
+                          ? NetworkImage(avatar)
+                          : null,
+                      child: avatar != null
+                          ? null
+                          : const Icon(
+                              Icons.person_rounded,
+                              color: Color(AppColors.textSecondary),
+                            ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 4,
+                      child: Text(
+                        name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
-                    if (contact.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
+                    Expanded(
+                      flex: 3,
+                      child: Text(
                         contact,
                         style: const TextStyle(
                           color: Color(AppColors.textSecondary),
                         ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ],
-                    if (submitted != null) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        formatEventDateNumeric(submitted),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        submitted != null
+                            ? formatEventDateNumeric(submitted)
+                            : '—',
                         style: const TextStyle(
                           fontSize: 12,
                           color: Color(AppColors.textSecondary),
                         ),
                       ),
-                    ],
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      children: [
-                        _chip(participant.status ?? 'submitted'),
-                        if (payment.isNotEmpty) _chip(payment),
-                      ],
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        alignment: WrapAlignment.end,
+                        children: [
+                          _chip(participant.status ?? 'submitted'),
+                          if (payment.isNotEmpty) _chip(payment),
+                        ],
+                      ),
+                    ),
+                  ],
+                )
+              : Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundColor: const Color(AppColors.background),
+                      backgroundImage: avatar != null
+                          ? NetworkImage(avatar)
+                          : null,
+                      child: avatar != null
+                          ? null
+                          : const Icon(
+                              Icons.person_rounded,
+                              color: Color(AppColors.textSecondary),
+                            ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                            ),
+                          ),
+                          if (contact.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              contact,
+                              style: const TextStyle(
+                                color: Color(AppColors.textSecondary),
+                              ),
+                            ),
+                          ],
+                          if (submitted != null) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              formatEventDateNumeric(submitted),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Color(AppColors.textSecondary),
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 4,
+                            children: [
+                              _chip(participant.status ?? 'submitted'),
+                              if (payment.isNotEmpty) _chip(payment),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
         ),
       ),
     );

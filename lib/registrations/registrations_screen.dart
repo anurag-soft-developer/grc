@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:grc/components/home/home_section_message.dart';
 import 'package:grc/components/home/home_upcoming_slot_card.dart';
 import 'package:grc/core/components/bottom_navigation_panel/navigation_controller.dart';
+import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/query/query_keys.dart';
 import 'package:grc/registrations/model/run_event_participant_model.dart';
@@ -19,9 +20,8 @@ class RegistrationsScreen extends HookWidget {
   Widget build(BuildContext context) {
     final query = useInfiniteQuery<PaginatedRunEventParticipants, Object, int>(
       QueryKeys.myRegistrations,
-      (ctx) => RunEventParticipantsService.instance.listMine(
-        page: ctx.pageParam,
-      ),
+      (ctx) =>
+          RunEventParticipantsService.instance.listMine(page: ctx.pageParam),
       initialPageParam: 1,
       retry: _noRetry,
       nextPageParamBuilder: (data) {
@@ -54,16 +54,19 @@ class RegistrationsScreen extends HookWidget {
       return RefreshIndicator(
         onRefresh: () async => query.refetch(),
         color: const Color(AppColors.primary),
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-          children: [
-            HomeSectionMessage(
-              message: 'Could not load your registrations',
-              actionLabel: 'Retry',
-              onAction: query.refetch,
-            ),
-          ],
+        child: AdaptivePageContainer(
+          maxWidth: 980,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+            children: [
+              HomeSectionMessage(
+                message: 'Could not load your registrations',
+                actionLabel: 'Retry',
+                onAction: query.refetch,
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -71,16 +74,19 @@ class RegistrationsScreen extends HookWidget {
       return RefreshIndicator(
         onRefresh: () async => query.refetch(),
         color: const Color(AppColors.primary),
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-          children: [
-            HomeSectionMessage(
-              message: 'No registrations yet',
-              actionLabel: 'Browse events',
-              onAction: () => Get.find<NavigationController>().changeTab(1),
-            ),
-          ],
+        child: AdaptivePageContainer(
+          maxWidth: 980,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+            children: [
+              HomeSectionMessage(
+                message: 'No registrations yet',
+                actionLabel: 'Browse events',
+                onAction: () => Get.find<NavigationController>().changeTab(1),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -109,7 +115,12 @@ class RegistrationsScreen extends HookWidget {
                 child: Center(child: CircularProgressIndicator()),
               );
             }
-            return HomeUpcomingSlotCard(participant: items[index]);
+            return Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 980),
+                child: HomeUpcomingSlotCard(participant: items[index]),
+              ),
+            );
           },
         ),
       ),
