@@ -29,12 +29,12 @@ class RunEventParticipantsService {
       ApiConstants.runEvents.publicBySlug(slug),
     );
     if (response == null) return null;
-    return RunEventRegistrationContext(
-      event: RunEventModel.fromMap(response),
-    );
+    return RunEventRegistrationContext(event: RunEventModel.fromMap(response));
   }
 
-  Future<EventRegistrationStatus> getMyRegistrationStatus(String eventId) async {
+  Future<EventRegistrationStatus> getMyRegistrationStatus(
+    String eventId,
+  ) async {
     final response = await _api.get<Map<String, dynamic>>(
       ApiConstants.runEventParticipants.myRegistration(eventId),
     );
@@ -76,12 +76,40 @@ class RunEventParticipantsService {
     return RunEventParticipantModel.fromApiMap(response);
   }
 
-  Future<CreateParticipantOrderResponse?> createOrder(String eventId) async {
+  Future<CreateParticipantOrderResponse?> createOrder(
+    String eventId, {
+    bool paymentLink = false,
+  }) async {
     final response = await _api.post<Map<String, dynamic>>(
       ApiConstants.runEventParticipants.createOrder(eventId),
+      queryParameters: paymentLink ? {'paymentLink': 'true'} : null,
     );
     if (response == null) return null;
     return CreateParticipantOrderResponse.fromApiMap(response);
+  }
+
+  Future<RunEventParticipantModel?> verifyHostedPayment(
+    String eventId, {
+    required String participantId,
+    required String razorpayPaymentLinkId,
+    required String razorpayPaymentLinkReferenceId,
+    required String razorpayPaymentLinkStatus,
+    required String razorpayPaymentId,
+    required String razorpaySignature,
+  }) async {
+    final response = await _api.post<Map<String, dynamic>>(
+      ApiConstants.runEventParticipants.verifyHostedPayment(eventId),
+      data: {
+        'participantId': participantId,
+        'razorpay_payment_link_id': razorpayPaymentLinkId,
+        'razorpay_payment_link_reference_id': razorpayPaymentLinkReferenceId,
+        'razorpay_payment_link_status': razorpayPaymentLinkStatus,
+        'razorpay_payment_id': razorpayPaymentId,
+        'razorpay_signature': razorpaySignature,
+      },
+    );
+    if (response == null) return null;
+    return RunEventParticipantModel.fromApiMap(response);
   }
 
   Future<RunEventParticipantModel?> verifyPayment(
@@ -129,11 +157,7 @@ class RunEventParticipantsService {
   }) async {
     final response = await _api.get<Map<String, dynamic>>(
       ApiConstants.runEventParticipants.me,
-      queryParameters: {
-        'page': page,
-        'limit': limit,
-        'segment': segment,
-      },
+      queryParameters: {'page': page, 'limit': limit, 'segment': segment},
     );
     if (response == null) {
       throw Exception('Failed to load registrations');

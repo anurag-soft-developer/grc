@@ -5,6 +5,7 @@ import 'package:grc/admin/events/model/run_event_model.dart';
 import 'package:grc/admin/events/questionnaires/form_builder_binding.dart';
 import 'package:grc/admin/events/questionnaires/form_builder_screen.dart';
 import 'package:grc/components/questionnaires/form_renderer.dart';
+import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/registrations/model/custom_question_type.dart';
 
@@ -49,54 +50,58 @@ class EventQuestionnairesPreviewScreen extends HookWidget {
         Get.back(result: event.value);
       },
       child: Scaffold(
-      backgroundColor: const Color(AppColors.background),
-      appBar: AppBar(
-        elevation: 0,
-        scrolledUnderElevation: 0.5,
-        backgroundColor: const Color(AppColors.surface),
-        foregroundColor: const Color(AppColors.text),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          color: const Color(AppColors.text),
-          onPressed: () => Get.back(result: event.value),
-        ),
-        title: _PreviewAppBarTitle(eventTitle: data.title),
-        actions: [
-          IconButton(
-            onPressed: openEditor,
-            tooltip: 'Edit form',
-            icon: const Icon(Icons.edit_outlined),
-            color: const Color(AppColors.primary),
+        backgroundColor: const Color(AppColors.background),
+        appBar: AppBar(
+          elevation: 0,
+          scrolledUnderElevation: 0.5,
+          backgroundColor: const Color(AppColors.surface),
+          foregroundColor: const Color(AppColors.text),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            color: const Color(AppColors.text),
+            onPressed: () => Get.back(result: event.value),
           ),
-        ],
-      ),
-      body: questions.isEmpty
-          ? _EmptyPreview(onEdit: openEditor)
-          : SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
-              child: FormRenderer(
-                key: ValueKey(formRevision.value),
-                questions: questions,
-                answers: previewAnswers,
-                sectionTitle: 'Registration form',
-                sectionSubtitle:
-                    'Fill in the fields below to preview the participant experience.',
-                onAnswerChanged: (key, _) {
-                  final question = questions
-                      .where((q) => q.key == key)
-                      .firstOrNull;
-                  if (question == null) return;
-                  final needsRebuild = switch (question.type) {
-                    CustomQuestionType.radio ||
-                    CustomQuestionType.checkbox ||
-                    CustomQuestionType.select =>
-                      true,
-                    _ => false,
-                  };
-                  if (needsRebuild) formRevision.value++;
-                },
-              ),
+          title: _PreviewAppBarTitle(eventTitle: data.title),
+          actions: [
+            IconButton(
+              onPressed: openEditor,
+              tooltip: 'Edit form',
+              icon: const Icon(Icons.edit_outlined),
+              color: const Color(AppColors.primary),
             ),
+          ],
+        ),
+        body: AdaptivePageContainer(
+          maxWidth: 920,
+          alignment: Alignment.topCenter,
+          child: questions.isEmpty
+              ? _EmptyPreview(onEdit: openEditor)
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
+                  child: FormRenderer(
+                    key: ValueKey(formRevision.value),
+                    questions: questions,
+                    answers: previewAnswers,
+                    sectionTitle: 'Registration form',
+                    sectionSubtitle:
+                        'Fill in the fields below to preview the participant experience.',
+                    onAnswerChanged: (key, _) {
+                      final question = questions
+                          .where((q) => q.key == key)
+                          .firstOrNull;
+                      if (question == null) return;
+                      final needsRebuild = switch (question.type) {
+                        CustomQuestionType.radio ||
+                        CustomQuestionType.checkbox ||
+                        CustomQuestionType.select =>
+                          true,
+                        _ => false,
+                      };
+                      if (needsRebuild) formRevision.value++;
+                    },
+                  ),
+                ),
+        ),
       ),
     );
   }
@@ -143,12 +148,12 @@ class _EmptyPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 32, 20, 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
             Icon(
               Icons.quiz_outlined,
               size: 48,
@@ -180,7 +185,6 @@ class _EmptyPreview extends StatelessWidget {
             ),
           ],
         ),
-      ),
     );
   }
 }

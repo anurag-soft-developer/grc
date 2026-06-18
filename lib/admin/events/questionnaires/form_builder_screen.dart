@@ -6,6 +6,7 @@ import 'package:grc/admin/events/model/run_event_model.dart';
 import 'package:grc/admin/events/questionnaires/event_question_draft.dart';
 import 'package:grc/admin/events/questionnaires/form_builder_controller.dart';
 import 'package:grc/components/shared/custom_button.dart';
+import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/components/query/mutation_loading_overlay.dart';
 import 'package:grc/core/config/app_colors.dart';
 import 'package:grc/core/config/constants.dart';
@@ -86,31 +87,34 @@ class FormBuilderScreen extends HookWidget {
       ),
       body: MutationLoadingOverlay(
         mutationKey: QueryKeys.updateEventCustomQuestions,
-        child: Column(
-          children: [
-            Expanded(
-              child: Obx(() {
-                if (controller.drafts.isEmpty) {
-                  return _EmptyQuestionsState(onAdd: controller.addQuestion);
-                }
-                return ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-                  itemCount: controller.drafts.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8),
-                  itemBuilder: (context, index) => _QuestionCard(
-                    index: index,
-                    draft: controller.drafts[index],
-                    controller: controller,
-                  ),
-                );
-              }),
-            ),
-            _BottomActionBar(
-              isSaving: saveMutation.isPending,
-              onAdd: controller.addQuestion,
-              onSave: () => saveMutation.mutate(null),
-            ),
-          ],
+        child: AdaptivePageContainer(
+          maxWidth: 1020,
+          child: Column(
+            children: [
+              Expanded(
+                child: Obx(() {
+                  if (controller.drafts.isEmpty) {
+                    return _EmptyQuestionsState(onAdd: controller.addQuestion);
+                  }
+                  return ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+                    itemCount: controller.drafts.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (context, index) => _QuestionCard(
+                      index: index,
+                      draft: controller.drafts[index],
+                      controller: controller,
+                    ),
+                  );
+                }),
+              ),
+              _BottomActionBar(
+                isSaving: saveMutation.isPending,
+                onAdd: controller.addQuestion,
+                onSave: () => saveMutation.mutate(null),
+              ),
+            ],
+          ),
         ),
       ),
     );

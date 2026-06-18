@@ -265,7 +265,7 @@ class _EventDetailBody extends StatelessWidget {
                     label: 'Location',
                     value: _locationLabel(event),
                     onTap: canOpenLocation
-                        ? () => openEventLocationInMaps(event.location)
+                        ? () => handleEventLocationTap(event.location)
                         : null,
                     showChevron: canOpenLocation,
                   ),
@@ -426,6 +426,7 @@ class _DetailRow extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
+        mouseCursor: SystemMouseCursors.click,
         borderRadius: BorderRadius.circular(12),
         child: content,
       ),

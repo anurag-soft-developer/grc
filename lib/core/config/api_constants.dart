@@ -90,6 +90,8 @@ class RunEventParticipantEndpoints {
       '/run-events/$eventId/participants/draft/create-order';
   String verifyPayment(String eventId) =>
       '/run-events/$eventId/participants/verify-payment';
+  String verifyHostedPayment(String eventId) =>
+      '/run-events/$eventId/participants/verify-hosted-payment';
   String get me => '/run-event-participants/me';
   String byId(String id) => '/run-event-participants/$id';
   String listByEvent(String eventId) => '/run-events/$eventId/participants';

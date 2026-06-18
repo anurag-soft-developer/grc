@@ -36,6 +36,7 @@ class Routes {
   final String eventDetail = '/event-detail';
   final String registrationForm = '/registration-form';
   final String registrationDetail = '/registration-detail';
+  final String paymentsRazorpayCallback = '/payments/razorpay/callback';
 }
 
 enum AppMode {

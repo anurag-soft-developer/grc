@@ -6,6 +6,7 @@ import 'package:grc/core/models/user/user_model.dart';
 import 'package:grc/core/models/user/user_ref_field_instance.dart';
 import 'package:grc/core/models/user/user_ref_hook.dart';
 import 'package:grc/registrations/model/razorpay_order_model.dart';
+import 'package:grc/registrations/model/razorpay_payment_link_model.dart';
 
 part 'run_event_participant_model.mapper.dart';
 
@@ -23,6 +24,9 @@ class RunEventParticipantModel with RunEventParticipantModelMappable {
   final String? paymentStatus;
   final String? paymentId;
   final String? razorpayOrderId;
+  final String? razorpayPaymentLinkId;
+  final String? razorpayPaymentLinkShortUrl;
+  final String? razorpayPaymentLinkCallbackUrl;
   final String? invoiceId;
   final String? paidAt;
   final String? paymentExpiresAt;
@@ -38,6 +42,9 @@ class RunEventParticipantModel with RunEventParticipantModelMappable {
     this.paymentStatus,
     this.paymentId,
     this.razorpayOrderId,
+    this.razorpayPaymentLinkId,
+    this.razorpayPaymentLinkShortUrl,
+    this.razorpayPaymentLinkCallbackUrl,
     this.invoiceId,
     this.paidAt,
     this.paymentExpiresAt,
@@ -47,6 +54,61 @@ class RunEventParticipantModel with RunEventParticipantModelMappable {
   bool get isSubmitted => status == 'submitted';
   bool get isPendingPayment => status == 'pending_payment';
   bool get isPaid => paymentStatus == 'paid';
+
+  bool get isPaymentHoldActive {
+    if (!isPendingPayment) return false;
+    final expiresAt = paymentExpiresAt?.trim();
+    if (expiresAt == null || expiresAt.isEmpty) return true;
+    return DateTime.parse(expiresAt).isAfter(DateTime.now());
+  }
+
+  RazorpayOrderModel? get reusableCheckoutOrder {
+    if (!isPaymentHoldActive) return null;
+
+    final orderId = razorpayOrderId?.trim();
+    final amount = totalAmount;
+    if (orderId == null || orderId.isEmpty || amount == null || amount <= 0) {
+      return null;
+    }
+
+    final amountInPaise = (amount * 100).round();
+    return RazorpayOrderModel(
+      id: orderId,
+      entity: 'order',
+      amount: amountInPaise,
+      amountPaid: 0,
+      amountDue: amountInPaise,
+      currency: 'INR',
+      receipt: '',
+      status: 'created',
+      attempts: 0,
+      createdAt: 0,
+    );
+  }
+
+  RazorpayPaymentLinkModel? get reusablePaymentLink {
+    if (!isPaymentHoldActive) return null;
+
+    final linkId = razorpayPaymentLinkId?.trim();
+    final shortUrl = razorpayPaymentLinkShortUrl?.trim();
+    final callbackUrl = razorpayPaymentLinkCallbackUrl?.trim();
+    if (linkId == null ||
+        linkId.isEmpty ||
+        shortUrl == null ||
+        shortUrl.isEmpty) {
+      return null;
+    }
+
+    return RazorpayPaymentLinkModel(
+      id: linkId,
+      shortUrl: shortUrl,
+      callbackUrl: callbackUrl ?? '',
+    );
+  }
+
+  bool get hasReusableRazorpayOrder => reusableCheckoutOrder != null;
+
+  bool get hasReusablePaymentLink => reusablePaymentLink != null;
 
   String? get runEventId => runEvent?.getId();
   RunEventModel? get runEventModel => runEvent?.getModel();
@@ -79,8 +141,7 @@ class RunEventParticipantModel with RunEventParticipantModelMappable {
 }
 
 @MappableClass()
-class PaginatedRunEventParticipants
-    with PaginatedRunEventParticipantsMappable {
+class PaginatedRunEventParticipants with PaginatedRunEventParticipantsMappable {
   final List<RunEventParticipantModel> data;
   @MappableField(key: 'totalDocuments')
   final int totalDocuments;
@@ -146,10 +207,12 @@ class PaginatedRunEventParticipants
 class CreateParticipantOrderResponse {
   final RunEventParticipantModel participant;
   final RazorpayOrderModel order;
+  final RazorpayPaymentLinkModel? paymentLink;
 
   const CreateParticipantOrderResponse({
     required this.participant,
     required this.order,
+    this.paymentLink,
   });
 
   static CreateParticipantOrderResponse fromApiMap(Map<String, dynamic> map) {
@@ -160,6 +223,11 @@ class CreateParticipantOrderResponse {
       order: RazorpayOrderModel.fromMap(
         Map<String, dynamic>.from(map['order'] as Map),
       ),
+      paymentLink: map['paymentLink'] is Map
+          ? RazorpayPaymentLinkModel.fromMap(
+              Map<String, dynamic>.from(map['paymentLink'] as Map),
+            )
+          : null,
     );
   }
 }

@@ -83,6 +83,30 @@ class RunEventParticipantModelMapper
       v.razorpayOrderId;
   static const Field<RunEventParticipantModel, String> _f$razorpayOrderId =
       Field('razorpayOrderId', _$razorpayOrderId, opt: true);
+  static String? _$razorpayPaymentLinkId(RunEventParticipantModel v) =>
+      v.razorpayPaymentLinkId;
+  static const Field<RunEventParticipantModel, String>
+  _f$razorpayPaymentLinkId = Field(
+    'razorpayPaymentLinkId',
+    _$razorpayPaymentLinkId,
+    opt: true,
+  );
+  static String? _$razorpayPaymentLinkShortUrl(RunEventParticipantModel v) =>
+      v.razorpayPaymentLinkShortUrl;
+  static const Field<RunEventParticipantModel, String>
+  _f$razorpayPaymentLinkShortUrl = Field(
+    'razorpayPaymentLinkShortUrl',
+    _$razorpayPaymentLinkShortUrl,
+    opt: true,
+  );
+  static String? _$razorpayPaymentLinkCallbackUrl(RunEventParticipantModel v) =>
+      v.razorpayPaymentLinkCallbackUrl;
+  static const Field<RunEventParticipantModel, String>
+  _f$razorpayPaymentLinkCallbackUrl = Field(
+    'razorpayPaymentLinkCallbackUrl',
+    _$razorpayPaymentLinkCallbackUrl,
+    opt: true,
+  );
   static String? _$invoiceId(RunEventParticipantModel v) => v.invoiceId;
   static const Field<RunEventParticipantModel, String> _f$invoiceId = Field(
     'invoiceId',
@@ -117,6 +141,9 @@ class RunEventParticipantModelMapper
     #paymentStatus: _f$paymentStatus,
     #paymentId: _f$paymentId,
     #razorpayOrderId: _f$razorpayOrderId,
+    #razorpayPaymentLinkId: _f$razorpayPaymentLinkId,
+    #razorpayPaymentLinkShortUrl: _f$razorpayPaymentLinkShortUrl,
+    #razorpayPaymentLinkCallbackUrl: _f$razorpayPaymentLinkCallbackUrl,
     #invoiceId: _f$invoiceId,
     #paidAt: _f$paidAt,
     #paymentExpiresAt: _f$paymentExpiresAt,
@@ -134,6 +161,11 @@ class RunEventParticipantModelMapper
       paymentStatus: data.dec(_f$paymentStatus),
       paymentId: data.dec(_f$paymentId),
       razorpayOrderId: data.dec(_f$razorpayOrderId),
+      razorpayPaymentLinkId: data.dec(_f$razorpayPaymentLinkId),
+      razorpayPaymentLinkShortUrl: data.dec(_f$razorpayPaymentLinkShortUrl),
+      razorpayPaymentLinkCallbackUrl: data.dec(
+        _f$razorpayPaymentLinkCallbackUrl,
+      ),
       invoiceId: data.dec(_f$invoiceId),
       paidAt: data.dec(_f$paidAt),
       paymentExpiresAt: data.dec(_f$paymentExpiresAt),
@@ -223,6 +255,9 @@ abstract class RunEventParticipantModelCopyWith<
     String? paymentStatus,
     String? paymentId,
     String? razorpayOrderId,
+    String? razorpayPaymentLinkId,
+    String? razorpayPaymentLinkShortUrl,
+    String? razorpayPaymentLinkCallbackUrl,
     String? invoiceId,
     String? paidAt,
     String? paymentExpiresAt,
@@ -260,6 +295,9 @@ class _RunEventParticipantModelCopyWithImpl<$R, $Out>
     Object? paymentStatus = $none,
     Object? paymentId = $none,
     Object? razorpayOrderId = $none,
+    Object? razorpayPaymentLinkId = $none,
+    Object? razorpayPaymentLinkShortUrl = $none,
+    Object? razorpayPaymentLinkCallbackUrl = $none,
     Object? invoiceId = $none,
     Object? paidAt = $none,
     Object? paymentExpiresAt = $none,
@@ -276,6 +314,12 @@ class _RunEventParticipantModelCopyWithImpl<$R, $Out>
       if (paymentStatus != $none) #paymentStatus: paymentStatus,
       if (paymentId != $none) #paymentId: paymentId,
       if (razorpayOrderId != $none) #razorpayOrderId: razorpayOrderId,
+      if (razorpayPaymentLinkId != $none)
+        #razorpayPaymentLinkId: razorpayPaymentLinkId,
+      if (razorpayPaymentLinkShortUrl != $none)
+        #razorpayPaymentLinkShortUrl: razorpayPaymentLinkShortUrl,
+      if (razorpayPaymentLinkCallbackUrl != $none)
+        #razorpayPaymentLinkCallbackUrl: razorpayPaymentLinkCallbackUrl,
       if (invoiceId != $none) #invoiceId: invoiceId,
       if (paidAt != $none) #paidAt: paidAt,
       if (paymentExpiresAt != $none) #paymentExpiresAt: paymentExpiresAt,
@@ -296,6 +340,18 @@ class _RunEventParticipantModelCopyWithImpl<$R, $Out>
     paymentStatus: data.get(#paymentStatus, or: $value.paymentStatus),
     paymentId: data.get(#paymentId, or: $value.paymentId),
     razorpayOrderId: data.get(#razorpayOrderId, or: $value.razorpayOrderId),
+    razorpayPaymentLinkId: data.get(
+      #razorpayPaymentLinkId,
+      or: $value.razorpayPaymentLinkId,
+    ),
+    razorpayPaymentLinkShortUrl: data.get(
+      #razorpayPaymentLinkShortUrl,
+      or: $value.razorpayPaymentLinkShortUrl,
+    ),
+    razorpayPaymentLinkCallbackUrl: data.get(
+      #razorpayPaymentLinkCallbackUrl,
+      or: $value.razorpayPaymentLinkCallbackUrl,
+    ),
     invoiceId: data.get(#invoiceId, or: $value.invoiceId),
     paidAt: data.get(#paidAt, or: $value.paidAt),
     paymentExpiresAt: data.get(#paymentExpiresAt, or: $value.paymentExpiresAt),

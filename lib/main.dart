@@ -28,7 +28,7 @@ void main() async {
         theme: _lightTheme,
         initialBinding: InitialBinding(queryClient: queryClient),
         getPages: AppRoutes.routes,
-        initialRoute: AppRoutes.splashRoute,
+        initialRoute: AppRoutes.resolveInitialRoute(),
         debugShowCheckedModeBanner: false,
         defaultTransition: Transition.cupertino,
       ),

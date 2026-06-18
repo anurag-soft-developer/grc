@@ -4,12 +4,14 @@ class AdaptivePageContainer extends StatelessWidget {
   final Widget child;
   final double maxWidth;
   final EdgeInsetsGeometry padding;
+  final AlignmentGeometry alignment;
 
   const AdaptivePageContainer({
     super.key,
     required this.child,
     this.maxWidth = 1180,
     this.padding = const EdgeInsets.symmetric(horizontal: 12),
+    this.alignment = Alignment.topCenter,
   });
 
   @override
@@ -23,7 +25,8 @@ class AdaptivePageContainer extends StatelessWidget {
 
         return Padding(
           padding: padding,
-          child: Center(
+          child: Align(
+            alignment: alignment,
             child: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: maxWidth),
               child: child,

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:grc/bindings/main_screen_wrapper_binding.dart';
 import 'package:grc/core/components/bottom_navigation_panel/main_screen_wrapper.dart';
@@ -13,11 +14,23 @@ import 'package:grc/core/views/access_denied_screen.dart';
 import 'package:grc/core/views/splash_screen.dart';
 import 'package:grc/registrations/event_registration_binding.dart';
 import 'package:grc/components/registration/event_registration_form_screen.dart';
+import 'package:grc/registrations/razorpay_payment_callback_screen.dart';
 import 'package:grc/registrations/registration_detail_screen.dart';
 
 class AppRoutes {
   static const String splashRoute = '/';
   static const String mainRoute = MainTabRoutes.legacyMain;
+
+  /// On web, Razorpay/Google redirects land with a full path URL. Respect it
+  /// instead of always booting through the splash route.
+  static String resolveInitialRoute() {
+    if (!kIsWeb) return splashRoute;
+
+    final path = Uri.base.path;
+    if (path.isEmpty || path == splashRoute) return splashRoute;
+
+    return path;
+  }
 
   static GetPage _mainTabPage(String name) {
     return GetPage(
@@ -55,6 +68,10 @@ class AppRoutes {
       page: () => const RegistrationDetailScreen(),
       binding: EventRegistrationBinding(),
       middlewares: [AuthGuard()],
+    ),
+    GetPage(
+      name: AppConstants.routes.paymentsRazorpayCallback,
+      page: () => const RazorpayPaymentCallbackScreen(),
     ),
     ...authRoutes,
     ...adminRoutes,

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_query/flutter_query.dart';
 import 'package:get/get.dart';
 import 'package:grc/admin/events/model/run_event_model.dart';
@@ -12,12 +13,13 @@ import 'package:grc/registrations/model/run_event_registration_context.dart';
 import 'package:grc/core/query/query_keys.dart';
 import 'package:grc/registrations/run_event_participants_service.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class EventRegistrationController extends GetxController {
   final RunEventParticipantsService _service =
       RunEventParticipantsService.instance;
 
-  late final Razorpay _razorpay;
+  Razorpay? _razorpay;
   String? _pendingParticipantId;
   String? _pendingOrderId;
   String? _eventId;
@@ -47,15 +49,18 @@ class EventRegistrationController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _razorpay = Razorpay();
-    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
-    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
-    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+    if (!kIsWeb) {
+      _razorpay = Razorpay();
+      _razorpay!
+        ..on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess)
+        ..on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError)
+        ..on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+    }
   }
 
   @override
   void onClose() {
-    _razorpay.clear();
+    _razorpay?.clear();
     super.onClose();
   }
 
@@ -90,10 +95,7 @@ class EventRegistrationController extends GetxController {
     }
   }
 
-  Future<void> openTicket(
-    String participantId, {
-    String? eventId,
-  }) async {
+  Future<void> openTicket(String participantId, {String? eventId}) async {
     if (eventId != null) {
       _eventId = eventId;
     }
@@ -187,16 +189,7 @@ class EventRegistrationController extends GetxController {
     participant.value = p;
     isSubmitting.value = true;
     try {
-      final orderResponse = await _service.createOrder(eventId);
-      if (orderResponse == null) {
-        ExceptionHandler.showErrorToast('Could not start payment');
-        return;
-      }
-      participant.value = orderResponse.participant;
-      _openRazorpayCheckout(
-        order: orderResponse.order,
-        participantModel: orderResponse.participant,
-      );
+      await _startPayment(eventId);
     } on DioException catch (e) {
       ExceptionHandler.handleDioException(e);
     } catch (e) {
@@ -204,6 +197,66 @@ class EventRegistrationController extends GetxController {
     } finally {
       isSubmitting.value = false;
     }
+  }
+
+  Future<void> _startPayment(String eventId) async {
+    final current = participant.value;
+
+    if (kIsWeb) {
+      final existingLink = current?.reusablePaymentLink;
+      if (existingLink != null) {
+        final launched = await launchUrl(
+          Uri.parse(existingLink.shortUrl),
+          webOnlyWindowName: '_self',
+        );
+        if (!launched) {
+          ExceptionHandler.showErrorToast('Could not open payment page');
+        }
+        return;
+      }
+    } else {
+      final existingOrder = current?.reusableCheckoutOrder;
+      if (existingOrder != null && current != null) {
+        _openRazorpayCheckout(
+          order: existingOrder,
+          participantModel: current,
+        );
+        return;
+      }
+    }
+
+    final orderResponse = await _service.createOrder(
+      eventId,
+      paymentLink: kIsWeb,
+    );
+    if (orderResponse == null) {
+      ExceptionHandler.showErrorToast('Could not start payment');
+      return;
+    }
+
+    participant.value = orderResponse.participant;
+
+    if (kIsWeb) {
+      final paymentLink = orderResponse.paymentLink;
+      if (paymentLink == null || paymentLink.shortUrl.isEmpty) {
+        ExceptionHandler.showErrorToast('Could not start payment');
+        return;
+      }
+
+      final launched = await launchUrl(
+        Uri.parse(paymentLink.shortUrl),
+        webOnlyWindowName: '_self',
+      );
+      if (!launched) {
+        ExceptionHandler.showErrorToast('Could not open payment page');
+      }
+      return;
+    }
+
+    _openRazorpayCheckout(
+      order: orderResponse.order,
+      participantModel: orderResponse.participant,
+    );
   }
 
   Future<void> _loadDraft(String eventId) async {
@@ -271,16 +324,7 @@ class EventRegistrationController extends GetxController {
 
       final price = event?.price ?? 0;
       if (price > 0 && result.isPendingPayment) {
-        final orderResponse = await _service.createOrder(eventId);
-        if (orderResponse == null) {
-          ExceptionHandler.showErrorToast('Could not start payment');
-          return;
-        }
-        participant.value = orderResponse.participant;
-        _openRazorpayCheckout(
-          order: orderResponse.order,
-          participantModel: orderResponse.participant,
-        );
+        await _startPayment(eventId);
         return;
       }
 
@@ -322,7 +366,7 @@ class EventRegistrationController extends GetxController {
     _pendingParticipantId = participantId;
     _pendingOrderId = order.id;
 
-    _razorpay.open({
+    _razorpay?.open({
       'key': key,
       'amount': order.amount,
       'order_id': order.id,
@@ -373,9 +417,7 @@ class EventRegistrationController extends GetxController {
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
-    ExceptionHandler.showErrorToast(
-      response.message ?? 'Payment failed',
-    );
+    ExceptionHandler.showErrorToast(response.message ?? 'Payment failed');
   }
 
   void _handleExternalWallet(ExternalWalletResponse response) {
