@@ -11,9 +11,9 @@ class VerifyEmailController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    final args = Get.arguments;
-    if (args is Map && args['email'] is String) {
-      emailController.text = args['email'] as String;
+    final args = Get.parameters['email'];
+    if (args != null && args.isNotEmpty) {
+      emailController.text = args;
     }
   }
 

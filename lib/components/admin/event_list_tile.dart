@@ -79,8 +79,11 @@ class AdminEventListTile extends StatelessWidget {
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         leading: _coverThumbnail(),
-        onTap: () =>
-            Get.toNamed(AppConstants.routes.adminEventDetail, arguments: event),
+        onTap: () {
+          final id = event.id;
+          if (id == null) return;
+          Get.toNamed(AppConstants.routes.adminEventDetailPath(id));
+        },
         title: Text(event.title),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

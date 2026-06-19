@@ -11,12 +11,12 @@ class FormBuilderController extends GetxController {
 
   String? get eventId => event.id;
 
-  void initFromArguments() {
-    final args = Get.arguments;
-    if (args is! RunEventModel) {
-      throw ArgumentError('RunEventModel required');
+  Future<void> initFromEventId(String eventId) async {
+    final loaded = await RunEventsService.instance.getEventById(eventId);
+    if (loaded == null) {
+      throw ArgumentError('Event not found: $eventId');
     }
-    event = args;
+    event = loaded;
     _loadDrafts(event.customQuestions);
   }
 

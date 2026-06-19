@@ -4,9 +4,7 @@ import 'package:flutter_query/flutter_query.dart';
 import 'package:get/get.dart';
 import 'package:grc/admin/events/model/run_event_model.dart';
 import 'package:grc/admin/events/run_events_service.dart';
-import 'package:grc/admin/events/questionnaires/event_questionnaires_preview_screen.dart';
-import 'package:grc/admin/form/event_form_binding.dart';
-import 'package:grc/admin/form/event_form_screen.dart';
+import 'package:grc/core/components/query/query_async_body.dart';
 import 'package:grc/components/events/admin_event_actions.dart';
 import 'package:grc/components/events/user_event_actions.dart';
 import 'package:grc/components/shared/loading_overlay.dart';
@@ -35,66 +33,63 @@ class EventDetailScreen extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final authState = Get.find<AuthStateController>();
-    final event = useState<RunEventModel?>(Get.arguments as RunEventModel?);
     final isAdminMode = authState.isAdminMode;
-    final eventId = event.value?.id;
+    final id = useMemoized(() => Get.parameters['id']);
 
-    final adminDetailQuery = useQuery<RunEventModel?, Object>(
-      QueryKeys.adminEvent(eventId ?? ''),
+    final detailQuery = useQuery<RunEventModel?, Object>(
+      QueryKeys.adminEvent(id ?? ''),
       (_) async {
-        final id = eventId;
-        if (id == null) return null;
-        return RunEventsService.instance.getEventById(id);
+        final routeId = id;
+        if (routeId == null || routeId.isEmpty) return null;
+        return RunEventsService.instance.getEventById(routeId);
       },
-      enabled: isAdminMode && eventId != null,
+      enabled: id != null && id!.isNotEmpty,
     );
 
-    useEffect(() {
-      final fresh = adminDetailQuery.data;
-      if (fresh != null) {
-        event.value = fresh;
-      }
-      return null;
-    }, [adminDetailQuery.data]);
+    final event = detailQuery.data;
 
     Future<void> openEdit() async {
-      final current = event.value;
-      if (current == null) return;
+      final id = event?.id;
+      if (id == null) return;
 
-      final updated = await Get.to<RunEventModel>(
-        () => const EventFormScreen(),
-        binding: EventFormBinding(),
-        arguments: current,
+      final updated = await Get.toNamed<RunEventModel>(
+        AppConstants.routes.adminEventFormEditPath(id),
       );
       if (updated != null) {
-        event.value = updated;
+        detailQuery.refetch();
       }
     }
 
     Future<void> openQuestionnaires() async {
-      final current = event.value;
-      if (current == null) return;
+      final id = event?.id;
+      if (id == null) return;
 
-      final updated = await Get.to<RunEventModel>(
-        () => const EventQuestionnairesPreviewScreen(),
-        arguments: current,
+      final updated = await Get.toNamed<RunEventModel>(
+        AppConstants.routes.adminEventQuestionnairesPath(id),
       );
       if (updated != null) {
-        event.value = updated;
+        detailQuery.refetch();
       }
     }
 
-    final data = event.value;
-
     Widget body;
-    if (data == null) {
+    if (id == null || id!.isEmpty) {
       body = const Center(child: Text('Event not found'));
     } else {
-      body = _buildDetailBody(
-        data,
-        isAdminMode,
-        (updated) => event.value = updated,
-        onDeleted: () => Get.back(),
+      body = QueryAsyncBody<RunEventModel?, dynamic>(
+        state: detailQuery,
+        onRetry: detailQuery.refetch,
+        data: (data) {
+          if (data == null) {
+            return const Center(child: Text('Event not found'));
+          }
+          return _buildDetailBody(
+            data,
+            isAdminMode,
+            (_) => detailQuery.refetch(),
+            onDeleted: () => Get.back(),
+          );
+        },
       );
     }
 
@@ -110,7 +105,7 @@ class EventDetailScreen extends HookWidget {
       appBar: AppBar(
         title: const Text('Event details'),
         actions: [
-          if (data != null && isAdminMode) ...[
+          if (event != null && isAdminMode) ...[
             IconButton(
               icon: const Icon(Icons.quiz_outlined),
               tooltip: 'Questionnaires',

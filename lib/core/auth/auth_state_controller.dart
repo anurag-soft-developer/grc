@@ -23,10 +23,15 @@ class AuthStateController extends GetxController {
   bool get isAdmin => user?.isAdmin == true;
   bool get isAdminMode => isAdmin && appMode.value == AppMode.admin;
 
+  Future<void>? _hydrationFuture;
+
+  /// Completes once local session has been read from storage.
+  Future<void> ensureHydrated() => _hydrationFuture ??= _hydrateFromStorage();
+
   @override
   void onInit() {
     super.onInit();
-    _hydrateFromStorage();
+    ensureHydrated();
   }
 
   Future<void> _hydrateFromStorage() async {

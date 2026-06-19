@@ -4,6 +4,7 @@ import 'package:flutter_query/flutter_query.dart';
 import 'package:get/get.dart';
 import 'package:grc/components/shared/custom_button.dart';
 import 'package:grc/components/shared/custom_text_field.dart';
+import 'package:grc/core/auth/auth_navigation.dart';
 import 'package:grc/core/auth/auth_state_controller.dart';
 import 'package:grc/core/auth/login/login_controller.dart';
 import 'package:grc/core/components/query/mutation_loading_overlay.dart';
@@ -39,7 +40,7 @@ class LoginOtpChallengeView extends HookWidget {
         if (user != null) {
           authState.setUser(user);
           controller.pendingOtpChallenge.value = null;
-          Get.offAllNamed(AppRoutes.mainRoute);
+          AuthNavigation.goAfterAuth();
         }
       },
     );

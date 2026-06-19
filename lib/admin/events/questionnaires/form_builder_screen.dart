@@ -24,7 +24,15 @@ class FormBuilderScreen extends HookWidget {
     final theme = Theme.of(context);
 
     useEffect(() {
-      controller.initFromArguments();
+      final id = Get.parameters['id'];
+      if (id == null || id.isEmpty) {
+        return () {
+          if (Get.isRegistered<FormBuilderController>()) {
+            Get.delete<FormBuilderController>(force: true);
+          }
+        };
+      }
+      controller.initFromEventId(id);
       return () {
         if (Get.isRegistered<FormBuilderController>()) {
           Get.delete<FormBuilderController>(force: true);

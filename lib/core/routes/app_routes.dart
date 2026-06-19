@@ -53,18 +53,18 @@ class AppRoutes {
     _mainTabPage(MainTabRoutes.dashboard),
     _mainTabPage(MainTabRoutes.myEvents),
     GetPage(
-      name: AppConstants.routes.eventDetail,
+      name: AppConstants.routes.eventDetailPath(':id'),
       page: () => const EventDetailScreen(),
       middlewares: [AuthGuard()],
     ),
     GetPage(
-      name: AppConstants.routes.registrationForm,
+      name: AppConstants.routes.registrationFormPath(':id'),
       page: () => const EventRegistrationFormScreen(),
       binding: EventRegistrationBinding(),
       middlewares: [AuthGuard()],
     ),
     GetPage(
-      name: AppConstants.routes.registrationDetail,
+      name: AppConstants.routes.registrationDetailPath(':id'),
       page: () => const RegistrationDetailScreen(),
       binding: EventRegistrationBinding(),
       middlewares: [AuthGuard()],

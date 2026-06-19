@@ -99,10 +99,7 @@ class EventRegistrationController extends GetxController {
     if (eventId != null) {
       _eventId = eventId;
     }
-    await Get.toNamed(
-      AppConstants.routes.registrationDetail,
-      arguments: participantId,
-    );
+    await Get.toNamed(AppConstants.routes.registrationDetailPath(participantId));
     await _invalidateEventRegistrationStatus();
   }
 
@@ -148,7 +145,7 @@ class EventRegistrationController extends GetxController {
         return;
       }
       isLoading.value = false;
-      await Get.toNamed(AppConstants.routes.registrationForm);
+      await Get.toNamed(AppConstants.routes.registrationFormPath(eventId));
       await _invalidateEventRegistrationStatus();
     } on DioException catch (e) {
       ExceptionHandler.handleDioException(e);
@@ -172,7 +169,7 @@ class EventRegistrationController extends GetxController {
             event: existing.runEventModel ?? const RunEventModel(title: ''),
           );
       participant.value = existing;
-      Get.toNamed(AppConstants.routes.registrationForm);
+      Get.toNamed(AppConstants.routes.registrationFormPath(eventId));
     } on DioException catch (e) {
       ExceptionHandler.handleDioException(e);
     } catch (e) {
@@ -429,9 +426,33 @@ class EventRegistrationController extends GetxController {
   void _goToDetail(String? participantId) {
     if (participantId == null) return;
     _invalidateEventRegistrationStatus();
-    Get.offNamed(
-      AppConstants.routes.registrationDetail,
-      arguments: participantId,
-    );
+    Get.offNamed(AppConstants.routes.registrationDetailPath(participantId));
+  }
+
+  /// Loads registration context when the form route is opened directly (e.g. web refresh).
+  Future<void> bootstrapFromRoute() async {
+    if (context.value != null) return;
+
+    final id = Get.parameters['id'];
+    if (id == null || id.isEmpty) return;
+
+    _eventId = id;
+    isLoading.value = true;
+    alreadyRegistered.value = false;
+    try {
+      final loaded = await _service.getRegistrationContext(id);
+      if (loaded == null) {
+        ExceptionHandler.showErrorToast('Could not load registration form');
+        return;
+      }
+      context.value = loaded;
+      await _loadDraft(id);
+    } on DioException catch (e) {
+      ExceptionHandler.handleDioException(e);
+    } catch (e) {
+      ExceptionHandler.handleGenericException(e);
+    } finally {
+      isLoading.value = false;
+    }
   }
 }

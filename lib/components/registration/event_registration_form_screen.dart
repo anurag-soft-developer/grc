@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:get/get.dart';
 import 'package:grc/components/shared/custom_button.dart';
 import 'package:grc/core/components/layout/adaptive_page_container.dart';
@@ -6,12 +7,18 @@ import 'package:grc/core/config/app_colors.dart';
 import 'package:grc/registrations/event_registration_controller.dart';
 import 'package:grc/components/registration/registration_form_fields.dart';
 
-class EventRegistrationFormScreen extends StatelessWidget {
+class EventRegistrationFormScreen extends HookWidget {
   const EventRegistrationFormScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<EventRegistrationController>();
+
+    useEffect(() {
+      controller.bootstrapFromRoute();
+      return null;
+    }, const []);
+
     final event = controller.event;
 
     return Scaffold(

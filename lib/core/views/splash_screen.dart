@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_query/flutter_query.dart';
 import 'package:get/get.dart';
+import 'package:grc/core/auth/auth_navigation.dart';
 import 'package:grc/core/auth/auth_state_controller.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/query/query_keys.dart';
@@ -38,30 +39,29 @@ class AuthWrapper extends HookWidget {
     final authRepo = Get.find<AuthRepository>();
     final client = useQueryClient();
 
-    final bootstrap = useQuery(
-      QueryKeys.authStatus,
-      (ctx) async {
-        final stored = await authRepo.getStoredUser();
-        if (stored == null) return false;
-        try {
-          final status = await authRepo.getAuthStatus();
-          if (status != null) {
-            authState.setUser(status.user);
-            return true;
-          }
-        } catch (_) {}
-        authState.setUser(stored);
-        return true;
-      },
-    );
+    final bootstrap = useQuery(QueryKeys.authStatus, (ctx) async {
+      final stored = await authRepo.getStoredUser();
+      if (stored == null) return false;
+      try {
+        final status = await authRepo.getAuthStatus();
+        if (status != null) {
+          authState.setUser(status.user);
+          return true;
+        }
+      } catch (_) {}
+      authState.setUser(stored);
+      return true;
+    });
 
     useEffect(() {
       if (bootstrap.isLoading) return null;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final loggedIn = bootstrap.data == true || authState.isLoggedIn;
-        Get.offAllNamed(
-          loggedIn ? AppRoutes.mainRoute : AppConstants.routes.login,
-        );
+        if (loggedIn) {
+          AuthNavigation.goAfterAuth();
+        } else {
+          Get.offAllNamed(AppConstants.routes.login);
+        }
       });
       return null;
     }, [bootstrap.isLoading, bootstrap.data]);

@@ -7,24 +7,21 @@ import 'package:grc/components/shared/custom_button.dart';
 import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/components/query/query_async_body.dart';
 import 'package:grc/core/config/constants.dart';
+import 'package:grc/core/query/query_keys.dart';
+import 'package:grc/core/config/constants.dart';
+import 'package:grc/core/utils/date_format_util.dart';
 import 'package:grc/registrations/event_registration_controller.dart';
 import 'package:grc/registrations/model/custom_question_model.dart';
 import 'package:grc/registrations/model/run_event_participant_model.dart';
 import 'package:grc/registrations/run_event_participants_service.dart';
-import 'package:grc/core/query/query_keys.dart';
-import 'package:grc/core/utils/date_format_util.dart';
 
 class RegistrationDetailScreen extends HookWidget {
   const RegistrationDetailScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Capture once — Get.arguments is global and changes when child routes
-    // (e.g. event detail) are pushed, so re-reading on rebuild causes cast errors.
-    final participantId = useMemoized(() {
-      final args = Get.arguments;
-      return args is String ? args : null;
-    });
+    // Capture once — route params are stable; re-reading on rebuild is safe.
+    final id = useMemoized(() => Get.parameters['id']);
     final payController = useMemoized(() {
       if (!Get.isRegistered<EventRegistrationController>()) {
         Get.put(EventRegistrationController());
@@ -33,13 +30,13 @@ class RegistrationDetailScreen extends HookWidget {
     }, const []);
 
     final detailQuery = useQuery<RunEventParticipantModel?, Object>(
-      QueryKeys.registrationDetail(participantId ?? ''),
+      QueryKeys.registrationDetail(id ?? ''),
       (_) async {
-        final id = participantId;
-        if (id == null || id.isEmpty) return null;
-        return RunEventParticipantsService.instance.getById(id);
+        final routeId = id;
+        if (routeId == null || routeId.isEmpty) return null;
+        return RunEventParticipantsService.instance.getById(routeId);
       },
-      enabled: participantId != null && participantId.isNotEmpty,
+      enabled: id != null && id!.isNotEmpty,
     );
 
     return Scaffold(
@@ -482,8 +479,11 @@ class _CompactEventSection extends StatelessWidget {
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
-        onTap: () =>
-            Get.toNamed(AppConstants.routes.eventDetail, arguments: event),
+        onTap: () {
+          final id = event.id;
+          if (id == null) return;
+          Get.toNamed(AppConstants.routes.eventDetailPath(id));
+        },
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),

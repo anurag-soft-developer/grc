@@ -41,8 +41,7 @@ class SettingsScreen extends StatelessWidget {
                       leading: const Icon(Icons.mark_email_unread_outlined),
                       title: const Text('Verify email'),
                       onTap: () => Get.toNamed(
-                        AppConstants.routes.verifyEmail,
-                        arguments: {'email': user?.email},
+                        AppConstants.routes.verifyEmailPath(email: user?.email),
                       ),
                     ),
                   ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:grc/core/auth/auth_navigation.dart';
 import 'package:grc/core/auth/auth_state_controller.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/models/user/user_model.dart';
@@ -62,7 +63,7 @@ class _GoogleAuthCallbackScreenState extends State<GoogleAuthCallbackScreen> {
       ExceptionHandler.showSuccessToast('Google Sign-In successful');
 
       if (!mounted) return;
-      Get.offAllNamed(AppRoutes.mainRoute);
+      AuthNavigation.goAfterAuth();
     } catch (_) {
       if (!mounted) return;
       setState(() {

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:grc/core/auth/auth_navigation.dart';
 import 'package:grc/core/auth/auth_state_controller.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/repositories/auth_repository.dart';
-import 'package:grc/core/routes/app_routes.dart';
 import 'package:grc/core/services/auth_storage_service.dart';
 
 AuthStateController get _auth => Get.find<AuthStateController>();
@@ -36,6 +36,13 @@ class _PublicSessionGateState extends State<_PublicSessionGate> {
   }
 
   Future<void> _checkStoredSession() async {
+    await _auth.ensureHydrated();
+
+    if (_auth.isLoggedIn) {
+      if (mounted) AuthNavigation.goAfterAuth();
+      return;
+    }
+
     final accessToken = await _storage.getAccessToken();
     final refreshToken = await _storage.getRefreshToken();
     final storedUser = await _storage.getUserFromPreferences();
@@ -44,9 +51,7 @@ class _PublicSessionGateState extends State<_PublicSessionGate> {
 
     if (hasTokens && storedUser != null) {
       _auth.setUser(storedUser);
-      if (mounted) {
-        Get.offAllNamed(AppRoutes.mainRoute);
-      }
+      if (mounted) AuthNavigation.goAfterAuth();
       return;
     }
 
@@ -57,9 +62,7 @@ class _PublicSessionGateState extends State<_PublicSessionGate> {
       if (status != null) {
         await _storage.saveUser(status.user);
         _auth.setUser(status.user);
-        if (mounted) {
-          Get.offAllNamed(AppRoutes.mainRoute);
-        }
+        if (mounted) AuthNavigation.goAfterAuth();
         return;
       }
     }
@@ -96,18 +99,30 @@ class AuthGuard extends GetMiddleware {
   @override
   RouteSettings? redirect(String? route) {
     if (!_auth.isLoggedIn) {
-      return RouteSettings(name: AppConstants.routes.login);
+      return RouteSettings(
+        name: AuthNavigation.loginPath(
+          returnTo: AuthNavigation.intendedPath(route),
+        ),
+      );
     }
 
-    if (_auth.user?.isEmailVerified != true &&
-        route != AppConstants.routes.verifyEmail) {
+    if (_auth.user?.isEmailVerified != true && !_isVerifyEmailRoute(route)) {
+      final returnTo = AuthNavigation.intendedPath(route);
       return RouteSettings(
-        name: AppConstants.routes.verifyEmail,
-        arguments: {'email': _auth.user?.email},
+        name: AppConstants.routes.verifyEmailPath(
+          email: _auth.user?.email,
+          redirect: returnTo.isNotEmpty ? returnTo : null,
+        ),
       );
     }
 
     return null;
+  }
+
+  bool _isVerifyEmailRoute(String? route) {
+    final path = AuthNavigation.intendedPath(route);
+    return path == AppConstants.routes.verifyEmail ||
+        path.startsWith('${AppConstants.routes.verifyEmail}?');
   }
 }
 

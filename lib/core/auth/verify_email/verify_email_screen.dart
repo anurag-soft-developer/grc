@@ -4,6 +4,7 @@ import 'package:flutter_query/flutter_query.dart';
 import 'package:get/get.dart';
 import 'package:grc/components/shared/custom_button.dart';
 import 'package:grc/components/shared/custom_text_field.dart';
+import 'package:grc/core/auth/auth_navigation.dart';
 import 'package:grc/core/auth/auth_state_controller.dart';
 import 'package:grc/core/auth/verify_email/verify_email_controller.dart';
 import 'package:grc/core/components/query/mutation_loading_overlay.dart';
@@ -31,7 +32,9 @@ class VerifyEmailScreen extends HookWidget {
       mutationKey: QueryKeys.sendVerificationEmail,
       onSuccess: (ok, _, __, ___) {
         if (ok) {
-          ExceptionHandler.showSuccessToast(AppConstants.successMessages.otpSent);
+          ExceptionHandler.showSuccessToast(
+            AppConstants.successMessages.otpSent,
+          );
           controller.goToOtpStep();
         }
       },
@@ -53,11 +56,7 @@ class VerifyEmailScreen extends HookWidget {
       mutationKey: QueryKeys.verifyEmail,
       onSuccess: (_, __, ___, ____) {
         if (authState.isLoggedIn) {
-          if (Get.previousRoute == AppRoutes.mainRoute) {
-            Get.back();
-          } else {
-            Get.offAllNamed(AppRoutes.mainRoute);
-          }
+          AuthNavigation.goAfterAuth();
         } else {
           Get.offAllNamed(AppConstants.routes.login);
         }
@@ -86,9 +85,8 @@ class VerifyEmailScreen extends HookWidget {
             controller: controller,
             onVerify: () => verifyMutation.mutate(null),
             onBack: controller.goToEmailStep,
-            onResend: () => sendMutation.mutate(
-              controller.emailController.text.trim(),
-            ),
+            onResend: () =>
+                sendMutation.mutate(controller.emailController.text.trim()),
           ),
         );
       }),

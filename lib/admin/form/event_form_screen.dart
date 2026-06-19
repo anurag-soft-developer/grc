@@ -19,9 +19,6 @@ import 'package:grc/core/services/media_upload_service.dart';
 import 'package:grc/core/utils/exception_handler.dart';
 import 'package:image_picker/image_picker.dart';
 
-/// Pass as [Get.arguments] when opening the form to create a new event.
-const eventFormCreate = Object();
-
 class EventFormScreen extends HookWidget {
   const EventFormScreen({super.key});
 
@@ -32,9 +29,15 @@ class EventFormScreen extends HookWidget {
     final isUploadingCover = useState(false);
 
     useEffect(() {
-      final args = Get.arguments;
-      if (args is RunEventModel) {
-        controller.loadFromEvent(args);
+      final id = Get.parameters['id'];
+      if (id != null && id.isNotEmpty) {
+        RunEventsService.instance.getEventById(id).then((loaded) {
+          if (loaded != null) {
+            controller.loadFromEvent(loaded);
+          } else {
+            controller.resetForCreate();
+          }
+        });
       } else {
         controller.resetForCreate();
       }

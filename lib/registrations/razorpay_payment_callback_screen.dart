@@ -98,10 +98,7 @@ class _RazorpayPaymentCallbackScreenState
       ExceptionHandler.showSuccessToast('Payment successful');
 
       if (!mounted) return;
-      Get.offAllNamed(
-        AppConstants.routes.registrationDetail,
-        arguments: participantId,
-      );
+      Get.offAllNamed(AppConstants.routes.registrationDetailPath(participantId));
     } on DioException catch (e) {
       if (!mounted) return;
       setState(() {

@@ -29,10 +29,11 @@ class HomeEventCarouselCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () => Get.toNamed(
-          AppConstants.routes.eventDetail,
-          arguments: event,
-        ),
+        onTap: () {
+          final id = event.id;
+          if (id == null) return;
+          Get.toNamed(AppConstants.routes.eventDetailPath(id));
+        },
         child: Stack(
           fit: StackFit.expand,
           children: [

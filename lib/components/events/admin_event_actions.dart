@@ -277,15 +277,16 @@ class AdminEventActions extends HookWidget {
 
     void openParticipants() {
       closeMenu();
-      Get.toNamed(
-        AppConstants.routes.adminEventParticipants,
-        arguments: event,
-      );
+      final id = event.id;
+      if (id == null) return;
+      Get.toNamed(AppConstants.routes.adminEventParticipantsPath(id));
     }
 
     void openAnalytics() {
       closeMenu();
-      Get.toNamed(AppConstants.routes.adminEventAnalytics, arguments: event);
+      final id = event.id;
+      if (id == null) return;
+      Get.toNamed(AppConstants.routes.adminEventAnalyticsPath(id));
     }
 
     const publishColor = Color(AppColors.success);

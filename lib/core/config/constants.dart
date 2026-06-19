@@ -29,14 +29,39 @@ class Routes {
   final String privacyPolicy = '/privacy-policy';
   final String accessDenied = '/access-denied';
   final String eventForm = '/admin/event-form';
-  final String formBuilder = '/admin/form-builder';
-  final String adminEventDetail = '/admin/event-detail';
-  final String adminEventParticipants = '/admin/event-participants';
-  final String adminEventAnalytics = '/admin/event-analytics';
-  final String eventDetail = '/event-detail';
-  final String registrationForm = '/registration-form';
-  final String registrationDetail = '/registration-detail';
   final String paymentsRazorpayCallback = '/payments/razorpay/callback';
+
+  String eventDetailPath(String id) => '/events/$id';
+
+  String adminEventDetailPath(String id) => '/admin/events/$id';
+
+  String registrationDetailPath(String id) => '/registrations/$id';
+
+  String registrationFormPath(String id) => '/events/$id/register';
+
+  String adminEventParticipantsPath(String id) =>
+      '/admin/events/$id/participants';
+
+  String adminEventAnalyticsPath(String id) => '/admin/events/$id/analytics';
+
+  String adminEventQuestionnairesPath(String id) =>
+      '/admin/events/$id/questionnaires';
+
+  String adminFormBuilderPath(String id) => '/admin/events/$id/form-builder';
+
+  String adminEventFormEditPath(String id) => '/admin/event-form/$id';
+
+  String verifyEmailPath({String? email, String? redirect}) {
+    final params = <String, String>{};
+    if (email != null && email.isNotEmpty) {
+      params['email'] = email;
+    }
+    if (redirect != null && redirect.isNotEmpty) {
+      params['redirect'] = redirect;
+    }
+    if (params.isEmpty) return verifyEmail;
+    return '$verifyEmail?${params.entries.map((e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}').join('&')}';
+  }
 }
 
 enum AppMode {

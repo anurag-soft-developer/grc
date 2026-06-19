@@ -16,24 +16,34 @@ class EventAnalyticsScreen extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final event = Get.arguments as RunEventModel?;
-    final eventId = event?.id;
-    final eventTitle = event?.title ?? 'Event';
+    final id = useMemoized(() => Get.parameters['id']);
+
+    final eventQuery = useQuery<RunEventModel?, Object>(
+      QueryKeys.adminEvent(id ?? ''),
+      (_) async {
+        final routeId = id;
+        if (routeId == null || routeId.isEmpty) return null;
+        return RunEventsService.instance.getEventById(routeId);
+      },
+      enabled: id != null && id!.isNotEmpty,
+    );
 
     final analyticsQuery = useQuery<RunEventAnalyticsModel?, Object>(
-      QueryKeys.eventAnalytics(eventId ?? ''),
+      QueryKeys.eventAnalytics(id ?? ''),
       (_) async {
-        final id = eventId;
-        if (id == null || id.isEmpty) return null;
-        return RunEventsService.instance.getEventAnalytics(id);
+        final routeId = id;
+        if (routeId == null || routeId.isEmpty) return null;
+        return RunEventsService.instance.getEventAnalytics(routeId);
       },
-      enabled: eventId != null && eventId.isNotEmpty,
+      enabled: id != null && id!.isNotEmpty,
     );
+
+    final eventTitle = eventQuery.data?.title ?? 'Event';
 
     return Scaffold(
       backgroundColor: const Color(AppColors.background),
       appBar: AppBar(title: Text('Analytics · $eventTitle')),
-      body: eventId == null
+      body: id == null || id!.isEmpty
           ? const Center(child: Text('Event not found'))
           : QueryAsyncBody<RunEventAnalyticsModel?, dynamic>(
               state: analyticsQuery,

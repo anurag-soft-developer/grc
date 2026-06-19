@@ -344,10 +344,7 @@ class _VerifyEmailBanner extends StatelessWidget {
       color: const Color(0xFFFFF7ED),
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
-        onTap: () => Get.toNamed(
-          AppConstants.routes.verifyEmail,
-          arguments: {'email': email},
-        ),
+        onTap: () => Get.toNamed(AppConstants.routes.verifyEmailPath(email: email)),
         borderRadius: BorderRadius.circular(16),
         child: Container(
           padding: const EdgeInsets.all(16),

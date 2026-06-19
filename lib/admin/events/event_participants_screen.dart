@@ -6,6 +6,8 @@ import 'package:grc/admin/events/model/run_event_model.dart';
 import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/config/app_colors.dart';
 import 'package:grc/core/config/constants.dart';
+import 'package:grc/admin/events/run_events_service.dart';
+import 'package:grc/core/components/query/query_async_body.dart';
 import 'package:grc/core/query/query_keys.dart';
 import 'package:grc/core/utils/date_format_util.dart';
 import 'package:grc/registrations/model/run_event_participant_model.dart';
@@ -18,24 +20,33 @@ class EventParticipantsScreen extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final event = Get.arguments as RunEventModel?;
-    final eventId = event?.id;
+    final id = useMemoized(() => Get.parameters['id']);
+
+    final eventQuery = useQuery<RunEventModel?, Object>(
+      QueryKeys.adminEvent(id ?? ''),
+      (_) async {
+        final routeId = id;
+        if (routeId == null || routeId.isEmpty) return null;
+        return RunEventsService.instance.getEventById(routeId);
+      },
+      enabled: id != null && id!.isNotEmpty,
+    );
 
     final query = useInfiniteQuery<PaginatedRunEventParticipants, Object, int>(
-      QueryKeys.eventParticipants(eventId ?? ''),
+      QueryKeys.eventParticipants(id ?? ''),
       (ctx) {
-        final id = eventId;
-        if (id == null || id.isEmpty) {
+        final routeId = id;
+        if (routeId == null || routeId.isEmpty) {
           throw Exception('Event id missing');
         }
         return RunEventParticipantsService.instance.listByEvent(
-          id,
+          routeId,
           page: ctx.pageParam,
         );
       },
       initialPageParam: 1,
       retry: _noRetry,
-      enabled: eventId != null && eventId.isNotEmpty,
+      enabled: id != null && id!.isNotEmpty,
       nextPageParamBuilder: (data) {
         final last = data.pages.isNotEmpty ? data.pages.last : null;
         if (last == null || !last.hasMore) return null;
@@ -47,14 +58,18 @@ class EventParticipantsScreen extends HookWidget {
         query.data?.pages.expand((p) => p.data).toList() ??
         const <RunEventParticipantModel>[];
 
-    final title = event?.title ?? 'Event';
+    final title = eventQuery.data?.title ?? 'Event';
 
     return Scaffold(
       backgroundColor: const Color(AppColors.background),
       appBar: AppBar(title: Text('Participants · $title')),
-      body: eventId == null
+      body: id == null || id!.isEmpty
           ? const Center(child: Text('Event not found'))
-          : _buildBody(context, query, items),
+          : QueryAsyncBody<RunEventModel?, dynamic>(
+              state: eventQuery,
+              onRetry: eventQuery.refetch,
+              data: (_) => _buildBody(context, query, items),
+            ),
     );
   }
 
@@ -140,7 +155,7 @@ class _ParticipantTile extends StatelessWidget {
         onTap: () {
           final id = participant.id;
           if (id == null) return;
-          Get.toNamed(AppConstants.routes.registrationDetail, arguments: id);
+          Get.toNamed(AppConstants.routes.registrationDetailPath(id));
         },
         child: Padding(
           padding: const EdgeInsets.all(16),

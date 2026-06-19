@@ -219,8 +219,11 @@ class PublicEventListTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () =>
-            Get.toNamed(AppConstants.routes.eventDetail, arguments: event),
+        onTap: () {
+          final id = event.id;
+          if (id == null) return;
+          Get.toNamed(AppConstants.routes.eventDetailPath(id));
+        },
         child: Stack(
           clipBehavior: Clip.hardEdge,
           children: [

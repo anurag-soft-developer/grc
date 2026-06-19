@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:flutter_query/flutter_query.dart';
 import 'package:get/get.dart';
+import 'package:grc/core/auth/auth_state_controller.dart';
 import 'package:grc/core/binding/initial_binding.dart';
 import 'package:grc/core/config/app_colors.dart';
 import 'package:grc/core/config/env_config.dart';
@@ -19,6 +20,8 @@ void main() async {
   await EnvConfig.initialize();
 
   final queryClient = QueryClient();
+  InitialBinding(queryClient: queryClient).dependencies();
+  await Get.find<AuthStateController>().ensureHydrated();
 
   runApp(
     QueryClientProvider.value(

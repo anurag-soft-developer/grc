@@ -35,7 +35,7 @@ class HomeUpcomingSlotCard extends StatelessWidget {
         onTap: () {
           final id = participant.id;
           if (id == null) return;
-          Get.toNamed(AppConstants.routes.registrationDetail, arguments: id);
+          Get.toNamed(AppConstants.routes.registrationDetailPath(id));
         },
         child: Container(
           decoration: BoxDecoration(

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_query/flutter_query.dart';
 import 'package:get/get.dart';
-import 'package:grc/admin/form/event_form_screen.dart';
 import 'package:grc/admin/events/model/run_event_model.dart';
 import 'package:grc/admin/events/run_events_service.dart';
 import 'package:grc/components/admin/event_list_tile.dart';
@@ -34,10 +33,7 @@ class MyEventsScreen extends HookWidget {
       backgroundColor: const Color(AppColors.background),
       appBar: AppBar(title: const Text('My Events')),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Get.toNamed(
-          AppConstants.routes.eventForm,
-          arguments: eventFormCreate,
-        ),
+        onPressed: () => Get.toNamed(AppConstants.routes.eventForm),
         child: const Icon(Icons.add),
       ),
       body: _buildBody(eventsQuery, allEvents),

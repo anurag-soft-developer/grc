@@ -11,9 +11,17 @@ class InitialBinding extends Bindings {
 
   @override
   void dependencies() {
-    Get.put<QueryClient>(queryClient, permanent: true);
-    Get.put<AuthRepository>(AuthRepository(), permanent: true);
-    Get.put<UserRepository>(UserRepository(), permanent: true);
-    Get.put<AuthStateController>(AuthStateController(), permanent: true);
+    if (!Get.isRegistered<QueryClient>()) {
+      Get.put<QueryClient>(queryClient, permanent: true);
+    }
+    if (!Get.isRegistered<AuthRepository>()) {
+      Get.put<AuthRepository>(AuthRepository(), permanent: true);
+    }
+    if (!Get.isRegistered<UserRepository>()) {
+      Get.put<UserRepository>(UserRepository(), permanent: true);
+    }
+    if (!Get.isRegistered<AuthStateController>()) {
+      Get.put<AuthStateController>(AuthStateController(), permanent: true);
+    }
   }
 }

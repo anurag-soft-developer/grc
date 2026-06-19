@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:grc/admin/events/questionnaires/event_questionnaires_preview_screen.dart';
 import 'package:grc/admin/events/questionnaires/form_builder_binding.dart';
 import 'package:grc/admin/events/questionnaires/form_builder_screen.dart';
 import 'package:grc/admin/form/event_form_screen.dart';
@@ -21,7 +22,17 @@ final List<GetPage<dynamic>> adminRoutes = [
     ],
   ),
   GetPage(
-    name: AppConstants.routes.adminEventDetail,
+    name: AppConstants.routes.adminEventFormEditPath(':id'),
+    page: () => const EventFormScreen(),
+    binding: EventFormBinding(),
+    preventDuplicates: false,
+    middlewares: [
+      AuthGuard(),
+      RoleGuard(allowedRoles: ['admin']),
+    ],
+  ),
+  GetPage(
+    name: AppConstants.routes.adminEventDetailPath(':id'),
     page: () => const EventDetailScreen(),
     middlewares: [
       AuthGuard(),
@@ -29,7 +40,7 @@ final List<GetPage<dynamic>> adminRoutes = [
     ],
   ),
   GetPage(
-    name: AppConstants.routes.adminEventParticipants,
+    name: AppConstants.routes.adminEventParticipantsPath(':id'),
     page: () => const EventParticipantsScreen(),
     middlewares: [
       AuthGuard(),
@@ -37,7 +48,7 @@ final List<GetPage<dynamic>> adminRoutes = [
     ],
   ),
   GetPage(
-    name: AppConstants.routes.adminEventAnalytics,
+    name: AppConstants.routes.adminEventAnalyticsPath(':id'),
     page: () => const EventAnalyticsScreen(),
     middlewares: [
       AuthGuard(),
@@ -45,7 +56,15 @@ final List<GetPage<dynamic>> adminRoutes = [
     ],
   ),
   GetPage(
-    name: AppConstants.routes.formBuilder,
+    name: AppConstants.routes.adminEventQuestionnairesPath(':id'),
+    page: () => const EventQuestionnairesPreviewScreen(),
+    middlewares: [
+      AuthGuard(),
+      RoleGuard(allowedRoles: ['admin']),
+    ],
+  ),
+  GetPage(
+    name: AppConstants.routes.adminFormBuilderPath(':id'),
     page: () => const FormBuilderScreen(),
     binding: FormBuilderBinding(),
     preventDuplicates: false,
