@@ -4,18 +4,25 @@ class QueryKeys {
   static const profile = ['profile'];
   static const authStatus = ['authStatus'];
   static const adminEvents = ['adminEvents'];
+  static List<String> adminEventsList(List<String> filterParts) => [
+    'adminEvents',
+    ...filterParts,
+  ];
   static List<String> adminDashboardAnalytics({
     String? fromDate,
     String? toDate,
-  }) =>
-      [
-        'adminDashboardAnalytics',
-        if (fromDate != null) fromDate,
-        if (toDate != null) toDate,
-      ];
+  }) => [
+    'adminDashboardAnalytics',
+    if (fromDate != null) fromDate,
+    if (toDate != null) toDate,
+  ];
   static const publicUpcomingEvents = ['publicEvents', 'upcoming'];
   static const homeUpcomingEvents = ['home', 'upcomingEvents'];
   static const publicClosedEvents = ['publicEvents', 'closed'];
+  static List<String> publicEventsList(List<String> filterParts) => [
+    'publicEvents',
+    ...filterParts,
+  ];
   static List<String> adminEvent(String id) => ['adminEvent', id];
   static const myRegistrations = ['myRegistrations'];
   static const myUpcomingRegistrations = ['myRegistrations', 'upcoming'];

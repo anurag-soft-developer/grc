@@ -3,6 +3,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_query/flutter_query.dart';
 import 'package:grc/admin/events/model/run_event_model.dart';
 import 'package:grc/admin/events/run_events_service.dart';
+import 'package:grc/components/events/event_list_filters.dart';
+import 'package:grc/components/events/event_list_filters_bar.dart';
 import 'package:grc/components/events/public_event_list_tile.dart';
 import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/config/constants.dart';
@@ -16,28 +18,21 @@ class EventsScreen extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tabController = useTabController(initialLength: 2);
-    final closedTabEnabled = useState(false);
+    final filters = useState(EventListFilters.all);
 
-    useEffect(() {
-      void onTabChanged() {
-        if (tabController.index == 1) {
-          closedTabEnabled.value = true;
-        }
-      }
+    final queryKey = useMemoized(
+      () => QueryKeys.publicEventsList(filters.value.toQueryKeyParts()),
+      [filters.value],
+    );
 
-      tabController.addListener(onTabChanged);
-      return () => tabController.removeListener(onTabChanged);
-    }, [tabController]);
-
-    final upcomingQuery = useInfiniteQuery<PaginatedRunEvents, Object, int>(
-      QueryKeys.publicUpcomingEvents,
+    final eventsQuery = useInfiniteQuery<PaginatedRunEvents, Object, int>(
+      queryKey,
       (ctx) => RunEventsService.instance.listPublicEvents(
-        segment: 'upcoming',
+        segment: filters.value.apiSegment,
         page: ctx.pageParam,
+        filters: filters.value,
       ),
       initialPageParam: 1,
-      enabled: true,
       retry: _noRetry,
       nextPageParamBuilder: (data) {
         final last = data.pages.isNotEmpty ? data.pages.last : null;
@@ -46,69 +41,40 @@ class EventsScreen extends HookWidget {
       },
     );
 
-    final closedQuery = useInfiniteQuery<PaginatedRunEvents, Object, int>(
-      QueryKeys.publicClosedEvents,
-      (ctx) => RunEventsService.instance.listPublicEvents(
-        segment: 'closed',
-        page: ctx.pageParam,
-      ),
-      initialPageParam: 1,
-      enabled: closedTabEnabled.value,
-      retry: _noRetry,
-      nextPageParamBuilder: (data) {
-        final last = data.pages.isNotEmpty ? data.pages.last : null;
-        if (last == null || !last.hasMore) return null;
-        return last.page + 1;
-      },
-    );
-
-    final upcomingEvents =
-        upcomingQuery.data?.pages.expand((p) => p.data).toList() ??
+    final events =
+        eventsQuery.data?.pages.expand((p) => p.data).toList() ??
         const <RunEventModel>[];
 
-    final closedEvents =
-        closedQuery.data?.pages.expand((p) => p.data).toList() ??
-        const <RunEventModel>[];
+    final segmentMode = filters.value.segmentMode;
 
     return Scaffold(
       backgroundColor: const Color(AppColors.background),
-      appBar: AppBar(
-        title: const Text('Events'),
-        bottom: TabBar(
-          controller: tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          indicatorColor: Colors.white,
-          indicatorWeight: 3,
-          labelStyle: const TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
-          ),
-          unselectedLabelStyle: const TextStyle(
-            fontWeight: FontWeight.w500,
-            fontSize: 14,
-          ),
-          tabs: const [
-            Tab(text: 'Upcoming'),
-            Tab(text: 'Closed'),
-          ],
-        ),
-      ),
-      body: TabBarView(
-        controller: tabController,
+      appBar: AppBar(title: const Text('Events')),
+      body: Column(
         children: [
-          _EventsTabContent(
-            query: upcomingQuery,
-            events: upcomingEvents,
-            emptyWidget: const _ComingSoonEmpty(),
-            emptyMessage: 'No upcoming events found',
+          EventListFiltersBar(
+            filters: filters.value,
+            onChanged: (next) => filters.value = next,
           ),
-          _EventsTabContent(
-            query: closedQuery,
-            events: closedEvents,
-            emptyWidget: const _EmptyTabMessage('No closed events yet'),
-            emptyMessage: 'No closed events found',
-            waitForEnable: !closedTabEnabled.value,
+          Expanded(
+            child: _EventsListContent(
+              query: eventsQuery,
+              events: events,
+              emptyWidget: switch (segmentMode) {
+                EventSegmentFilterMode.closed => const _EmptyListMessage(
+                  'No closed events yet',
+                ),
+                EventSegmentFilterMode.upcoming => const _ComingSoonEmpty(),
+                EventSegmentFilterMode.all => const _EmptyListMessage(
+                  'No events found',
+                ),
+              },
+              emptyMessage: switch (segmentMode) {
+                EventSegmentFilterMode.closed => 'No closed events found',
+                EventSegmentFilterMode.upcoming => 'No upcoming events found',
+                EventSegmentFilterMode.all => 'No events found',
+              },
+            ),
           ),
         ],
       ),
@@ -116,31 +82,23 @@ class EventsScreen extends HookWidget {
   }
 }
 
-class _EventsTabContent extends HookWidget {
+class _EventsListContent extends HookWidget {
   final InfiniteQueryResult<PaginatedRunEvents, Object, int> query;
   final List<RunEventModel> events;
   final Widget emptyWidget;
   final String emptyMessage;
-  final bool waitForEnable;
 
-  const _EventsTabContent({
+  const _EventsListContent({
     required this.query,
     required this.events,
     required this.emptyWidget,
     required this.emptyMessage,
-    this.waitForEnable = false,
   });
 
   bool get _hasSettled => query.data != null || query.isError;
 
   @override
   Widget build(BuildContext context) {
-    useAutomaticKeepAlive();
-
-    if (waitForEnable) {
-      return const SizedBox.shrink();
-    }
-
     if (query.data == null && query.isFetching) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -172,10 +130,10 @@ class _EventsTabContent extends HookWidget {
         onRefresh: () async => query.refetch(),
         color: const Color(AppColors.primary),
         child: AdaptivePageContainer(
-          maxWidth: 980,
+          maxWidth: EventListFiltersBar.listMaxWidth,
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(EventListFiltersBar.horizontalPadding),
             children: [emptyWidget],
           ),
         ),
@@ -196,7 +154,7 @@ class _EventsTabContent extends HookWidget {
         },
         child: ListView.builder(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(EventListFiltersBar.horizontalPadding),
           itemCount: events.length + (query.isFetchingNextPage ? 1 : 0),
           itemBuilder: (context, index) {
             if (index >= events.length) {
@@ -214,7 +172,9 @@ class _EventsTabContent extends HookWidget {
 
             return Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 980),
+                constraints: const BoxConstraints(
+                  maxWidth: EventListFiltersBar.listMaxWidth,
+                ),
                 child: PublicEventListTile(event: events[index]),
               ),
             );
@@ -262,10 +222,10 @@ class _ComingSoonEmpty extends StatelessWidget {
   }
 }
 
-class _EmptyTabMessage extends StatelessWidget {
+class _EmptyListMessage extends StatelessWidget {
   final String message;
 
-  const _EmptyTabMessage(this.message);
+  const _EmptyListMessage(this.message);
 
   @override
   Widget build(BuildContext context) {

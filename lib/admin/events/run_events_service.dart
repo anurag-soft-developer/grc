@@ -1,5 +1,6 @@
 import 'package:grc/admin/events/model/run_event_analytics_model.dart';
 import 'package:grc/admin/events/model/run_event_model.dart';
+import 'package:grc/components/events/event_list_filters.dart';
 import 'package:grc/core/config/api_constants.dart';
 import 'package:grc/core/services/api_service.dart';
 
@@ -10,16 +11,18 @@ class RunEventsService {
   final ApiService _api = ApiService();
 
   Future<PaginatedRunEvents> listPublicEvents({
-    required String segment,
+    String? segment,
     int page = 1,
     int limit = 10,
+    EventListFilters filters = EventListFilters.all,
   }) async {
     final response = await _api.get<Map<String, dynamic>>(
       ApiConstants.runEvents.publicList,
       queryParameters: {
-        'segment': segment,
+        if (segment != null) 'segment': segment,
         'page': page,
         'limit': limit,
+        ...filters.toQueryParameters(),
       },
     );
     if (response == null) {
@@ -32,6 +35,7 @@ class RunEventsService {
     int page = 1,
     int limit = 10,
     String? status,
+    EventListFilters filters = EventListFilters.all,
   }) async {
     final response = await _api.get<Map<String, dynamic>>(
       ApiConstants.runEvents.list,
@@ -39,6 +43,8 @@ class RunEventsService {
         'page': page,
         'limit': limit,
         if (status != null) 'status': status,
+        if (filters.apiSegment != null) 'segment': filters.apiSegment,
+        ...filters.toQueryParameters(),
       },
     );
     if (response == null) {

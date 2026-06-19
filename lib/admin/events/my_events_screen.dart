@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:grc/admin/events/model/run_event_model.dart';
 import 'package:grc/admin/events/run_events_service.dart';
 import 'package:grc/components/admin/event_list_tile.dart';
+import 'package:grc/components/events/event_list_filters.dart';
+import 'package:grc/components/events/event_list_filters_bar.dart';
 import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/query/query_keys.dart';
@@ -14,9 +16,18 @@ class MyEventsScreen extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    final filters = useState(EventListFilters.all);
+    final queryKey = useMemoized(
+      () => QueryKeys.adminEventsList(filters.value.toQueryKeyParts()),
+      [filters.value],
+    );
+
     final eventsQuery = useInfiniteQuery<PaginatedRunEvents, Object, int>(
-      QueryKeys.adminEvents,
-      (ctx) => RunEventsService.instance.listEvents(page: ctx.pageParam),
+      queryKey,
+      (ctx) => RunEventsService.instance.listEvents(
+        page: ctx.pageParam,
+        filters: filters.value,
+      ),
       initialPageParam: 1,
       nextPageParamBuilder: (data) {
         final last = data.pages.isNotEmpty ? data.pages.last : null;
@@ -36,7 +47,15 @@ class MyEventsScreen extends HookWidget {
         onPressed: () => Get.toNamed(AppConstants.routes.eventForm),
         child: const Icon(Icons.add),
       ),
-      body: _buildBody(eventsQuery, allEvents),
+      body: Column(
+        children: [
+          EventListFiltersBar(
+            filters: filters.value,
+            onChanged: (next) => filters.value = next,
+          ),
+          Expanded(child: _buildBody(eventsQuery, allEvents)),
+        ],
+      ),
     );
   }
 
@@ -69,9 +88,10 @@ class MyEventsScreen extends HookWidget {
         onRefresh: () async => eventsQuery.refetch(),
         color: const Color(AppColors.primary),
         child: AdaptivePageContainer(
-          maxWidth: 1020,
+          maxWidth: EventListFiltersBar.listMaxWidth,
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(EventListFiltersBar.horizontalPadding),
             children: const [
               SizedBox(
                 height: 240,
@@ -100,7 +120,7 @@ class MyEventsScreen extends HookWidget {
         },
         child: ListView.builder(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(EventListFiltersBar.horizontalPadding),
           itemCount:
               allEvents.length + (eventsQuery.isFetchingNextPage ? 1 : 0),
           itemBuilder: (context, index) {
@@ -118,7 +138,9 @@ class MyEventsScreen extends HookWidget {
             }
             return Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1020),
+                constraints: const BoxConstraints(
+                  maxWidth: EventListFiltersBar.listMaxWidth,
+                ),
                 child: AdminEventListTile(event: allEvents[index]),
               ),
             );
