@@ -15,6 +15,8 @@ import 'package:grc/registrations/run_event_participants_service.dart';
 
 Duration? _noRetry(int count, Object error) => null;
 
+const _actionButtonMaxWidth = 420.0;
+
 class _EventActionConfig {
   final String label;
   final IconData icon;
@@ -27,7 +29,7 @@ class _EventActionConfig {
   });
 }
 
-class UserEventActions extends HookWidget {
+class UserEventActions extends StatelessWidget {
   final RunEventModel event;
   final bool isLoggedIn;
 
@@ -39,6 +41,49 @@ class UserEventActions extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!isLoggedIn) {
+      return _GuestUserEventActions(event: event);
+    }
+    return _AuthenticatedUserEventActions(event: event);
+  }
+}
+
+class _GuestUserEventActions extends StatelessWidget {
+  final RunEventModel event;
+
+  const _GuestUserEventActions({required this.event});
+
+  @override
+  Widget build(BuildContext context) {
+    final isOpen = event.isOpenForRegistration;
+    final config = isOpen
+        ? _EventActionConfig(
+            label: 'Register',
+            icon: Icons.how_to_reg_outlined,
+            onPressed: () => _startGuestRegistration(context, event),
+          )
+        : const _EventActionConfig(
+            label: 'Registrations closed',
+            icon: Icons.lock_outline,
+          );
+
+    return _EventActionBar(
+      child: CustomButton(
+        text: config.label,
+        icon: Icon(config.icon, size: 20),
+        onPressed: config.onPressed,
+      ),
+    );
+  }
+}
+
+class _AuthenticatedUserEventActions extends HookWidget {
+  final RunEventModel event;
+
+  const _AuthenticatedUserEventActions({required this.event});
+
+  @override
+  Widget build(BuildContext context) {
     final eventId = event.id;
     final isOpen = event.isOpenForRegistration;
 
@@ -47,7 +92,7 @@ class UserEventActions extends HookWidget {
       (_) => RunEventParticipantsService.instance.getMyRegistrationStatus(
         eventId!,
       ),
-      enabled: isLoggedIn && eventId != null && eventId.isNotEmpty,
+      enabled: eventId != null && eventId.isNotEmpty,
       retry: _noRetry,
     );
 
@@ -56,120 +101,123 @@ class UserEventActions extends HookWidget {
       return Get.find<EventRegistrationController>();
     }, const []);
 
-    final config = _resolveAction(
+    final config = _resolveAuthenticatedAction(
       context: context,
       isOpen: isOpen,
-      isLoggedIn: isLoggedIn,
       status: statusQuery.data,
-      isLoading: isLoggedIn &&
-          statusQuery.isLoading &&
-          statusQuery.data == null,
+      isLoading: statusQuery.isLoading && statusQuery.data == null,
       hasError: statusQuery.isError,
       event: event,
       controller: registrationController,
     );
 
+    return _EventActionBar(
+      child: statusQuery.isLoading && statusQuery.data == null
+          ? const SizedBox(
+              height: 48,
+              child: Center(child: CircularProgressIndicator()),
+            )
+          : CustomButton(
+              text: config.label,
+              icon: Icon(config.icon, size: 20),
+              onPressed: config.onPressed,
+            ),
+    );
+  }
+}
+
+class _EventActionBar extends StatelessWidget {
+  final Widget child;
+
+  const _EventActionBar({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
     return SafeArea(
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-        child: isLoggedIn &&
-                statusQuery.isLoading &&
-                statusQuery.data == null
-            ? const SizedBox(
-                height: 48,
-                child: Center(child: CircularProgressIndicator()),
-              )
-            : CustomButton(
-                text: config.label,
-                icon: Icon(config.icon, size: 20),
-                onPressed: config.onPressed,
-              ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth > _actionButtonMaxWidth
+                ? _actionButtonMaxWidth
+                : constraints.maxWidth;
+            return Align(
+              alignment: Alignment.center,
+              child: SizedBox(width: width, child: child),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+_EventActionConfig _resolveAuthenticatedAction({
+  required BuildContext context,
+  required bool isOpen,
+  required EventRegistrationStatus? status,
+  required bool isLoading,
+  required bool hasError,
+  required RunEventModel event,
+  required EventRegistrationController controller,
+}) {
+  if (isLoading) {
+    return const _EventActionConfig(
+      label: 'Loading...',
+      icon: Icons.hourglass_empty,
+    );
+  }
+
+  final reg = hasError || status == null
+      ? EventRegistrationStatus.none
+      : status;
+
+  if (reg.isTicket) {
+    final participantId = reg.participantId!;
+    return _EventActionConfig(
+      label: 'Ticket',
+      icon: Icons.confirmation_number_outlined,
+      onPressed: () => controller.openTicket(
+        participantId,
+        eventId: event.id,
       ),
     );
   }
 
-  _EventActionConfig _resolveAction({
-    required BuildContext context,
-    required bool isOpen,
-    required bool isLoggedIn,
-    required EventRegistrationStatus? status,
-    required bool isLoading,
-    required bool hasError,
-    required RunEventModel event,
-    required EventRegistrationController controller,
-  }) {
-    if (isLoading) {
-      return const _EventActionConfig(
-        label: 'Loading...',
-        icon: Icons.hourglass_empty,
-      );
-    }
-
-    if (!isLoggedIn) {
-      if (isOpen) {
-        return _EventActionConfig(
-          label: 'Register',
-          icon: Icons.how_to_reg_outlined,
-          onPressed: () => _startGuestRegistration(context, event),
-        );
-      }
-      return const _EventActionConfig(
-        label: 'Registrations closed',
-        icon: Icons.lock_outline,
-      );
-    }
-
-    final reg = hasError || status == null
-        ? EventRegistrationStatus.none
-        : status;
-
-    if (reg.isTicket) {
-      final participantId = reg.participantId!;
-      return _EventActionConfig(
-        label: 'Ticket',
-        icon: Icons.confirmation_number_outlined,
-        onPressed: () => controller.openTicket(
-          participantId,
-          eventId: event.id,
-        ),
-      );
-    }
-
-    if (reg.canPayNow(isOpen)) {
-      final participantId = reg.participantId!;
-      return _EventActionConfig(
-        label: 'Pay now',
-        icon: Icons.payment_outlined,
-        onPressed: () => controller.payNowForEvent(event, participantId),
-      );
-    }
-
-    if (reg.canContinue(isOpen)) {
-      return _EventActionConfig(
-        label: 'Continue registration',
-        icon: Icons.edit_note_outlined,
-        onPressed: () => controller.continueRegistration(event),
-      );
-    }
-
-    if (reg.canRegister(isOpen)) {
-      return _EventActionConfig(
-        label: 'Register',
-        icon: Icons.how_to_reg_outlined,
-        onPressed: () => _startRegistrationWithAcceptance(
-          context,
-          event,
-          controller,
-        ),
-      );
-    }
-
-    return const _EventActionConfig(
-      label: 'Registrations closed',
-      icon: Icons.lock_outline,
+  if (reg.canPayNow(isOpen)) {
+    final participantId = reg.participantId!;
+    return _EventActionConfig(
+      label: 'Pay now',
+      icon: Icons.payment_outlined,
+      onPressed: () => controller.payNowForEvent(event, participantId),
     );
   }
+
+  if (reg.canContinue(isOpen)) {
+    return _EventActionConfig(
+      label: 'Continue registration',
+      icon: Icons.edit_note_outlined,
+      onPressed: () => controller.continueRegistration(event),
+    );
+  }
+
+  if (reg.canRegister(isOpen)) {
+    return _EventActionConfig(
+      label: 'Register',
+      icon: Icons.how_to_reg_outlined,
+      onPressed: () => _startRegistrationWithAcceptance(
+        context,
+        event,
+        controller,
+      ),
+    );
+  }
+
+  return const _EventActionConfig(
+    label: 'Registrations closed',
+    icon: Icons.lock_outline,
+  );
 }
 
 Future<void> _startGuestRegistration(

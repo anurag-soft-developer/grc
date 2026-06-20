@@ -174,25 +174,28 @@ class EventDetailScreen extends HookWidget {
       );
     }
 
-    if (!Get.isRegistered<EventRegistrationController>()) {
-      EventRegistrationBinding().dependencies();
-    }
-    final registrationController = Get.find<EventRegistrationController>();
+    final authState = Get.find<AuthStateController>();
 
-    return Obx(
-      () => LoadingOverlay(
+    return Obx(() {
+      final isLoggedIn = authState.isLoggedIn;
+      final content = Column(
+        children: [
+          Expanded(child: _EventDetailBody(event: data)),
+          UserEventActions(event: data, isLoggedIn: isLoggedIn),
+        ],
+      );
+
+      if (!isLoggedIn) return content;
+
+      if (!Get.isRegistered<EventRegistrationController>()) {
+        EventRegistrationBinding().dependencies();
+      }
+      final registrationController = Get.find<EventRegistrationController>();
+      return LoadingOverlay(
         isLoading: registrationController.isLoading.value,
-        child: Column(
-          children: [
-            Expanded(child: _EventDetailBody(event: data)),
-            UserEventActions(
-              event: data,
-              isLoggedIn: Get.find<AuthStateController>().isLoggedIn,
-            ),
-          ],
-        ),
-      ),
-    );
+        child: content,
+      );
+    });
   }
 }
 
