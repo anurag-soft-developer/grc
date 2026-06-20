@@ -12,8 +12,8 @@ import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/query/query_keys.dart';
 import 'package:grc/core/repositories/auth_repository.dart';
 import 'package:grc/core/repositories/user_repository.dart';
-import 'package:grc/core/routes/app_routes.dart';
 import 'package:grc/core/utils/exception_handler.dart';
+import 'package:grc/core/utils/responsive_form_spacing.dart';
 import 'package:grc/core/utils/validators.dart';
 
 class VerifyEmailScreen extends HookWidget {
@@ -22,6 +22,9 @@ class VerifyEmailScreen extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<VerifyEmailController>();
+    final spacing = ResponsiveFormSpacing.fromWidth(
+      MediaQuery.sizeOf(context).width,
+    );
     final authRepo = Get.find<AuthRepository>();
     final userRepo = Get.find<UserRepository>();
     final authState = Get.find<AuthStateController>();
@@ -70,6 +73,7 @@ class VerifyEmailScreen extends HookWidget {
           return MutationLoadingOverlay(
             mutationKey: QueryKeys.sendVerificationEmail,
             child: _EmailStep(
+              spacing: spacing,
               controller: controller,
               onSend: () {
                 if (controller.emailFormKey.currentState!.validate()) {
@@ -82,6 +86,7 @@ class VerifyEmailScreen extends HookWidget {
         return MutationLoadingOverlay(
           mutationKey: QueryKeys.verifyEmail,
           child: _OtpStep(
+            spacing: spacing,
             controller: controller,
             onVerify: () => verifyMutation.mutate(null),
             onBack: controller.goToEmailStep,
@@ -95,15 +100,20 @@ class VerifyEmailScreen extends HookWidget {
 }
 
 class _EmailStep extends StatelessWidget {
+  final ResponsiveFormSpacing spacing;
   final VerifyEmailController controller;
   final VoidCallback onSend;
 
-  const _EmailStep({required this.controller, required this.onSend});
+  const _EmailStep({
+    required this.spacing,
+    required this.controller,
+    required this.onSend,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: spacing.outerPadding,
       child: Form(
         key: controller.emailFormKey,
         child: Column(
@@ -130,12 +140,14 @@ class _EmailStep extends StatelessWidget {
 }
 
 class _OtpStep extends StatelessWidget {
+  final ResponsiveFormSpacing spacing;
   final VerifyEmailController controller;
   final VoidCallback onVerify;
   final VoidCallback onBack;
   final VoidCallback onResend;
 
   const _OtpStep({
+    required this.spacing,
     required this.controller,
     required this.onVerify,
     required this.onBack,
@@ -145,7 +157,7 @@ class _OtpStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: spacing.outerPadding,
       child: Form(
         key: controller.otpFormKey,
         child: Column(

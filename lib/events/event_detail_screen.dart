@@ -43,37 +43,37 @@ class EventDetailScreen extends HookWidget {
         if (routeId == null || routeId.isEmpty) return null;
         return RunEventsService.instance.getEventById(routeId);
       },
-      enabled: id != null && id!.isNotEmpty,
+      enabled: id != null && id.isNotEmpty,
     );
 
     final event = detailQuery.data;
 
     Future<void> openEdit() async {
-      final id = event?.id;
-      if (id == null) return;
+      final eventId = event?.id ?? id;
+      if (eventId == null || eventId.isEmpty) return;
 
-      final updated = await Get.toNamed<RunEventModel>(
-        AppConstants.routes.adminEventFormEditPath(id),
+      final result = await Get.toNamed(
+        AppConstants.routes.adminEventFormEditPath(eventId),
       );
-      if (updated != null) {
+      if (result != null) {
         detailQuery.refetch();
       }
     }
 
     Future<void> openQuestionnaires() async {
-      final id = event?.id;
-      if (id == null) return;
+      final eventId = event?.id ?? id;
+      if (eventId == null || eventId.isEmpty) return;
 
-      final updated = await Get.toNamed<RunEventModel>(
-        AppConstants.routes.adminEventQuestionnairesPath(id),
+      final result = await Get.toNamed(
+        AppConstants.routes.adminEventQuestionnairesPath(eventId),
       );
-      if (updated != null) {
+      if (result != null) {
         detailQuery.refetch();
       }
     }
 
     Widget body;
-    if (id == null || id!.isEmpty) {
+    if (id == null || id.isEmpty) {
       body = const Center(child: Text('Event not found'));
     } else {
       body = QueryAsyncBody<RunEventModel?, dynamic>(

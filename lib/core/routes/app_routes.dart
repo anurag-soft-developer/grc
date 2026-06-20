@@ -21,16 +21,16 @@ class AppRoutes {
   static const String splashRoute = '/';
   static const String mainRoute = MainTabRoutes.legacyMain;
 
-  /// On web, Razorpay/Google redirects land with a full path URL. Respect it
-  /// instead of always booting through the splash route.
-  static String resolveInitialRoute() {
-    if (!kIsWeb) return splashRoute;
+  // /// On web, Razorpay/Google redirects land with a full path URL. Respect it
+  // /// instead of always booting through the splash route.
+  // static String resolveInitialRoute() {
+  //   if (!kIsWeb) return splashRoute;
 
-    final path = Uri.base.path;
-    if (path.isEmpty || path == splashRoute) return splashRoute;
+  //   final path = Uri.base.path;
+  //   if (path.isEmpty || path == splashRoute) return splashRoute;
 
-    return path;
-  }
+  //   return path;
+  // }
 
   static GetPage _mainTabPage(String name) {
     return GetPage(

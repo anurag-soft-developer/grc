@@ -8,11 +8,10 @@ import 'package:grc/core/auth/auth_navigation.dart';
 import 'package:grc/core/auth/auth_state_controller.dart';
 import 'package:grc/core/auth/login/login_controller.dart';
 import 'package:grc/core/components/query/mutation_loading_overlay.dart';
-import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/models/user/user_model.dart';
 import 'package:grc/core/query/query_keys.dart';
 import 'package:grc/core/repositories/auth_repository.dart';
-import 'package:grc/core/routes/app_routes.dart';
+import 'package:grc/core/utils/responsive_form_spacing.dart';
 import 'package:grc/core/utils/validators.dart';
 
 class LoginOtpChallengeView extends HookWidget {
@@ -28,6 +27,9 @@ class LoginOtpChallengeView extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final authRepo = Get.find<AuthRepository>();
+    final spacing = ResponsiveFormSpacing.fromWidth(
+      MediaQuery.sizeOf(context).width,
+    );
     final authState = Get.find<AuthStateController>();
 
     final verifyMutation = useMutation<UserModel?, Object, void, void>(
@@ -48,7 +50,7 @@ class LoginOtpChallengeView extends HookWidget {
     return MutationLoadingOverlay(
       mutationKey: QueryKeys.verifyLoginOtp,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: spacing.outerPadding,
         child: Form(
           key: controller.otpFormKey,
           child: Column(

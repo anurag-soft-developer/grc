@@ -12,6 +12,7 @@ import 'package:grc/core/models/user/user_model.dart';
 import 'package:grc/core/query/query_keys.dart';
 import 'package:grc/core/repositories/auth_repository.dart';
 import 'package:grc/core/utils/exception_handler.dart';
+import 'package:grc/core/utils/responsive_form_spacing.dart';
 import 'package:grc/core/utils/validators.dart';
 
 class TwoFactorScreen extends HookWidget {
@@ -20,6 +21,9 @@ class TwoFactorScreen extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final authState = Get.find<AuthStateController>();
+    final spacing = ResponsiveFormSpacing.fromWidth(
+      MediaQuery.sizeOf(context).width,
+    );
     final authRepo = Get.find<AuthRepository>();
     final client = useQueryClient();
     final otpController = useTextEditingController();
@@ -61,14 +65,14 @@ class TwoFactorScreen extends HookWidget {
         child: AdaptivePageContainer(
           maxWidth: 760,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: spacing.outerPadding,
             child: Container(
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Theme.of(context).dividerColor),
               ),
-              padding: const EdgeInsets.all(20),
+              padding: spacing.cardPadding,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

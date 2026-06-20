@@ -33,16 +33,11 @@ class _MainTabShell extends StatefulWidget {
 
 class _MainTabShellState extends State<_MainTabShell> {
   late final NavigationController _navController;
-  late List<Widget?> _tabCache;
 
   @override
   void initState() {
     super.initState();
     _navController = Get.find<NavigationController>();
-    _tabCache = List<Widget?>.filled(
-      navTabsFor(widget.isAdminMode).length,
-      null,
-    );
     final tabs = navTabsFor(widget.isAdminMode);
     if (tabs.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -54,17 +49,9 @@ class _MainTabShellState extends State<_MainTabShell> {
 
   List<NavTab> get _tabs => navTabsFor(widget.isAdminMode);
 
-  Widget _buildLazyIndexedStack(int index) {
-    if (_tabCache[index] == null) {
-      _tabCache[index] = _tabs[index].screenBuilder();
-    }
-    return IndexedStack(
-      index: index,
-      children: List.generate(
-        _tabs.length,
-        (i) => _tabCache[i] ?? const SizedBox.shrink(),
-      ),
-    );
+  Widget _buildActiveTab(int index) {
+    final tab = _tabs[index];
+    return KeyedSubtree(key: ValueKey(tab.route), child: tab.screenBuilder());
   }
 
   @override
@@ -84,7 +71,7 @@ class _MainTabShellState extends State<_MainTabShell> {
               );
 
               if (!useRail) {
-                return _buildLazyIndexedStack(index);
+                return _buildActiveTab(index);
               }
 
               return Row(
@@ -121,7 +108,7 @@ class _MainTabShellState extends State<_MainTabShell> {
                     ),
                   ),
                   const VerticalDivider(width: 1),
-                  Expanded(child: _buildLazyIndexedStack(index)),
+                  Expanded(child: _buildActiveTab(index)),
                 ],
               );
             }),

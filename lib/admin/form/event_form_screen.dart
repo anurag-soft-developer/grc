@@ -17,6 +17,7 @@ import 'package:grc/core/models/media_upload_models.dart';
 import 'package:grc/core/query/query_keys.dart';
 import 'package:grc/core/services/media_upload_service.dart';
 import 'package:grc/core/utils/exception_handler.dart';
+import 'package:grc/core/utils/responsive_form_spacing.dart';
 import 'package:image_picker/image_picker.dart';
 
 class EventFormScreen extends HookWidget {
@@ -25,13 +26,17 @@ class EventFormScreen extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<EventFormController>();
+    final spacing = ResponsiveFormSpacing.fromWidth(
+      MediaQuery.sizeOf(context).width,
+    );
     final client = useQueryClient();
     final isUploadingCover = useState(false);
+    final routeEventId = useMemoized(() => Get.parameters['id']);
+    final isEditingMode = routeEventId != null && routeEventId.isNotEmpty;
 
     useEffect(() {
-      final id = Get.parameters['id'];
-      if (id != null && id.isNotEmpty) {
-        RunEventsService.instance.getEventById(id).then((loaded) {
+      if (isEditingMode) {
+        RunEventsService.instance.getEventById(routeEventId).then((loaded) {
           if (loaded != null) {
             controller.loadFromEvent(loaded);
           } else {
@@ -46,7 +51,7 @@ class EventFormScreen extends HookWidget {
           Get.delete<EventFormController>(force: true);
         }
       };
-    }, const []);
+    }, [isEditingMode, routeEventId]);
 
     Future<RunEventModel> buildInputAndSubmit() async {
       if (!controller.formKey.currentState!.validate()) {
@@ -64,7 +69,11 @@ class EventFormScreen extends HookWidget {
         throw Exception('Invalid numeric fields');
       }
 
-      if (controller.isEditing) {
+      if (isEditingMode) {
+        final eventIdForUpdate = controller.editingEventId ?? routeEventId;
+        if (eventIdForUpdate.isEmpty) {
+          throw Exception('Event ID missing for update');
+        }
         final input = UpdateRunEventInput(
           title: controller.titleController.text.trim(),
           description: controller.descriptionController.text.trim(),
@@ -80,7 +89,7 @@ class EventFormScreen extends HookWidget {
           coverImages: controller.coverImageUrls.toList(),
         );
         final updated = await RunEventsService.instance.updateEvent(
-          controller.editingEventId!,
+          eventIdForUpdate,
           input,
         );
         if (updated == null) {
@@ -136,9 +145,8 @@ class EventFormScreen extends HookWidget {
       },
     );
 
-    final isEditing = controller.isEditing;
-    final submitMutation = isEditing ? updateMutation : createMutation;
-    final mutationKey = isEditing
+    final submitMutation = isEditingMode ? updateMutation : createMutation;
+    final mutationKey = isEditingMode
         ? QueryKeys.updateEvent
         : QueryKeys.createEvent;
 
@@ -163,20 +171,20 @@ class EventFormScreen extends HookWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(isEditing ? 'Edit Event' : 'Add Event')),
+      appBar: AppBar(title: Text(isEditingMode ? 'Edit Event' : 'Add Event')),
       body: MutationLoadingOverlay(
         mutationKey: mutationKey,
         child: AdaptivePageContainer(
           maxWidth: 1020,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: spacing.outerPadding,
             child: Container(
               decoration: BoxDecoration(
                 color: const Color(AppColors.surface),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: const Color(AppColors.divider)),
               ),
-              padding: const EdgeInsets.all(20),
+              padding: spacing.cardPadding,
               child: Form(
                 key: controller.formKey,
                 child: Column(
@@ -217,43 +225,48 @@ class EventFormScreen extends HookWidget {
                                         : const Color(AppColors.divider),
                                   ),
                                 ),
-                                child: Obx(
-                                  () => ListTile(
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 2,
+                                child: Material(
+                                  color: Colors.transparent,
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Obx(
+                                    () => ListTile(
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 2,
+                                          ),
+                                      title: const Text('Event date'),
+                                      subtitle: Text(
+                                        controller.eventDate.value != null
+                                            ? controller.eventDate.value!
+                                                  .toLocal()
+                                                  .toString()
+                                                  .split(' ')
+                                                  .first
+                                            : 'Tap to select',
+                                      ),
+                                      trailing: const Icon(
+                                        Icons.calendar_today_outlined,
+                                      ),
+                                      onTap: () async {
+                                        final picked = await showDatePicker(
+                                          context: context,
+                                          initialDate:
+                                              controller.eventDate.value ??
+                                              DateTime.now().add(
+                                                const Duration(days: 7),
+                                              ),
+                                          firstDate: DateTime.now(),
+                                          lastDate: DateTime.now().add(
+                                            const Duration(days: 365 * 2),
+                                          ),
+                                        );
+                                        if (picked != null) {
+                                          controller.eventDate.value = picked;
+                                          field.didChange(null);
+                                        }
+                                      },
                                     ),
-                                    title: const Text('Event date'),
-                                    subtitle: Text(
-                                      controller.eventDate.value != null
-                                          ? controller.eventDate.value!
-                                                .toLocal()
-                                                .toString()
-                                                .split(' ')
-                                                .first
-                                          : 'Tap to select',
-                                    ),
-                                    trailing: const Icon(
-                                      Icons.calendar_today_outlined,
-                                    ),
-                                    onTap: () async {
-                                      final picked = await showDatePicker(
-                                        context: context,
-                                        initialDate:
-                                            controller.eventDate.value ??
-                                            DateTime.now().add(
-                                              const Duration(days: 7),
-                                            ),
-                                        firstDate: DateTime.now(),
-                                        lastDate: DateTime.now().add(
-                                          const Duration(days: 365 * 2),
-                                        ),
-                                      );
-                                      if (picked != null) {
-                                        controller.eventDate.value = picked;
-                                        field.didChange(null);
-                                      }
-                                    },
                                   ),
                                 ),
                               ),
@@ -294,31 +307,37 @@ class EventFormScreen extends HookWidget {
                                         : const Color(AppColors.divider),
                                   ),
                                 ),
-                                child: Obx(
-                                  () => ListTile(
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 2,
+                                child: Material(
+                                  color: Colors.transparent,
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Obx(
+                                    () => ListTile(
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 2,
+                                          ),
+                                      title: const Text('Reporting time'),
+                                      subtitle: Text(
+                                        controller.reportingTimeLabel,
+                                      ),
+                                      trailing: const Icon(
+                                        Icons.access_time_outlined,
+                                      ),
+                                      onTap: () async {
+                                        final picked = await showTimePicker(
+                                          context: context,
+                                          initialTime:
+                                              controller.reportingTime.value ??
+                                              TimeOfDay.now(),
+                                        );
+                                        if (picked != null) {
+                                          controller.reportingTime.value =
+                                              picked;
+                                          field.didChange(null);
+                                        }
+                                      },
                                     ),
-                                    title: const Text('Reporting time'),
-                                    subtitle: Text(
-                                      controller.reportingTimeLabel,
-                                    ),
-                                    trailing: const Icon(
-                                      Icons.access_time_outlined,
-                                    ),
-                                    onTap: () async {
-                                      final picked = await showTimePicker(
-                                        context: context,
-                                        initialTime:
-                                            controller.reportingTime.value ??
-                                            TimeOfDay.now(),
-                                      );
-                                      if (picked != null) {
-                                        controller.reportingTime.value = picked;
-                                        field.didChange(null);
-                                      }
-                                    },
                                   ),
                                 ),
                               ),
@@ -545,7 +564,7 @@ class EventFormScreen extends HookWidget {
                     }),
                     const SizedBox(height: 24),
                     CustomButton(
-                      text: isEditing ? 'Save changes' : 'Create event',
+                      text: isEditingMode ? 'Save changes' : 'Create event',
                       isLoading: submitMutation.isPending,
                       onPressed: submitMutation.isPending
                           ? null

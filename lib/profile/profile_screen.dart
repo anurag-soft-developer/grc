@@ -9,6 +9,7 @@ import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/models/user/user_model.dart';
 import 'package:grc/core/query/query_keys.dart';
 import 'package:grc/core/repositories/user_repository.dart';
+import 'package:grc/core/routes/main_tab_routes.dart';
 import 'package:grc/components/shared/loading_overlay.dart';
 
 /// Profile tab inside main shell (uses cached user + optional refetch).
@@ -19,10 +20,13 @@ class ProfileTabScreen extends HookWidget {
   Widget build(BuildContext context) {
     final userRepo = Get.find<UserRepository>();
     final authState = Get.find<AuthStateController>();
+    final isActiveTab =
+        Uri.parse(Get.currentRoute).path == MainTabRoutes.profile;
 
     final profileQuery = useQuery(
       QueryKeys.profile,
       (_) => userRepo.getProfile(),
+      enabled: isActiveTab,
     );
 
     useEffect(() {
@@ -403,12 +407,13 @@ class _ProfileSectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(AppColors.surface),
+    return Material(
+      color: const Color(AppColors.surface),
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(AppColors.divider)),
+        side: const BorderSide(color: Color(AppColors.divider)),
       ),
+      clipBehavior: Clip.antiAlias,
       child: Column(children: children),
     );
   }

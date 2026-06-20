@@ -10,6 +10,7 @@ import 'package:grc/core/components/bottom_navigation_panel/navigation_controlle
 import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/query/query_keys.dart';
+import 'package:grc/core/routes/main_tab_routes.dart';
 import 'package:grc/registrations/model/run_event_participant_model.dart';
 import 'package:grc/registrations/run_event_participants_service.dart';
 
@@ -20,6 +21,7 @@ class HomeScreen extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isActiveTab = Uri.parse(Get.currentRoute).path == MainTabRoutes.home;
     final eventsQuery = useQuery<PaginatedRunEvents, Object>(
       QueryKeys.homeUpcomingEvents,
       (_) => RunEventsService.instance.listPublicEvents(
@@ -28,6 +30,7 @@ class HomeScreen extends HookWidget {
         limit: 5,
       ),
       retry: _noRetry,
+      enabled: isActiveTab,
     );
 
     final registrationsQuery = useQuery<PaginatedRunEventParticipants, Object>(
@@ -38,6 +41,7 @@ class HomeScreen extends HookWidget {
         segment: 'upcoming',
       ),
       retry: _noRetry,
+      enabled: isActiveTab,
     );
 
     final events = eventsQuery.data?.data ?? const <RunEventModel>[];

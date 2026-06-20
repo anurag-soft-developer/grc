@@ -8,6 +8,7 @@ import 'package:grc/core/components/bottom_navigation_panel/navigation_controlle
 import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/query/query_keys.dart';
+import 'package:grc/core/routes/main_tab_routes.dart';
 import 'package:grc/registrations/model/run_event_participant_model.dart';
 import 'package:grc/registrations/run_event_participants_service.dart';
 
@@ -18,12 +19,15 @@ class RegistrationsScreen extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isActiveTab =
+        Uri.parse(Get.currentRoute).path == MainTabRoutes.registrations;
     final query = useInfiniteQuery<PaginatedRunEventParticipants, Object, int>(
       QueryKeys.myRegistrations,
       (ctx) =>
           RunEventParticipantsService.instance.listMine(page: ctx.pageParam),
       initialPageParam: 1,
       retry: _noRetry,
+      enabled: isActiveTab,
       nextPageParamBuilder: (data) {
         final last = data.pages.isNotEmpty ? data.pages.last : null;
         if (last == null || !last.hasMore) return null;
@@ -96,10 +100,22 @@ class RegistrationsScreen extends HookWidget {
       color: const Color(AppColors.primary),
       child: NotificationListener<ScrollNotification>(
         onNotification: (n) {
+          if (Uri.parse(Get.currentRoute).path != MainTabRoutes.registrations) {
+            return false;
+          }
           if (n.metrics.extentAfter < 160 &&
               query.hasNextPage &&
               !query.isFetchingNextPage) {
-            query.fetchNextPage();
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!context.mounted) return;
+              if (Uri.parse(Get.currentRoute).path !=
+                  MainTabRoutes.registrations) {
+                return;
+              }
+              if (query.hasNextPage && !query.isFetchingNextPage) {
+                query.fetchNextPage();
+              }
+            });
           }
           return false;
         },

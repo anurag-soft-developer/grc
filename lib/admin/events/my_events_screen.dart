@@ -10,17 +10,17 @@ import 'package:grc/components/events/event_list_filters_bar.dart';
 import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/query/query_keys.dart';
+import 'package:grc/core/routes/main_tab_routes.dart';
 
 class MyEventsScreen extends HookWidget {
   const MyEventsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final isActiveTab =
+        Uri.parse(Get.currentRoute).path == MainTabRoutes.myEvents;
     final filters = useState(EventListFilters.all);
-    final queryKey = useMemoized(
-      () => QueryKeys.adminEventsList(filters.value.toQueryKeyParts()),
-      [filters.value],
-    );
+    final queryKey = QueryKeys.adminEventsList(filters.value.toQueryKeyParts());
 
     final eventsQuery = useInfiniteQuery<PaginatedRunEvents, Object, int>(
       queryKey,
@@ -29,6 +29,7 @@ class MyEventsScreen extends HookWidget {
         filters: filters.value,
       ),
       initialPageParam: 1,
+      enabled: isActiveTab,
       nextPageParamBuilder: (data) {
         final last = data.pages.isNotEmpty ? data.pages.last : null;
         if (last == null || !last.hasMore) return null;
@@ -53,13 +54,14 @@ class MyEventsScreen extends HookWidget {
             filters: filters.value,
             onChanged: (next) => filters.value = next,
           ),
-          Expanded(child: _buildBody(eventsQuery, allEvents)),
+          Expanded(child: _buildBody(context, eventsQuery, allEvents)),
         ],
       ),
     );
   }
 
   Widget _buildBody(
+    BuildContext context,
     InfiniteQueryResult<PaginatedRunEvents, Object, int> eventsQuery,
     List<RunEventModel> allEvents,
   ) {
@@ -91,7 +93,9 @@ class MyEventsScreen extends HookWidget {
           maxWidth: EventListFiltersBar.listMaxWidth,
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(EventListFiltersBar.horizontalPadding),
+            padding: const EdgeInsets.all(
+              EventListFiltersBar.horizontalPadding,
+            ),
             children: const [
               SizedBox(
                 height: 240,
@@ -110,10 +114,23 @@ class MyEventsScreen extends HookWidget {
       color: const Color(AppColors.primary),
       child: NotificationListener<ScrollNotification>(
         onNotification: (notification) {
+          if (Uri.parse(Get.currentRoute).path != MainTabRoutes.myEvents) {
+            return false;
+          }
           if (notification.metrics.pixels >=
               notification.metrics.maxScrollExtent - 160) {
             if (eventsQuery.hasNextPage && !eventsQuery.isFetchingNextPage) {
-              eventsQuery.fetchNextPage();
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (!context.mounted) return;
+                if (Uri.parse(Get.currentRoute).path !=
+                    MainTabRoutes.myEvents) {
+                  return;
+                }
+                if (eventsQuery.hasNextPage &&
+                    !eventsQuery.isFetchingNextPage) {
+                  eventsQuery.fetchNextPage();
+                }
+              });
             }
           }
           return false;

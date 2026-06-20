@@ -33,7 +33,7 @@ void main() async {
         themeMode: ThemeMode.dark,
         initialBinding: InitialBinding(queryClient: queryClient),
         getPages: AppRoutes.routes,
-        initialRoute: AppRoutes.resolveInitialRoute(),
+        // initialRoute: AppRoutes.resolveInitialRoute(),
         debugShowCheckedModeBanner: false,
         defaultTransition: Transition.cupertino,
       ),

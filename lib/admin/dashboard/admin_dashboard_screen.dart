@@ -11,6 +11,7 @@ import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/components/query/query_async_body.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/query/query_keys.dart';
+import 'package:grc/core/routes/main_tab_routes.dart';
 
 class AdminDashboardScreen extends HookWidget {
   const AdminDashboardScreen({super.key});
@@ -19,6 +20,8 @@ class AdminDashboardScreen extends HookWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<AdminDashboardController>();
     final preset = useState(DashboardDatePreset.thisMonth);
+    final isActiveTab =
+        Uri.parse(Get.currentRoute).path == MainTabRoutes.dashboard;
 
     final activeRange = useMemoized(() => preset.value.resolveRange(), [
       preset.value,
@@ -34,6 +37,7 @@ class AdminDashboardScreen extends HookWidget {
     final analyticsQuery = useQuery<AdminDashboardAnalyticsModel, Object>(
       QueryKeys.adminDashboardAnalytics(fromDate: fromKey, toDate: toKey),
       (_) => AdminDashboardService.instance.getAnalytics(range: activeRange),
+      enabled: isActiveTab,
     );
 
     return Scaffold(
@@ -44,9 +48,23 @@ class AdminDashboardScreen extends HookWidget {
         onRetry: analyticsQuery.refetch,
         data: (analytics) => LayoutBuilder(
           builder: (context, constraints) {
-            final maxCrossAxisExtent = constraints.maxWidth >= 1400
-                ? 240.0
-                : 300.0;
+            final screenWidth = constraints.maxWidth;
+            final isSmallScreen = screenWidth < 700;
+
+            final SliverGridDelegate overviewGridDelegate = isSmallScreen
+                ? const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 14,
+                    crossAxisSpacing: 14,
+                    childAspectRatio: 1.35,
+                  )
+                : SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: screenWidth >= 1280 ? 240 : 280,
+                    mainAxisSpacing: 14,
+                    crossAxisSpacing: 14,
+                    childAspectRatio: 1.2,
+                  );
+
             return RefreshIndicator(
               onRefresh: () async => analyticsQuery.refetch(),
               color: const Color(AppColors.primary),
@@ -81,12 +99,7 @@ class AdminDashboardScreen extends HookWidget {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: 4,
-                      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                        maxCrossAxisExtent: maxCrossAxisExtent,
-                        mainAxisSpacing: 14,
-                        crossAxisSpacing: 14,
-                        childAspectRatio: 1.2,
-                      ),
+                      gridDelegate: overviewGridDelegate,
                       itemBuilder: (context, index) {
                         final cards = [
                           DashboardStatCard(

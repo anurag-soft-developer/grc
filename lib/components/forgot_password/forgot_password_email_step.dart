@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:grc/components/shared/custom_button.dart';
 import 'package:grc/components/shared/custom_text_field.dart';
 import 'package:grc/core/components/query/mutation_loading_overlay.dart';
+import 'package:grc/core/utils/responsive_form_spacing.dart';
 import 'package:grc/core/utils/validators.dart';
 
 class ForgotPasswordEmailStep extends StatefulWidget {
@@ -31,10 +32,13 @@ class _ForgotPasswordEmailStepState extends State<ForgotPasswordEmailStep> {
 
   @override
   Widget build(BuildContext context) {
+    final spacing = ResponsiveFormSpacing.fromWidth(
+      MediaQuery.sizeOf(context).width,
+    );
     return MutationLoadingOverlay(
       mutationKey: widget.mutationKey,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: spacing.outerPadding,
         child: Form(
           key: _formKey,
           child: Container(
@@ -43,7 +47,7 @@ class _ForgotPasswordEmailStepState extends State<ForgotPasswordEmailStep> {
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Theme.of(context).dividerColor),
             ),
-            padding: const EdgeInsets.all(20),
+            padding: spacing.cardPadding,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

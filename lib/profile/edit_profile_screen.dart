@@ -7,6 +7,7 @@ import 'package:grc/components/shared/custom_button.dart';
 import 'package:grc/components/shared/custom_text_field.dart';
 import 'package:grc/core/auth/auth_state_controller.dart';
 import 'package:grc/core/components/layout/adaptive_page_container.dart';
+import 'package:grc/core/utils/responsive_form_spacing.dart';
 import 'package:grc/core/components/query/mutation_loading_overlay.dart';
 import 'package:grc/core/models/user/user_model.dart';
 import 'package:grc/core/query/query_keys.dart';
@@ -19,6 +20,10 @@ class EditProfileScreen extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    final spacing = ResponsiveFormSpacing.fromWidth(
+      MediaQuery.sizeOf(context).width,
+    );
+
     final controller = Get.find<ProfileController>();
     final authState = Get.find<AuthStateController>();
     final userRepo = Get.find<UserRepository>();
@@ -81,7 +86,7 @@ class EditProfileScreen extends HookWidget {
         child: AdaptivePageContainer(
           maxWidth: 860,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: spacing.outerPadding,
             child: Form(
               key: controller.formKey,
               child: Container(
@@ -90,7 +95,7 @@ class EditProfileScreen extends HookWidget {
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: Theme.of(context).dividerColor),
                 ),
-                padding: const EdgeInsets.all(20),
+                padding: spacing.cardPadding,
                 child: Column(
                   children: [
                     AvatarImageInput(

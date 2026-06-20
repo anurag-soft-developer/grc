@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
+// import 'package:flutter/foundation.dart';
 import 'package:grc/core/config/api_constants.dart';
 import 'package:grc/core/services/auth_storage_service.dart';
 import 'package:grc/core/utils/exception_handler.dart';
@@ -87,15 +87,15 @@ class ApiService {
       ),
     );
 
-    if (kDebugMode) {
-      dioInstance.interceptors.add(
-        LogInterceptor(
-          requestBody: true,
-          responseBody: true,
-          logPrint: (object) => debugPrint('[API] $object'),
-        ),
-      );
-    }
+    // if (kDebugMode) {
+    //   dioInstance.interceptors.add(
+    //     LogInterceptor(
+    //       requestBody: true,
+    //       responseBody: true,
+    //       logPrint: (object) => debugPrint('[API] $object'),
+    //     ),
+    //   );
+    // }
 
     return dioInstance;
   }
