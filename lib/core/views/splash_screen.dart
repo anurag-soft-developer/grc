@@ -7,7 +7,6 @@ import 'package:grc/core/auth/auth_state_controller.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/query/query_keys.dart';
 import 'package:grc/core/repositories/auth_repository.dart';
-import 'package:grc/core/routes/app_routes.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
@@ -20,7 +19,11 @@ class SplashScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.directions_run, size: 80, color: Colors.white),
+            Image(
+              image: AssetImage('assets/logos/grc_logo.png'),
+              width: 120,
+              height: 120,
+            ),
             SizedBox(height: 24),
             CircularProgressIndicator(color: Colors.white),
           ],
@@ -37,7 +40,6 @@ class AuthWrapper extends HookWidget {
   Widget build(BuildContext context) {
     final authState = Get.find<AuthStateController>();
     final authRepo = Get.find<AuthRepository>();
-    final client = useQueryClient();
 
     final bootstrap = useQuery(QueryKeys.authStatus, (ctx) async {
       final stored = await authRepo.getStoredUser();

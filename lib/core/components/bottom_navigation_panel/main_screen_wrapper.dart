@@ -4,7 +4,6 @@ import 'package:grc/core/auth/auth_state_controller.dart';
 import 'package:grc/core/components/bottom_navigation_panel/app_bottom_navigation_panel.dart';
 import 'package:grc/core/components/bottom_navigation_panel/nav_tabs.dart';
 import 'package:grc/core/components/bottom_navigation_panel/navigation_controller.dart';
-import 'package:grc/core/config/constants.dart';
 
 class MainScreenWrapper extends StatelessWidget {
   const MainScreenWrapper({super.key});
@@ -81,27 +80,33 @@ class _MainTabShellState extends State<_MainTabShell> {
                       width: useExtendedRail ? 250 : 84,
                       child: Column(
                         children: [
-                          _RailBrandHeader(extended: useExtendedRail),
+                          _RailBrandHeader(
+                            onTap: _navController.resetToFirstTab,
+                          ),
                           const Divider(height: 1),
                           Expanded(
-                            child: NavigationRail(
-                              selectedIndex: index,
-                              onDestinationSelected: _navController.changeTab,
-                              labelType: useExtendedRail
-                                  ? NavigationRailLabelType.none
-                                  : NavigationRailLabelType.all,
-                              extended: useExtendedRail,
-                              minWidth: 84,
-                              minExtendedWidth: 250,
-                              destinations: [
-                                for (final tab in _tabs)
-                                  NavigationRailDestination(
-                                    icon: Icon(tab.icon),
-                                    selectedIcon: Icon(tab.activeIcon),
-                                    label: Text(tab.label),
+                            child: useExtendedRail
+                                ? _ExtendedRailDestinations(
+                                    tabs: _tabs,
+                                    selectedIndex: index,
+                                    onSelect: _navController.changeTab,
+                                  )
+                                : NavigationRail(
+                                    selectedIndex: index,
+                                    onDestinationSelected:
+                                        _navController.changeTab,
+                                    labelType: NavigationRailLabelType.all,
+                                    extended: false,
+                                    minWidth: 84,
+                                    destinations: [
+                                      for (final tab in _tabs)
+                                        NavigationRailDestination(
+                                          icon: Icon(tab.icon),
+                                          selectedIcon: Icon(tab.activeIcon),
+                                          label: Text(tab.label),
+                                        ),
+                                    ],
                                   ),
-                              ],
-                            ),
                           ),
                         ],
                       ),
@@ -130,9 +135,9 @@ class _MainTabShellState extends State<_MainTabShell> {
 }
 
 class _RailBrandHeader extends StatelessWidget {
-  final bool extended;
+  final VoidCallback onTap;
 
-  const _RailBrandHeader({required this.extended});
+  const _RailBrandHeader({required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -141,39 +146,135 @@ class _RailBrandHeader extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14),
         child: Row(
-          mainAxisAlignment: extended
-              ? MainAxisAlignment.start
-              : MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 30,
-              height: 30,
-              decoration: BoxDecoration(
-                color: const Color(AppColors.primary).withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.directions_run_rounded,
-                size: 18,
-                color: Color(AppColors.primary),
+            InkWell(
+              borderRadius: BorderRadius.circular(6),
+              onTap: onTap,
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: Image.asset(
+                  'assets/logos/grc_logo.png',
+                  width: 36,
+                  height: 36,
+                  fit: BoxFit.contain,
+                ),
               ),
             ),
-            if (extended) ...[
-              const SizedBox(width: 10),
+            // if (extended) ...[
+            //   const SizedBox(width: 10),
+            //   Expanded(
+            //     child: Text(
+            //       AppConstants.appName,
+            //       maxLines: 1,
+            //       overflow: TextOverflow.ellipsis,
+            //       style: const TextStyle(
+            //         fontSize: 15,
+            //         fontWeight: FontWeight.w700,
+            //         color: Color(AppColors.text),
+            //       ),
+            //     ),
+            //   ),
+            // ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ExtendedRailDestinations extends StatelessWidget {
+  final List<NavTab> tabs;
+  final int selectedIndex;
+  final ValueChanged<int> onSelect;
+
+  const _ExtendedRailDestinations({
+    required this.tabs,
+    required this.selectedIndex,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(10, 10, 10, 16),
+      itemCount: tabs.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 6),
+      itemBuilder: (context, index) {
+        final tab = tabs[index];
+        final selected = index == selectedIndex;
+        return _ExtendedRailDestinationTile(
+          icon: selected ? tab.activeIcon : tab.icon,
+          label: tab.label,
+          selected: selected,
+          onTap: () => onSelect(index),
+        );
+      },
+    );
+  }
+}
+
+class _ExtendedRailDestinationTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _ExtendedRailDestinationTile({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final selectedBg = colorScheme.primary.withValues(alpha: 0.16);
+    final selectedBorder = colorScheme.primary.withValues(alpha: 0.45);
+    final selectedText = colorScheme.onSurface;
+    final unselectedText = colorScheme.onSurface.withValues(alpha: 0.74);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: selected ? selectedBg : Colors.transparent,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: selected
+                  ? selectedBorder
+                  : colorScheme.outline.withValues(alpha: 0.20),
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                size: 22,
+                color: selected ? colorScheme.primary : unselectedText,
+              ),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  AppConstants.appName,
+                  label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: Color(AppColors.text),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                    color: selected ? selectedText : unselectedText,
                   ),
                 ),
               ),
             ],
-          ],
+          ),
         ),
       ),
     );

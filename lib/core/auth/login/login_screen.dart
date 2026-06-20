@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_query/flutter_query.dart';
 import 'package:get/get.dart';
@@ -163,26 +164,10 @@ class LoginScreen extends HookWidget {
                                 CustomButton(
                                   text: 'Continue with Google',
                                   isOutlined: true,
-                                  icon: Container(
+                                  icon: SvgPicture.asset(
+                                    'assets/logos/google.svg',
                                     width: 20,
                                     height: 20,
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(
-                                        color: const Color(AppColors.divider),
-                                      ),
-                                    ),
-                                    child: const Text(
-                                      'G',
-                                      style: TextStyle(
-                                        color: Color(AppColors.info),
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 12,
-                                        height: 1,
-                                      ),
-                                    ),
                                   ),
                                   onPressed: () => googleMutation.mutate(null),
                                 ),

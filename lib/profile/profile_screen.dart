@@ -10,6 +10,7 @@ import 'package:grc/core/models/user/user_model.dart';
 import 'package:grc/core/query/query_keys.dart';
 import 'package:grc/core/repositories/user_repository.dart';
 import 'package:grc/core/routes/main_tab_routes.dart';
+import 'package:grc/core/components/shared/previewable_avatar.dart';
 import 'package:grc/components/shared/loading_overlay.dart';
 
 /// Profile tab inside main shell (uses cached user + optional refetch).
@@ -183,8 +184,6 @@ class _ProfileHeaderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasAvatar = user.avatar != null && user.avatar!.isNotEmpty;
-
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
@@ -202,33 +201,10 @@ class _ProfileHeaderCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [
-                  const Color(AppColors.primary).withValues(alpha: 0.7),
-                  const Color(AppColors.secondary).withValues(alpha: 0.7),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: CircleAvatar(
-              radius: 44,
-              backgroundColor: const Color(AppColors.surface),
-              backgroundImage: hasAvatar ? NetworkImage(user.avatar!) : null,
-              child: hasAvatar
-                  ? null
-                  : Icon(
-                      Icons.person_rounded,
-                      size: 44,
-                      color: const Color(
-                        AppColors.primary,
-                      ).withValues(alpha: 0.6),
-                    ),
-            ),
+          PreviewableAvatar(
+            imageUrl: user.avatar,
+            radius: 44,
+            enablePreview: true,
           ),
           const SizedBox(height: 16),
           Text(

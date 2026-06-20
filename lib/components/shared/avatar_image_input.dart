@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:grc/core/config/constants.dart';
@@ -30,8 +31,9 @@ class AvatarImageInputState extends State<AvatarImageInput> {
     final file = await _picker.pickImage(source: source, maxWidth: 1200);
     if (file == null) return;
 
-    final previousUrl =
-        widget.imageUrls.isNotEmpty ? widget.imageUrls.first : null;
+    final previousUrl = widget.imageUrls.isNotEmpty
+        ? widget.imageUrls.first
+        : null;
     if (previousUrl != null && previousUrl.startsWith('http')) {
       widget.onDeferredRemoteRemoval?.call(previousUrl);
     }
@@ -66,9 +68,11 @@ class AvatarImageInputState extends State<AvatarImageInput> {
 
   @override
   Widget build(BuildContext context) {
-    final displayUrl =
-        widget.imageUrls.isNotEmpty ? widget.imageUrls.first : null;
-    final isLocal = displayUrl != null &&
+    final displayUrl = widget.imageUrls.isNotEmpty
+        ? widget.imageUrls.first
+        : null;
+    final isLocal =
+        displayUrl != null &&
         (displayUrl.startsWith('/') || !displayUrl.startsWith('http'));
 
     Widget avatarChild;
@@ -110,11 +114,12 @@ class AvatarImageInputState extends State<AvatarImageInput> {
               icon: const Icon(Icons.photo_library_outlined),
               label: const Text('Gallery'),
             ),
-            TextButton.icon(
-              onPressed: () => _pick(ImageSource.camera),
-              icon: const Icon(Icons.camera_alt_outlined),
-              label: const Text('Camera'),
-            ),
+            if (!kIsWeb)
+              TextButton.icon(
+                onPressed: () => _pick(ImageSource.camera),
+                icon: const Icon(Icons.camera_alt_outlined),
+                label: const Text('Camera'),
+              ),
           ],
         ),
         Obx(() {
