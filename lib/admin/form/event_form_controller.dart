@@ -7,6 +7,8 @@ class EventFormController extends GetxController {
   final titleController = TextEditingController();
   final descriptionController = TextEditingController();
   final locationController = TextEditingController();
+  final cityController = TextEditingController();
+  final stateController = TextEditingController();
   final priceController = TextEditingController();
   final maxParticipantsController = TextEditingController();
 
@@ -25,11 +27,9 @@ class EventFormController extends GetxController {
   bool get isEditing => editingEventId != null && editingEventId!.isNotEmpty;
 
   bool get hasLocation =>
-      city.value.isNotEmpty &&
-      state.value.isNotEmpty &&
-      address.value.isNotEmpty &&
-      lat.value != null &&
-      long.value != null;
+      city.value.trim().isNotEmpty &&
+      state.value.trim().isNotEmpty &&
+      address.value.trim().isNotEmpty;
 
   String get reportingTimeLabel {
     final time = reportingTime.value;
@@ -68,19 +68,16 @@ class EventFormController extends GetxController {
     if (loc != null &&
         loc.address.isNotEmpty &&
         loc.city.isNotEmpty &&
-        loc.state.isNotEmpty &&
-        loc.lat != null &&
-        loc.long != null) {
+        loc.state.isNotEmpty) {
       setLocation(
         address: loc.address,
         city: loc.city,
         state: loc.state,
-        latitude: loc.lat!,
-        longitude: loc.long!,
+        latitude: loc.lat,
+        longitude: loc.long,
       );
     } else {
       clearLocation();
-      locationController.clear();
     }
 
     coverImageUrls
@@ -93,6 +90,8 @@ class EventFormController extends GetxController {
     titleController.clear();
     descriptionController.clear();
     locationController.clear();
+    cityController.clear();
+    stateController.clear();
     priceController.clear();
     maxParticipantsController.clear();
     eventDate.value = null;
@@ -105,18 +104,53 @@ class EventFormController extends GetxController {
     required String address,
     required String city,
     required String state,
-    required double latitude,
-    required double longitude,
+    double? latitude,
+    double? longitude,
   }) {
-    locationController.text = address;
+    _assignControllerText(locationController, address);
+    _assignControllerText(cityController, city);
+    _assignControllerText(stateController, state);
+    syncLocationFromInput(
+      address: address,
+      city: city,
+      state: state,
+      latitude: latitude,
+      longitude: longitude,
+    );
+  }
+
+  /// Updates reactive location values only — does not touch text controllers.
+  /// Use while the user is typing so the cursor is not reset.
+  void syncLocationFromInput({
+    required String address,
+    required String city,
+    required String state,
+    double? latitude,
+    double? longitude,
+  }) {
+    this.address.value = address;
     this.city.value = city;
     this.state.value = state;
-    this.address.value = address;
     lat.value = latitude;
     long.value = longitude;
   }
 
+  static void _assignControllerText(
+    TextEditingController controller,
+    String text,
+  ) {
+    if (controller.text == text) return;
+    controller.value = controller.value.copyWith(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+      composing: TextRange.empty,
+    );
+  }
+
   void clearLocation() {
+    locationController.clear();
+    cityController.clear();
+    stateController.clear();
     city.value = '';
     state.value = '';
     address.value = '';
@@ -150,6 +184,8 @@ class EventFormController extends GetxController {
     titleController.dispose();
     descriptionController.dispose();
     locationController.dispose();
+    cityController.dispose();
+    stateController.dispose();
     priceController.dispose();
     maxParticipantsController.dispose();
     super.onClose();

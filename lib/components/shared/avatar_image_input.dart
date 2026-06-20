@@ -24,7 +24,7 @@ class AvatarImageInput extends StatefulWidget {
 
 class AvatarImageInputState extends State<AvatarImageInput> {
   final _picker = ImagePicker();
-  String? _localPath;
+  XFile? _pendingFile;
   final _uploadProgress = 0.0.obs;
 
   Future<void> _pick(ImageSource source) async {
@@ -39,7 +39,7 @@ class AvatarImageInputState extends State<AvatarImageInput> {
     }
 
     setState(() {
-      _localPath = file.path;
+      _pendingFile = file;
       widget.imageUrls
         ..clear()
         ..add(file.path);
@@ -47,13 +47,13 @@ class AvatarImageInputState extends State<AvatarImageInput> {
   }
 
   Future<String?> uploadPendingIfNeeded() async {
-    if (_localPath == null) {
+    if (_pendingFile == null) {
       final url = widget.imageUrls.isNotEmpty ? widget.imageUrls.first : null;
       if (url != null && url.startsWith('http')) return url;
       return null;
     }
     final ref = await MediaUploadService.instance.uploadLocalFile(
-      file: File(_localPath!),
+      file: _pendingFile!,
       purpose: MediaUploadPurpose.avatar,
       onProgress: (p) => _uploadProgress.value = p,
     );
@@ -62,7 +62,7 @@ class AvatarImageInputState extends State<AvatarImageInput> {
     widget.imageUrls
       ..clear()
       ..add(ref.fileUrl);
-    _localPath = null;
+    _pendingFile = null;
     return ref.fileUrl;
   }
 
@@ -71,17 +71,28 @@ class AvatarImageInputState extends State<AvatarImageInput> {
     final displayUrl = widget.imageUrls.isNotEmpty
         ? widget.imageUrls.first
         : null;
-    final isLocal =
+    final isLocalFile =
         displayUrl != null &&
-        (displayUrl.startsWith('/') || !displayUrl.startsWith('http'));
+        !displayUrl.startsWith('http') &&
+        !displayUrl.startsWith('blob:');
+    final isLocalPreview = displayUrl != null && !displayUrl.startsWith('http');
 
     Widget avatarChild;
     if (displayUrl == null) {
       avatarChild = const Icon(Icons.person, size: 48, color: Colors.white70);
-    } else if (isLocal) {
+    } else if (isLocalFile) {
       avatarChild = ClipOval(
         child: Image.file(
           File(displayUrl),
+          width: 96,
+          height: 96,
+          fit: BoxFit.cover,
+        ),
+      );
+    } else if (isLocalPreview) {
+      avatarChild = ClipOval(
+        child: Image.network(
+          displayUrl,
           width: 96,
           height: 96,
           fit: BoxFit.cover,

@@ -9,6 +9,7 @@ class ApiConstants {
   static const runEvents = RunEventEndpoints();
   static const runEventParticipants = RunEventParticipantEndpoints();
   static const dashboard = DashboardEndpoints();
+  static const places = PlacesEndpoints();
 
   static const Map<String, String> defaultHeaders = {
     'Content-Type': 'application/json',
@@ -76,6 +77,13 @@ class DashboardEndpoints {
   const DashboardEndpoints();
 
   String get analytics => '/dashboard/analytics';
+}
+
+class PlacesEndpoints {
+  const PlacesEndpoints();
+
+  String get autocomplete => '/places/autocomplete';
+  String get details => '/places/details';
 }
 
 class RunEventParticipantEndpoints {

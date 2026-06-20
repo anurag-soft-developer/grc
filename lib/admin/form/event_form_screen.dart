@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_query/flutter_query.dart';
@@ -17,6 +15,7 @@ import 'package:grc/core/components/query/mutation_loading_overlay.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/models/media_upload_models.dart';
 import 'package:grc/core/query/query_keys.dart';
+import 'package:grc/core/routes/main_tab_routes.dart';
 import 'package:grc/core/services/media_upload_service.dart';
 import 'package:grc/core/utils/exception_handler.dart';
 import 'package:grc/core/utils/responsive_form_spacing.dart';
@@ -81,11 +80,11 @@ class EventFormScreen extends HookWidget {
           description: controller.descriptionController.text.trim(),
           eventDate: date,
           reportingTime: reportingTime,
-          lat: controller.lat.value!,
-          long: controller.long.value!,
-          city: controller.city.value,
-          state: controller.state.value,
-          address: controller.address.value,
+          lat: controller.lat.value,
+          long: controller.long.value,
+          city: controller.city.value.trim(),
+          state: controller.state.value.trim(),
+          address: controller.address.value.trim(),
           price: price,
           maxParticipants: maxParticipants,
           coverImages: controller.coverImageUrls.toList(),
@@ -105,11 +104,11 @@ class EventFormScreen extends HookWidget {
         description: controller.descriptionController.text.trim(),
         eventDate: date,
         reportingTime: reportingTime,
-        lat: controller.lat.value!,
-        long: controller.long.value!,
-        city: controller.city.value,
-        state: controller.state.value,
-        address: controller.address.value,
+        lat: controller.lat.value,
+        long: controller.long.value,
+        city: controller.city.value.trim(),
+        state: controller.state.value.trim(),
+        address: controller.address.value.trim(),
         price: price,
         maxParticipants: maxParticipants,
         coverImages: controller.coverImageUrls.toList(),
@@ -128,7 +127,7 @@ class EventFormScreen extends HookWidget {
       onSuccess: (result, _, __, ___) async {
         await client.invalidateQueries(queryKey: QueryKeys.adminEvents);
         ExceptionHandler.showSuccessToast('Event created as draft');
-        Get.back();
+        Get.offNamed(MainTabRoutes.myEvents);
       },
     );
 
@@ -143,7 +142,7 @@ class EventFormScreen extends HookWidget {
           );
         }
         ExceptionHandler.showSuccessToast('Event updated');
-        Get.back(result: result);
+        Get.offNamed(MainTabRoutes.myEvents);
       },
     );
 
@@ -160,13 +159,17 @@ class EventFormScreen extends HookWidget {
       isUploadingCover.value = true;
       try {
         final ref = await MediaUploadService.instance.uploadLocalFile(
-          file: File(file.path),
+          file: file,
           purpose: MediaUploadPurpose.runEventMedia,
           onProgress: (_) {},
         );
         if (ref != null) {
           controller.coverImageUrls.add(ref.fileUrl);
+        } else {
+          ExceptionHandler.showErrorToast('Failed to upload image');
         }
+      } catch (_) {
+        ExceptionHandler.showErrorToast('Failed to upload image');
       } finally {
         isUploadingCover.value = false;
       }
@@ -392,23 +395,41 @@ class EventFormScreen extends HookWidget {
                     const SizedBox(height: 16),
                     FormField<void>(
                       validator: (_) =>
-                          controller.hasLocation ? null : 'Select a location',
+                          controller.hasLocation ? null : 'Location is required',
                       builder: (field) => Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          LocationAutocompleteField(
-                            controller: controller.locationController,
-                            labelText: 'Location',
-                            hintText: 'Search venue or address…',
-                            onLocationSelected:
+                          EventLocationFields(
+                            addressController: controller.locationController,
+                            cityController: controller.cityController,
+                            stateController: controller.stateController,
+                            addressValidator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Address is required';
+                              }
+                              return null;
+                            },
+                            cityValidator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'City is required';
+                              }
+                              return null;
+                            },
+                            stateValidator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'State is required';
+                              }
+                              return null;
+                            },
+                            onLocationChanged:
                                 ({
                                   required address,
                                   required city,
                                   required state,
-                                  required latitude,
-                                  required longitude,
+                                  latitude,
+                                  longitude,
                                 }) {
-                                  controller.setLocation(
+                                  controller.syncLocationFromInput(
                                     address: address,
                                     city: city,
                                     state: state,
@@ -418,21 +439,6 @@ class EventFormScreen extends HookWidget {
                                   field.didChange(null);
                                 },
                           ),
-                          Obx(() {
-                            if (!controller.hasLocation) {
-                              return const SizedBox.shrink();
-                            }
-                            return Padding(
-                              padding: const EdgeInsets.only(top: 8),
-                              child: Text(
-                                '${controller.city.value}, ${controller.state.value}',
-                                style: const TextStyle(
-                                  color: Color(AppColors.textSecondary),
-                                  fontSize: 13,
-                                ),
-                              ),
-                            );
-                          }),
                           if (field.hasError)
                             Padding(
                               padding: const EdgeInsets.only(top: 8, left: 12),

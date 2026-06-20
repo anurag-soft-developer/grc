@@ -9,7 +9,10 @@ class CustomTextField extends StatefulWidget {
   final TextInputType keyboardType;
   final String? Function(String?)? validator;
   final Widget? prefixIcon;
+  final Widget? suffixIcon;
   final int? maxLines;
+  final FocusNode? focusNode;
+  final ValueChanged<String>? onChanged;
 
   const CustomTextField({
     super.key,
@@ -20,7 +23,10 @@ class CustomTextField extends StatefulWidget {
     this.keyboardType = TextInputType.text,
     this.validator,
     this.prefixIcon,
+    this.suffixIcon,
     this.maxLines,
+    this.focusNode,
+    this.onChanged,
   });
 
   @override
@@ -54,6 +60,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
           ),
         TextFormField(
           controller: widget.controller,
+          focusNode: widget.focusNode,
+          onChanged: widget.onChanged,
           obscureText: widget.obscureText ? _obscure : false,
           keyboardType: widget.keyboardType,
           validator: widget.validator,
@@ -68,7 +76,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
                     ),
                     onPressed: () => setState(() => _obscure = !_obscure),
                   )
-                : null,
+                : widget.suffixIcon,
           ),
         ),
       ],

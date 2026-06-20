@@ -1,8 +1,7 @@
-import 'dart:io';
 import 'dart:math';
 
+import 'package:cross_file/cross_file.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:grc/core/config/api_constants.dart';
 import 'package:grc/core/models/media_upload_models.dart';
 import 'package:grc/core/services/api_service.dart';
@@ -102,14 +101,17 @@ class MediaUploadService {
   }
 
   Future<UploadedMediaRef?> uploadLocalFile({
-    required File file,
+    required XFile file,
     required MediaUploadPurpose purpose,
     String? idempotencyKey,
     required void Function(double progress) onProgress,
   }) async {
-    final path = file.path;
-    final fileName = fileNameFromPath(path);
-    final mimeType = mimeTypeForPath(path);
+    final fileName = file.name.isNotEmpty
+        ? file.name
+        : fileNameFromPath(file.path);
+    final mimeType = (file.mimeType != null && file.mimeType!.isNotEmpty)
+        ? file.mimeType!
+        : mimeTypeForPath(fileName);
     final bytes = await file.readAsBytes();
     final key = idempotencyKey ?? _randomIdempotencyKey();
 

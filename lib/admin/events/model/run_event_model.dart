@@ -182,8 +182,8 @@ class CreateRunEventInput {
   final String description;
   final DateTime eventDate;
   final String reportingTime;
-  final double lat;
-  final double long;
+  final double? lat;
+  final double? long;
   final String city;
   final String state;
   final String address;
@@ -198,8 +198,8 @@ class CreateRunEventInput {
     required this.description,
     required this.eventDate,
     required this.reportingTime,
-    required this.lat,
-    required this.long,
+    this.lat,
+    this.long,
     required this.city,
     required this.state,
     required this.address,
@@ -210,25 +210,32 @@ class CreateRunEventInput {
     this.customQuestions = const [],
   });
 
-  Map<String, dynamic> toJson() => {
-    'title': title,
-    'description': description,
-    'eventDate': eventDate.toUtc().toIso8601String(),
-    'reportingTime': reportingTime,
-    'location': {
-      'lat': lat,
-      'long': long,
+  Map<String, dynamic> toJson() {
+    final location = <String, dynamic>{
       'city': city,
       'state': state,
       'address': address,
-    },
-    'price': price,
-    'maxParticipants': maxParticipants,
-    if (coverImages.isNotEmpty) 'coverImages': coverImages,
-    'guidelines': guidelines,
-    'customQuestions':
-        customQuestions.map(CreateRunEventInput.customQuestionToJson).toList(),
-  };
+    };
+    if (lat != null && long != null) {
+      location['lat'] = lat;
+      location['long'] = long;
+    }
+
+    return {
+      'title': title,
+      'description': description,
+      'eventDate': eventDate.toUtc().toIso8601String(),
+      'reportingTime': reportingTime,
+      'location': location,
+      'price': price,
+      'maxParticipants': maxParticipants,
+      if (coverImages.isNotEmpty) 'coverImages': coverImages,
+      'guidelines': guidelines,
+      'customQuestions': customQuestions
+          .map(CreateRunEventInput.customQuestionToJson)
+          .toList(),
+    };
+  }
 
   static Map<String, dynamic> customQuestionToJson(CustomQuestionModel q) => {
     'key': q.key,
@@ -260,8 +267,8 @@ class UpdateRunEventInput {
   final String description;
   final DateTime eventDate;
   final String reportingTime;
-  final double lat;
-  final double long;
+  final double? lat;
+  final double? long;
   final String city;
   final String state;
   final String address;
@@ -276,8 +283,8 @@ class UpdateRunEventInput {
     required this.description,
     required this.eventDate,
     required this.reportingTime,
-    required this.lat,
-    required this.long,
+    this.lat,
+    this.long,
     required this.city,
     required this.state,
     required this.address,
