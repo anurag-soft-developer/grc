@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:grc/core/navigation/app_navigation.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_query/flutter_query.dart';
 import 'package:get/get.dart';
@@ -279,14 +280,14 @@ class AdminEventActions extends HookWidget {
       closeMenu();
       final id = event.id;
       if (id == null) return;
-      Get.toNamed(AppConstants.routes.adminEventParticipantsPath(id));
+      AppNavigation.toNamed(AppConstants.routes.adminEventParticipantsPath(id));
     }
 
     void openAnalytics() {
       closeMenu();
       final id = event.id;
       if (id == null) return;
-      Get.toNamed(AppConstants.routes.adminEventAnalyticsPath(id));
+      AppNavigation.toNamed(AppConstants.routes.adminEventAnalyticsPath(id));
     }
 
     const publishColor = Color(AppColors.success);

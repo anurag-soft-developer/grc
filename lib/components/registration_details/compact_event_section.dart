@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:grc/core/navigation/app_navigation.dart';
 import 'package:get/get.dart';
 import 'package:grc/admin/events/model/run_event_model.dart';
 import 'package:grc/core/config/app_colors.dart';
@@ -34,9 +35,9 @@ class CompactEventSection extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
         onTap: () {
-          final id = event.id;
-          if (id == null) return;
-          Get.toNamed(AppConstants.routes.eventDetailPath(id));
+          final slug = event.slug;
+          if (slug == null || slug.isEmpty) return;
+          AppNavigation.toNamed(AppConstants.routes.eventDetailPath(slug));
         },
         child: Container(
           decoration: BoxDecoration(

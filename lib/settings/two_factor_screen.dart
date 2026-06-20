@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:grc/components/shared/custom_button.dart';
 import 'package:grc/components/shared/custom_text_field.dart';
 import 'package:grc/core/auth/auth_state_controller.dart';
+import 'package:grc/core/components/app_bar/app_breadcrumbs.dart';
+import 'package:grc/core/components/app_bar/grc_app_bar.dart';
 import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/components/query/mutation_loading_overlay.dart';
 import 'package:grc/core/config/constants.dart';
@@ -59,7 +61,10 @@ class TwoFactorScreen extends HookWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Two-factor authentication')),
+      appBar: GrcAppBar(
+        title: 'Two-factor authentication',
+        breadcrumbs: AppBreadcrumbs.settingsChild('Two-factor authentication'),
+      ),
       body: MutationLoadingOverlay(
         mutationKey: QueryKeys.updateTwoFactor,
         child: AdaptivePageContainer(

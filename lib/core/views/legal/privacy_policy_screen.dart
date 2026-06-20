@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:grc/core/components/app_bar/app_breadcrumbs.dart';
+import 'package:grc/core/components/app_bar/grc_app_bar.dart';
 import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/views/legal/legal_section.dart';
@@ -12,7 +14,10 @@ class PrivacyPolicyScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(AppColors.background),
-      appBar: AppBar(title: const Text('Privacy policy')),
+      appBar: GrcAppBar(
+        title: 'Privacy policy',
+        breadcrumbs: AppBreadcrumbs.settingsChild('Privacy policy'),
+      ),
       body: AdaptivePageContainer(
         maxWidth: 860,
         child: SingleChildScrollView(

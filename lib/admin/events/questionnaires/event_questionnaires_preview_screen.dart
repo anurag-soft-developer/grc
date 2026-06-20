@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:grc/core/navigation/app_navigation.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_query/flutter_query.dart';
 import 'package:get/get.dart';
 import 'package:grc/admin/events/model/run_event_model.dart';
 import 'package:grc/admin/events/run_events_service.dart';
 import 'package:grc/components/questionnaires/form_renderer.dart';
+import 'package:grc/core/components/app_bar/app_breadcrumbs.dart';
+import 'package:grc/core/components/app_bar/grc_app_bar.dart';
 import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/components/query/query_async_body.dart';
 import 'package:grc/core/config/constants.dart';
@@ -31,7 +34,7 @@ class EventQuestionnairesPreviewScreen extends HookWidget {
     );
 
     Future<void> openEditor(String id) async {
-      final updated = await Get.toNamed<RunEventModel>(
+      final updated = await AppNavigation.toNamed<RunEventModel>(
         AppConstants.routes.adminFormBuilderPath(id),
       );
       if (updated != null) {
@@ -41,7 +44,7 @@ class EventQuestionnairesPreviewScreen extends HookWidget {
 
     if (id == null || id!.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Registration questions')),
+        appBar: GrcAppBar(title: 'Registration questions'),
         body: const Center(child: Text('Event not found')),
       );
     }
@@ -52,7 +55,7 @@ class EventQuestionnairesPreviewScreen extends HookWidget {
       data: (data) {
         if (data == null) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Registration questions')),
+            appBar: GrcAppBar(title: 'Registration questions'),
             body: const Center(child: Text('Event not found')),
           );
         }
@@ -68,7 +71,7 @@ class EventQuestionnairesPreviewScreen extends HookWidget {
           },
           child: Scaffold(
             backgroundColor: const Color(AppColors.background),
-            appBar: AppBar(
+            appBar: GrcAppBar(
               elevation: 0,
               scrolledUnderElevation: 0.5,
               backgroundColor: const Color(AppColors.surface),
@@ -78,7 +81,14 @@ class EventQuestionnairesPreviewScreen extends HookWidget {
                 color: const Color(AppColors.text),
                 onPressed: () => Get.back(result: data),
               ),
-              title: _PreviewAppBarTitle(eventTitle: data.title),
+              title: 'Registration questions',
+              titleWidget: _PreviewAppBarTitle(eventTitle: data.title),
+              breadcrumbs: id != null
+                  ? AppBreadcrumbs.adminQuestionnaires(
+                      eventId: id,
+                      eventTitle: data.title,
+                    )
+                  : null,
               actions: [
                 if (id != null)
                   IconButton(

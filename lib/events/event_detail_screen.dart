@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:grc/core/navigation/app_navigation.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_query/flutter_query.dart';
 import 'package:get/get.dart';
 import 'package:grc/admin/events/model/run_event_model.dart';
 import 'package:grc/admin/events/run_events_service.dart';
+import 'package:grc/core/components/app_bar/app_breadcrumbs.dart';
+import 'package:grc/core/components/app_bar/grc_app_bar.dart';
 import 'package:grc/core/components/query/query_async_body.dart';
 import 'package:grc/components/events/admin_event_actions.dart';
 import 'package:grc/components/events/user_event_actions.dart';
@@ -34,25 +37,39 @@ class EventDetailScreen extends HookWidget {
   Widget build(BuildContext context) {
     final authState = Get.find<AuthStateController>();
     final isAdminMode = authState.isAdminMode;
-    final id = useMemoized(() => Get.parameters['id']);
+    final isAdminDetailRoute = useMemoized(
+      () => Uri.parse(Get.currentRoute).path.startsWith('/admin/events/'),
+    );
+    final adminEventId = useMemoized(() => Get.parameters['id']);
+    final publicSlug = useMemoized(() => Get.parameters['slug']);
 
     final detailQuery = useQuery<RunEventModel?, Object>(
-      QueryKeys.adminEvent(id ?? ''),
+      isAdminDetailRoute
+          ? QueryKeys.adminEvent(adminEventId ?? '')
+          : QueryKeys.publicEvent(publicSlug ?? ''),
       (_) async {
-        final routeId = id;
-        if (routeId == null || routeId.isEmpty) return null;
-        return RunEventsService.instance.getEventById(routeId);
+        if (isAdminDetailRoute) {
+          final routeId = adminEventId;
+          if (routeId == null || routeId.isEmpty) return null;
+          return RunEventsService.instance.getEventById(routeId);
+        }
+
+        final slug = publicSlug;
+        if (slug == null || slug.isEmpty) return null;
+        return RunEventsService.instance.getPublicEventBySlug(slug);
       },
-      enabled: id != null && id.isNotEmpty,
+      enabled: isAdminDetailRoute
+          ? (adminEventId?.isNotEmpty ?? false)
+          : (publicSlug?.isNotEmpty ?? false),
     );
 
     final event = detailQuery.data;
 
     Future<void> openEdit() async {
-      final eventId = event?.id ?? id;
+      final eventId = event?.id ?? adminEventId;
       if (eventId == null || eventId.isEmpty) return;
 
-      final result = await Get.toNamed(
+      final result = await AppNavigation.toNamed(
         AppConstants.routes.adminEventFormEditPath(eventId),
       );
       if (result != null) {
@@ -61,10 +78,10 @@ class EventDetailScreen extends HookWidget {
     }
 
     Future<void> openQuestionnaires() async {
-      final eventId = event?.id ?? id;
+      final eventId = event?.id ?? adminEventId;
       if (eventId == null || eventId.isEmpty) return;
 
-      final result = await Get.toNamed(
+      final result = await AppNavigation.toNamed(
         AppConstants.routes.adminEventQuestionnairesPath(eventId),
       );
       if (result != null) {
@@ -73,7 +90,11 @@ class EventDetailScreen extends HookWidget {
     }
 
     Widget body;
-    if (id == null || id.isEmpty) {
+    final hasRouteParam = isAdminDetailRoute
+        ? (adminEventId?.isNotEmpty ?? false)
+        : (publicSlug?.isNotEmpty ?? false);
+
+    if (!hasRouteParam) {
       body = const Center(child: Text('Event not found'));
     } else {
       body = QueryAsyncBody<RunEventModel?, dynamic>(
@@ -102,8 +123,19 @@ class EventDetailScreen extends HookWidget {
 
     return Scaffold(
       backgroundColor: const Color(AppColors.background),
-      appBar: AppBar(
-        title: const Text('Event details'),
+      appBar: GrcAppBar(
+        title: event?.title ?? 'Event details',
+        breadcrumbs: hasRouteParam
+            ? (isAdminDetailRoute
+                ? AppBreadcrumbs.adminEventDetail(
+                    eventId: adminEventId!,
+                    eventTitle: event?.title,
+                  )
+                : AppBreadcrumbs.userEventDetail(
+                    eventSlug: publicSlug!,
+                    eventTitle: event?.title,
+                  ))
+            : null,
         actions: [
           if (event != null && isAdminMode) ...[
             IconButton(
@@ -153,7 +185,10 @@ class EventDetailScreen extends HookWidget {
         child: Column(
           children: [
             Expanded(child: _EventDetailBody(event: data)),
-            UserEventActions(event: data),
+            UserEventActions(
+              event: data,
+              isLoggedIn: Get.find<AuthStateController>().isLoggedIn,
+            ),
           ],
         ),
       ),

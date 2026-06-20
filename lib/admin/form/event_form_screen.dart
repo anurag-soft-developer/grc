@@ -10,6 +10,8 @@ import 'package:grc/admin/form/event_form_controller.dart';
 import 'package:grc/components/shared/custom_button.dart';
 import 'package:grc/components/shared/custom_text_field.dart';
 import 'package:grc/components/shared/location_autocomplete_field.dart';
+import 'package:grc/core/components/app_bar/app_breadcrumbs.dart';
+import 'package:grc/core/components/app_bar/grc_app_bar.dart';
 import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/components/query/mutation_loading_overlay.dart';
 import 'package:grc/core/config/constants.dart';
@@ -171,7 +173,12 @@ class EventFormScreen extends HookWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(isEditingMode ? 'Edit Event' : 'Add Event')),
+      appBar: GrcAppBar(
+        title: isEditingMode ? 'Edit Event' : 'Add Event',
+        breadcrumbs: isEditingMode
+            ? AppBreadcrumbs.adminEventFormEdit()
+            : AppBreadcrumbs.adminEventFormCreate(),
+      ),
       body: MutationLoadingOverlay(
         mutationKey: mutationKey,
         child: AdaptivePageContainer(

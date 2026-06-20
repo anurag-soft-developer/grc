@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:grc/core/navigation/app_navigation.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_query/flutter_query.dart';
 import 'package:get/get.dart';
 import 'package:grc/admin/events/model/run_event_model.dart';
+import 'package:grc/core/components/app_bar/app_breadcrumbs.dart';
+import 'package:grc/core/components/app_bar/grc_app_bar.dart';
 import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/config/app_colors.dart';
 import 'package:grc/core/config/constants.dart';
@@ -62,7 +65,16 @@ class EventParticipantsScreen extends HookWidget {
 
     return Scaffold(
       backgroundColor: const Color(AppColors.background),
-      appBar: AppBar(title: Text('Participants · $title')),
+      appBar: GrcAppBar(
+        title: 'Participants · $title',
+        breadcrumbs: id != null && id.isNotEmpty
+            ? AppBreadcrumbs.adminEventChild(
+                eventId: id,
+                eventTitle: title,
+                pageTitle: 'Participants',
+              )
+            : null,
+      ),
       body: id == null || id.isEmpty
           ? const Center(child: Text('Event not found'))
           : QueryAsyncBody<RunEventModel?, dynamic>(
@@ -158,7 +170,7 @@ class _ParticipantTile extends StatelessWidget {
         onTap: () {
           final id = participant.id;
           if (id == null) return;
-          Get.toNamed(AppConstants.routes.registrationDetailPath(id));
+          AppNavigation.toNamed(AppConstants.routes.registrationDetailPath(id));
         },
         child: Padding(
           padding: const EdgeInsets.all(16),

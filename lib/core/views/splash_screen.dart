@@ -7,6 +7,7 @@ import 'package:grc/core/auth/auth_state_controller.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/query/query_keys.dart';
 import 'package:grc/core/repositories/auth_repository.dart';
+import 'package:grc/core/routes/main_tab_routes.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
@@ -62,7 +63,7 @@ class AuthWrapper extends HookWidget {
         if (loggedIn) {
           AuthNavigation.goAfterAuth();
         } else {
-          Get.offAllNamed(AppConstants.routes.login);
+          Get.offAllNamed(MainTabRoutes.events);
         }
       });
       return null;

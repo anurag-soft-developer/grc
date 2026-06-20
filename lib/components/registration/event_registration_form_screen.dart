@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:get/get.dart';
 import 'package:grc/components/shared/custom_button.dart';
+import 'package:grc/core/components/app_bar/app_breadcrumbs.dart';
+import 'package:grc/core/components/app_bar/grc_app_bar.dart';
 import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/config/app_colors.dart';
 import 'package:grc/registrations/event_registration_controller.dart';
@@ -20,10 +22,19 @@ class EventRegistrationFormScreen extends HookWidget {
     }, const []);
 
     final event = controller.event;
+    final eventId = Get.parameters['id'];
 
     return Scaffold(
       backgroundColor: const Color(AppColors.background),
-      appBar: AppBar(title: Text(event?.title ?? 'Register')),
+      appBar: GrcAppBar(
+        title: event?.title ?? 'Register',
+        breadcrumbs: eventId != null && eventId.isNotEmpty
+            ? AppBreadcrumbs.userEventRegistration(
+                eventSlug: event?.slug ?? eventId,
+                eventTitle: event?.title,
+              )
+            : null,
+      ),
       body: Obx(() {
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());

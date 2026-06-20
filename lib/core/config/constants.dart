@@ -31,7 +31,7 @@ class Routes {
   final String eventForm = '/admin/event-form';
   final String paymentsRazorpayCallback = '/payments/razorpay/callback';
 
-  String eventDetailPath(String id) => '/events/$id';
+  String eventDetailPath(String slug) => '/events/$slug';
 
   String adminEventDetailPath(String id) => '/admin/events/$id';
 

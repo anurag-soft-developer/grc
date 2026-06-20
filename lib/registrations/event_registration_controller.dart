@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:grc/core/navigation/app_navigation.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_query/flutter_query.dart';
 import 'package:get/get.dart';
@@ -99,7 +100,7 @@ class EventRegistrationController extends GetxController {
     if (eventId != null) {
       _eventId = eventId;
     }
-    await Get.toNamed(AppConstants.routes.registrationDetailPath(participantId));
+    await AppNavigation.toNamed(AppConstants.routes.registrationDetailPath(participantId));
     await _invalidateEventRegistrationStatus();
   }
 
@@ -145,7 +146,7 @@ class EventRegistrationController extends GetxController {
         return;
       }
       isLoading.value = false;
-      await Get.toNamed(AppConstants.routes.registrationFormPath(eventId));
+      await AppNavigation.toNamed(AppConstants.routes.registrationFormPath(eventId));
       await _invalidateEventRegistrationStatus();
     } on DioException catch (e) {
       ExceptionHandler.handleDioException(e);
@@ -169,7 +170,7 @@ class EventRegistrationController extends GetxController {
             event: existing.runEventModel ?? const RunEventModel(title: ''),
           );
       participant.value = existing;
-      Get.toNamed(AppConstants.routes.registrationFormPath(eventId));
+      AppNavigation.toNamed(AppConstants.routes.registrationFormPath(eventId));
     } on DioException catch (e) {
       ExceptionHandler.handleDioException(e);
     } catch (e) {

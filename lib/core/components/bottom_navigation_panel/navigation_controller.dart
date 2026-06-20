@@ -1,5 +1,6 @@
 import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
+import 'package:grc/core/auth/auth_navigation.dart';
 import 'package:grc/core/auth/auth_state_controller.dart';
 import 'package:grc/core/components/bottom_navigation_panel/nav_tabs.dart';
 import 'package:grc/core/routes/main_tab_routes.dart';
@@ -27,6 +28,12 @@ class NavigationController extends GetxController {
   void changeTab(int index) {
     if (index < 0 || index >= tabCount) return;
     final nextRoute = activeTabs[index].route;
+
+    if (!_canAccessRoute(nextRoute)) {
+      _redirectTo(AuthNavigation.loginPath(returnTo: nextRoute));
+      return;
+    }
+
     final currentRoute = _normalizeRoute(Get.currentRoute);
 
     if (currentRoute != nextRoute) {
@@ -38,6 +45,14 @@ class NavigationController extends GetxController {
       _currentIndex.value = index;
       _loadControllerForCurrentTab();
     }
+  }
+
+  bool _canAccessRoute(String route) {
+    if (Get.find<AuthStateController>().isLoggedIn) {
+      return true;
+    }
+
+    return route == MainTabRoutes.events;
   }
 
   void resetToFirstTab() {
@@ -55,11 +70,6 @@ class NavigationController extends GetxController {
         _currentIndex.value = index;
       }
       _loadControllerForCurrentTab();
-      return;
-    }
-
-    if (currentRoute == MainTabRoutes.legacyMain) {
-      _redirectTo(activeTabs.first.route);
       return;
     }
 

@@ -8,6 +8,8 @@ import 'package:grc/components/registration_details/primary_details_card.dart';
 import 'package:grc/components/registration_details/section_card.dart';
 import 'package:grc/components/registration_details/status_helpers.dart';
 import 'package:grc/components/shared/custom_button.dart';
+import 'package:grc/core/components/app_bar/app_breadcrumbs.dart';
+import 'package:grc/core/components/app_bar/grc_app_bar.dart';
 import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/components/query/query_async_body.dart';
 import 'package:grc/core/config/constants.dart';
@@ -42,7 +44,11 @@ class RegistrationDetailScreen extends HookWidget {
 
     return Scaffold(
       backgroundColor: const Color(AppColors.background),
-      appBar: AppBar(title: const Text('Registration'), centerTitle: false),
+      appBar: GrcAppBar(
+        title: 'Registration',
+        centerTitle: false,
+        breadcrumbs: AppBreadcrumbs.registrationDetail(),
+      ),
       body: QueryAsyncBody<RunEventParticipantModel?, dynamic>(
         state: detailQuery,
         onRetry: detailQuery.refetch,

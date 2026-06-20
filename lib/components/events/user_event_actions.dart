@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:grc/admin/events/model/run_event_model.dart';
 import 'package:grc/components/events/event_registration_acceptance_dialog.dart';
 import 'package:grc/components/shared/custom_button.dart';
+import 'package:grc/core/auth/auth_navigation.dart';
+import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/query/query_keys.dart';
 import 'package:grc/registrations/event_registration_binding.dart';
 import 'package:grc/registrations/event_registration_controller.dart';
@@ -27,8 +29,13 @@ class _EventActionConfig {
 
 class UserEventActions extends HookWidget {
   final RunEventModel event;
+  final bool isLoggedIn;
 
-  const UserEventActions({super.key, required this.event});
+  const UserEventActions({
+    super.key,
+    required this.event,
+    required this.isLoggedIn,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +47,7 @@ class UserEventActions extends HookWidget {
       (_) => RunEventParticipantsService.instance.getMyRegistrationStatus(
         eventId!,
       ),
-      enabled: eventId != null && eventId.isNotEmpty,
+      enabled: isLoggedIn && eventId != null && eventId.isNotEmpty,
       retry: _noRetry,
     );
 
@@ -52,8 +59,11 @@ class UserEventActions extends HookWidget {
     final config = _resolveAction(
       context: context,
       isOpen: isOpen,
+      isLoggedIn: isLoggedIn,
       status: statusQuery.data,
-      isLoading: statusQuery.isLoading && statusQuery.data == null,
+      isLoading: isLoggedIn &&
+          statusQuery.isLoading &&
+          statusQuery.data == null,
       hasError: statusQuery.isError,
       event: event,
       controller: registrationController,
@@ -63,7 +73,9 @@ class UserEventActions extends HookWidget {
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-        child: statusQuery.isLoading && statusQuery.data == null
+        child: isLoggedIn &&
+                statusQuery.isLoading &&
+                statusQuery.data == null
             ? const SizedBox(
                 height: 48,
                 child: Center(child: CircularProgressIndicator()),
@@ -80,6 +92,7 @@ class UserEventActions extends HookWidget {
   _EventActionConfig _resolveAction({
     required BuildContext context,
     required bool isOpen,
+    required bool isLoggedIn,
     required EventRegistrationStatus? status,
     required bool isLoading,
     required bool hasError,
@@ -90,6 +103,20 @@ class UserEventActions extends HookWidget {
       return const _EventActionConfig(
         label: 'Loading...',
         icon: Icons.hourglass_empty,
+      );
+    }
+
+    if (!isLoggedIn) {
+      if (isOpen) {
+        return _EventActionConfig(
+          label: 'Register',
+          icon: Icons.how_to_reg_outlined,
+          onPressed: () => _startGuestRegistration(context, event),
+        );
+      }
+      return const _EventActionConfig(
+        label: 'Registrations closed',
+        icon: Icons.lock_outline,
       );
     }
 
@@ -143,6 +170,23 @@ class UserEventActions extends HookWidget {
       icon: Icons.lock_outline,
     );
   }
+}
+
+Future<void> _startGuestRegistration(
+  BuildContext context,
+  RunEventModel event,
+) async {
+  final accepted = await EventRegistrationAcceptanceDialog.show(
+    context,
+    event: event,
+  );
+  if (!accepted || !context.mounted) return;
+
+  final slug = event.slug?.trim();
+  final returnTo = slug != null && slug.isNotEmpty
+      ? AppConstants.routes.eventDetailPath(slug)
+      : null;
+  Get.toNamed(AuthNavigation.loginPath(returnTo: returnTo));
 }
 
 Future<void> _startRegistrationWithAcceptance(

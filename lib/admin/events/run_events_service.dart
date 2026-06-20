@@ -70,6 +70,14 @@ class RunEventsService {
     return RunEventModel.fromMap(response);
   }
 
+  Future<RunEventModel?> getPublicEventBySlug(String slug) async {
+    final response = await _api.get<Map<String, dynamic>>(
+      ApiConstants.runEvents.publicBySlug(slug),
+    );
+    if (response == null) return null;
+    return RunEventModel.fromMap(response);
+  }
+
   Future<RunEventAnalyticsModel?> getEventAnalytics(String eventId) async {
     final response = await _api.get<Map<String, dynamic>>(
       ApiConstants.runEvents.analytics(eventId),

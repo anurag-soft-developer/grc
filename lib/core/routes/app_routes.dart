@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:grc/bindings/main_screen_wrapper_binding.dart';
 import 'package:grc/core/components/bottom_navigation_panel/main_screen_wrapper.dart';
@@ -19,7 +18,9 @@ import 'package:grc/registrations/registration_detail_screen.dart';
 
 class AppRoutes {
   static const String splashRoute = '/';
-  static const String mainRoute = MainTabRoutes.legacyMain;
+
+  static String defaultTabRoute({required bool isAdminMode}) =>
+      MainTabRoutes.defaultForMode(isAdminMode);
 
   // /// On web, Razorpay/Google redirects land with a full path URL. Respect it
   // /// instead of always booting through the splash route.
@@ -37,7 +38,7 @@ class AppRoutes {
       name: name,
       page: () => const MainScreenWrapper(),
       binding: NavigationBinding(),
-      middlewares: [AuthGuard()],
+      middlewares: [MainTabAccessGuard()],
       transition: Transition.noTransition,
       transitionDuration: Duration.zero,
     );
@@ -45,7 +46,6 @@ class AppRoutes {
 
   static final routes = [
     GetPage(name: splashRoute, page: () => const AuthWrapper()),
-    _mainTabPage(mainRoute),
     _mainTabPage(MainTabRoutes.home),
     _mainTabPage(MainTabRoutes.events),
     _mainTabPage(MainTabRoutes.registrations),
@@ -53,9 +53,8 @@ class AppRoutes {
     _mainTabPage(MainTabRoutes.dashboard),
     _mainTabPage(MainTabRoutes.myEvents),
     GetPage(
-      name: AppConstants.routes.eventDetailPath(':id'),
+      name: AppConstants.routes.eventDetailPath(':slug'),
       page: () => const EventDetailScreen(),
-      middlewares: [AuthGuard()],
     ),
     GetPage(
       name: AppConstants.routes.registrationFormPath(':id'),

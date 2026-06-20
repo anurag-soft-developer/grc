@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:grc/core/navigation/app_navigation.dart';
 import 'package:get/get.dart';
 import 'package:grc/admin/events/model/run_event_model.dart';
 import 'package:grc/core/utils/date_format_util.dart';
@@ -30,9 +31,9 @@ class HomeEventCarouselCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
-          final id = event.id;
-          if (id == null) return;
-          Get.toNamed(AppConstants.routes.eventDetailPath(id));
+          final slug = event.slug;
+          if (slug == null || slug.isEmpty) return;
+          AppNavigation.toNamed(AppConstants.routes.eventDetailPath(slug));
         },
         child: Stack(
           fit: StackFit.expand,

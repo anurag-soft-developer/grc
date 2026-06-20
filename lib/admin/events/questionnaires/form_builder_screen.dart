@@ -5,9 +5,13 @@ import 'package:get/get.dart';
 import 'package:grc/admin/events/model/run_event_model.dart';
 import 'package:grc/admin/events/questionnaires/event_question_draft.dart';
 import 'package:grc/admin/events/questionnaires/form_builder_controller.dart';
+import 'package:grc/admin/events/run_events_service.dart';
 import 'package:grc/components/shared/custom_button.dart';
+import 'package:grc/core/components/app_bar/app_breadcrumbs.dart';
+import 'package:grc/core/components/app_bar/grc_app_bar.dart';
 import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/components/query/mutation_loading_overlay.dart';
+import 'package:grc/core/components/query/query_async_body.dart';
 import 'package:grc/core/config/app_colors.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/query/query_keys.dart';
@@ -22,23 +26,37 @@ class FormBuilderScreen extends HookWidget {
     final controller = Get.find<FormBuilderController>();
     final client = useQueryClient();
     final theme = Theme.of(context);
+    final routeId = useMemoized(() => Get.parameters['id']);
+    final syncedEventId = useState<String?>(null);
+
+    final eventQuery = useQuery<RunEventModel?, Object>(
+      QueryKeys.adminEvent(routeId ?? ''),
+      (_) async {
+        if (routeId == null || routeId.isEmpty) return null;
+        return RunEventsService.instance.getEventById(routeId);
+      },
+      enabled: routeId != null && routeId.isNotEmpty,
+    );
 
     useEffect(() {
-      final id = Get.parameters['id'];
-      if (id == null || id.isEmpty) {
-        return () {
-          if (Get.isRegistered<FormBuilderController>()) {
-            Get.delete<FormBuilderController>(force: true);
-          }
-        };
-      }
-      controller.initFromEventId(id);
       return () {
         if (Get.isRegistered<FormBuilderController>()) {
           Get.delete<FormBuilderController>(force: true);
         }
       };
     }, const []);
+
+    useEffect(() {
+      final event = eventQuery.data;
+      final eventId = event?.id;
+      if (eventId == null || eventId.isEmpty) return null;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.loadFromEvent(event!);
+        syncedEventId.value = eventId;
+      });
+      return null;
+    }, [eventQuery.data]);
 
     final saveMutation = useMutation<RunEventModel?, Object, void, void>(
       (_, __) async {
@@ -66,65 +84,133 @@ class FormBuilderScreen extends HookWidget {
       },
     );
 
-    return Scaffold(
-      backgroundColor: const Color(AppColors.background),
-      appBar: AppBar(
-        elevation: 0,
-        scrolledUnderElevation: 0.5,
-        backgroundColor: const Color(AppColors.surface),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              controller.event.title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                fontSize: 16,
+    if (routeId == null || routeId.isEmpty) {
+      return Scaffold(
+        backgroundColor: const Color(AppColors.background),
+        appBar: const GrcAppBar(title: 'Form builder'),
+        body: const Center(child: Text('Event not found')),
+      );
+    }
+
+    return QueryAsyncBody<RunEventModel?, dynamic>(
+      state: eventQuery,
+      onRetry: eventQuery.refetch,
+      data: (event) {
+        if (event == null) {
+          return Scaffold(
+            backgroundColor: const Color(AppColors.background),
+            appBar: const GrcAppBar(title: 'Form builder'),
+            body: const Center(child: Text('Event not found')),
+          );
+        }
+
+        final eventId = event.id ?? routeId;
+
+        if (syncedEventId.value != eventId) {
+          return Scaffold(
+            backgroundColor: const Color(AppColors.background),
+            appBar: GrcAppBar(
+              elevation: 0,
+              scrolledUnderElevation: 0.5,
+              backgroundColor: const Color(AppColors.surface),
+              title: 'Form builder',
+              titleWidget: _FormBuilderAppBarTitle(
+                eventTitle: event.title,
+                theme: theme,
               ),
             ),
-            Text(
-              'Form builder',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: const Color(AppColors.textSecondary),
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        return Scaffold(
+          backgroundColor: const Color(AppColors.background),
+          appBar: GrcAppBar(
+            elevation: 0,
+            scrolledUnderElevation: 0.5,
+            backgroundColor: const Color(AppColors.surface),
+            title: 'Form builder',
+            titleWidget: _FormBuilderAppBarTitle(
+              eventTitle: event.title,
+              theme: theme,
+            ),
+            breadcrumbs: eventId.isNotEmpty
+                ? AppBreadcrumbs.adminFormBuilder(
+                    eventId: eventId,
+                    eventTitle: event.title,
+                  )
+                : null,
+          ),
+          body: MutationLoadingOverlay(
+            mutationKey: QueryKeys.updateEventCustomQuestions,
+            child: AdaptivePageContainer(
+              maxWidth: 1020,
+              child: Column(
+                children: [
+                  Expanded(
+                    child: Obx(() {
+                      if (controller.drafts.isEmpty) {
+                        return _EmptyQuestionsState(
+                          onAdd: controller.addQuestion,
+                        );
+                      }
+                      return ListView.separated(
+                        padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+                        itemCount: controller.drafts.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 8),
+                        itemBuilder: (context, index) => _QuestionCard(
+                          index: index,
+                          draft: controller.drafts[index],
+                          controller: controller,
+                        ),
+                      );
+                    }),
+                  ),
+                  _BottomActionBar(
+                    isSaving: saveMutation.isPending,
+                    onAdd: controller.addQuestion,
+                    onSave: () => saveMutation.mutate(null),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
-      body: MutationLoadingOverlay(
-        mutationKey: QueryKeys.updateEventCustomQuestions,
-        child: AdaptivePageContainer(
-          maxWidth: 1020,
-          child: Column(
-            children: [
-              Expanded(
-                child: Obx(() {
-                  if (controller.drafts.isEmpty) {
-                    return _EmptyQuestionsState(onAdd: controller.addQuestion);
-                  }
-                  return ListView.separated(
-                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-                    itemCount: controller.drafts.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
-                    itemBuilder: (context, index) => _QuestionCard(
-                      index: index,
-                      draft: controller.drafts[index],
-                      controller: controller,
-                    ),
-                  );
-                }),
-              ),
-              _BottomActionBar(
-                isSaving: saveMutation.isPending,
-                onAdd: controller.addQuestion,
-                onSave: () => saveMutation.mutate(null),
-              ),
-            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _FormBuilderAppBarTitle extends StatelessWidget {
+  final String eventTitle;
+  final ThemeData theme;
+
+  const _FormBuilderAppBarTitle({
+    required this.eventTitle,
+    required this.theme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          eventTitle,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
           ),
         ),
-      ),
+        Text(
+          'Form builder',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: const Color(AppColors.textSecondary),
+          ),
+        ),
+      ],
     );
   }
 }

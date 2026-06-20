@@ -6,6 +6,8 @@ import 'package:grc/admin/events/model/run_event_analytics_model.dart';
 import 'package:grc/admin/events/model/run_event_model.dart';
 import 'package:grc/admin/events/run_events_service.dart';
 import 'package:grc/components/admin/stat_card.dart';
+import 'package:grc/core/components/app_bar/app_breadcrumbs.dart';
+import 'package:grc/core/components/app_bar/grc_app_bar.dart';
 import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/components/query/query_async_body.dart';
 import 'package:grc/core/config/app_colors.dart';
@@ -42,7 +44,16 @@ class EventAnalyticsScreen extends HookWidget {
 
     return Scaffold(
       backgroundColor: const Color(AppColors.background),
-      appBar: AppBar(title: Text('Analytics · $eventTitle')),
+      appBar: GrcAppBar(
+        title: 'Analytics · $eventTitle',
+        breadcrumbs: id != null && id.isNotEmpty
+            ? AppBreadcrumbs.adminEventChild(
+                eventId: id,
+                eventTitle: eventTitle,
+                pageTitle: 'Analytics',
+              )
+            : null,
+      ),
       body: id == null || id!.isEmpty
           ? const Center(child: Text('Event not found'))
           : QueryAsyncBody<RunEventAnalyticsModel?, dynamic>(

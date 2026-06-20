@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:grc/core/navigation/app_navigation.dart';
 import 'package:get/get.dart';
 import 'package:grc/core/utils/date_format_util.dart';
 import 'package:grc/core/config/constants.dart';
@@ -35,7 +36,7 @@ class HomeUpcomingSlotCard extends StatelessWidget {
         onTap: () {
           final id = participant.id;
           if (id == null) return;
-          Get.toNamed(AppConstants.routes.registrationDetailPath(id));
+          AppNavigation.toNamed(AppConstants.routes.registrationDetailPath(id));
         },
         child: Container(
           decoration: BoxDecoration(

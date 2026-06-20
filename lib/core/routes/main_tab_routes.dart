@@ -1,21 +1,18 @@
 class MainTabRoutes {
-  static const legacyMain = '/main';
+  static const home = '/home';
+  static const events = '/events';
+  static const registrations = '/registrations';
+  static const profile = '/profile';
 
-  static const home = '/main/home';
-  static const events = '/main/events';
-  static const registrations = '/main/registrations';
-  static const profile = '/main/profile';
-
-  static const dashboard = '/main/dashboard';
-  static const myEvents = '/main/my-events';
+  static const dashboard = '/dashboard';
+  static const myEvents = '/my-events';
 
   static String defaultForMode(bool isAdminMode) {
     return isAdminMode ? dashboard : home;
   }
 
   static bool isMainTabRoute(String route) {
-    return route == legacyMain ||
-        route == home ||
+    return route == home ||
         route == events ||
         route == registrations ||
         route == profile ||

@@ -24,6 +24,7 @@ class QueryKeys {
     ...filterParts,
   ];
   static List<String> adminEvent(String id) => ['adminEvent', id];
+  static List<String> publicEvent(String slug) => ['publicEvent', slug];
   static const myRegistrations = ['myRegistrations'];
   static const myUpcomingRegistrations = ['myRegistrations', 'upcoming'];
   static List<String> registrationDetail(String id) => [

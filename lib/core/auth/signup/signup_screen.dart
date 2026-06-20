@@ -13,6 +13,7 @@ import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/models/user/user_model.dart';
 import 'package:grc/core/query/query_keys.dart';
 import 'package:grc/core/repositories/auth_repository.dart';
+import 'package:grc/core/routes/main_tab_routes.dart';
 import 'package:grc/core/utils/validators.dart';
 
 class SignupScreen extends HookWidget {
@@ -60,7 +61,16 @@ class SignupScreen extends HookWidget {
 
     return Scaffold(
       backgroundColor: const Color(AppColors.background),
-      appBar: AppBar(title: const Text('Join GRC runs')),
+      appBar: AppBar(
+        backgroundColor: const Color(AppColors.background),
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        title: const Text('Join GRC runs'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(AppColors.text)),
+          onPressed: () => Get.offAllNamed(MainTabRoutes.events),
+        ),
+      ),
       body: MutationLoadingOverlay(
         mutationKey: QueryKeys.register,
         child: MutationLoadingOverlay(

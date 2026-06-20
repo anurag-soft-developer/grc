@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:grc/core/navigation/app_navigation.dart';
 import 'package:get/get.dart';
 import 'package:grc/core/auth/auth_state_controller.dart';
+import 'package:grc/core/components/app_bar/app_breadcrumbs.dart';
+import 'package:grc/core/components/app_bar/grc_app_bar.dart';
 import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/config/constants.dart';
 
@@ -13,7 +16,10 @@ class SettingsScreen extends StatelessWidget {
     final user = authState.user;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: GrcAppBar(
+        title: 'Settings',
+        breadcrumbs: AppBreadcrumbs.settings(),
+      ),
       body: AdaptivePageContainer(
         maxWidth: 820,
         child: ListView(
@@ -27,20 +33,20 @@ class SettingsScreen extends StatelessWidget {
                     leading: const Icon(Icons.lock_outline),
                     title: const Text('Change password'),
                     onTap: () =>
-                        Get.toNamed(AppConstants.routes.changePassword),
+                        AppNavigation.toNamed(AppConstants.routes.changePassword),
                   ),
                   const Divider(height: 1),
                   ListTile(
                     leading: const Icon(Icons.security),
                     title: const Text('Two-factor authentication'),
-                    onTap: () => Get.toNamed(AppConstants.routes.twoFactorAuth),
+                    onTap: () => AppNavigation.toNamed(AppConstants.routes.twoFactorAuth),
                   ),
                   if (user?.isEmailVerified != true) ...[
                     const Divider(height: 1),
                     ListTile(
                       leading: const Icon(Icons.mark_email_unread_outlined),
                       title: const Text('Verify email'),
-                      onTap: () => Get.toNamed(
+                      onTap: () => AppNavigation.toNamed(
                         AppConstants.routes.verifyEmailPath(email: user?.email),
                       ),
                     ),
@@ -68,12 +74,12 @@ class SettingsScreen extends StatelessWidget {
                   ListTile(
                     title: const Text('Terms of service'),
                     onTap: () =>
-                        Get.toNamed(AppConstants.routes.termsOfService),
+                        AppNavigation.toNamed(AppConstants.routes.termsOfService),
                   ),
                   const Divider(height: 1),
                   ListTile(
                     title: const Text('Privacy policy'),
-                    onTap: () => Get.toNamed(AppConstants.routes.privacyPolicy),
+                    onTap: () => AppNavigation.toNamed(AppConstants.routes.privacyPolicy),
                   ),
                 ],
               ),

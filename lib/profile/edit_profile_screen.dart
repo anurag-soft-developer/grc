@@ -6,6 +6,8 @@ import 'package:grc/components/shared/avatar_image_input.dart';
 import 'package:grc/components/shared/custom_button.dart';
 import 'package:grc/components/shared/custom_text_field.dart';
 import 'package:grc/core/auth/auth_state_controller.dart';
+import 'package:grc/core/components/app_bar/app_breadcrumbs.dart';
+import 'package:grc/core/components/app_bar/grc_app_bar.dart';
 import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/utils/responsive_form_spacing.dart';
 import 'package:grc/core/components/query/mutation_loading_overlay.dart';
@@ -80,7 +82,10 @@ class EditProfileScreen extends HookWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Edit profile')),
+      appBar: GrcAppBar(
+        title: 'Edit profile',
+        breadcrumbs: AppBreadcrumbs.editProfile(),
+      ),
       body: MutationLoadingOverlay(
         mutationKey: QueryKeys.updateProfile,
         child: AdaptivePageContainer(

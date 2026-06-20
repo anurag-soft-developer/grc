@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:grc/core/navigation/app_navigation.dart';
 import 'package:get/get.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/models/user/user_model.dart';
@@ -33,6 +34,6 @@ class LoginController extends GetxController {
   }
 
   void goToForgotPassword() {
-    Get.toNamed(AppConstants.routes.forgotPassword);
+    AppNavigation.toNamed(AppConstants.routes.forgotPassword);
   }
 }

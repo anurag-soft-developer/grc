@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:grc/core/navigation/app_navigation.dart';
 import 'package:get/get.dart';
 import 'package:grc/admin/events/model/run_event_model.dart';
 import 'package:grc/core/config/constants.dart';
@@ -82,7 +83,7 @@ class AdminEventListTile extends StatelessWidget {
         onTap: () {
           final id = event.id;
           if (id == null) return;
-          Get.toNamed(AppConstants.routes.adminEventDetailPath(id));
+          AppNavigation.toNamed(AppConstants.routes.adminEventDetailPath(id));
         },
         title: Text(event.title),
         subtitle: Column(

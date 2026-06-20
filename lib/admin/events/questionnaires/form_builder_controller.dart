@@ -16,8 +16,12 @@ class FormBuilderController extends GetxController {
     if (loaded == null) {
       throw ArgumentError('Event not found: $eventId');
     }
+    loadFromEvent(loaded);
+  }
+
+  void loadFromEvent(RunEventModel loaded) {
     event = loaded;
-    _loadDrafts(event.customQuestions);
+    _loadDrafts(loaded.customQuestions);
   }
 
   void _loadDrafts(List<CustomQuestionModel> questions) {

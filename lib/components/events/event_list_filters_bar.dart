@@ -11,7 +11,7 @@ class EventListFiltersBar extends HookWidget {
 
   static const filterWidth = 160.0;
   static const listMaxWidth = 980.0;
-  static const horizontalPadding = 16.0;
+  static const horizontalPadding = 10.0;
 
   const EventListFiltersBar({
     super.key,
@@ -71,65 +71,79 @@ class EventListFiltersBar extends HookWidget {
       );
     }
 
-    return Material(
-      color: const Color(AppColors.surface),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          horizontalPadding,
-          8,
-          horizontalPadding,
-          8,
-        ),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: listMaxWidth),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  InkWell(
-                    borderRadius: BorderRadius.circular(10),
-                    onTap: () => isExpanded.value = !isExpanded.value,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 10,
-                      ),
-                      child: Row(
-                        children: [
-                          const Text(
-                            'Filters',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Color(AppColors.text),
-                            ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        horizontalPadding,
+        8,
+        horizontalPadding,
+        8,
+      ),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: listMaxWidth),
+          child: Material(
+            color: const Color(AppColors.surface),
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: Color(AppColors.divider)),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                InkWell(
+                  onTap: () => isExpanded.value = !isExpanded.value,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    child: Row(
+                      children: [
+                        const Text(
+                          'Filters',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Color(AppColors.text),
                           ),
-                          const Spacer(),
-                          Icon(
-                            isExpanded.value
-                                ? Icons.keyboard_arrow_up_rounded
-                                : Icons.keyboard_arrow_down_rounded,
-                            color: const Color(AppColors.textSecondary),
-                          ),
-                        ],
-                      ),
+                        ),
+                        const Spacer(),
+                        Icon(
+                          isExpanded.value
+                              ? Icons.keyboard_arrow_up_rounded
+                              : Icons.keyboard_arrow_down_rounded,
+                          color: const Color(AppColors.textSecondary),
+                        ),
+                      ],
                     ),
                   ),
-                  AnimatedCrossFade(
-                    duration: const Duration(milliseconds: 200),
-                    crossFadeState: isExpanded.value
-                        ? CrossFadeState.showSecond
-                        : CrossFadeState.showFirst,
-                    firstChild: const SizedBox.shrink(),
-                    secondChild: Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: filtersContent(),
-                    ),
+                ),
+                AnimatedCrossFade(
+                  duration: const Duration(milliseconds: 200),
+                  crossFadeState: isExpanded.value
+                      ? CrossFadeState.showSecond
+                      : CrossFadeState.showFirst,
+                  firstChild: const SizedBox.shrink(),
+                  secondChild: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: Color(AppColors.divider),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+                        child: filtersContent(),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

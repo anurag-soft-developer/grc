@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:grc/core/auth/auth_state_controller.dart';
 import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/routes/app_routes.dart';
+import 'package:grc/core/routes/main_tab_routes.dart';
 
 /// Post-login / session-restore navigation that preserves deep links on web reload.
 class AuthNavigation {
@@ -50,7 +51,8 @@ class AuthNavigation {
       return returnTo;
     }
 
-    return fallback ?? AppRoutes.mainRoute;
+    return fallback ??
+        MainTabRoutes.defaultForMode(auth.isAdminMode);
   }
 
   static void goAfterAuth({String? fallback}) {

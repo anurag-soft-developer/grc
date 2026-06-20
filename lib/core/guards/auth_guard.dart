@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:grc/core/auth/auth_navigation.dart';
 import 'package:grc/core/auth/auth_state_controller.dart';
 import 'package:grc/core/config/constants.dart';
+import 'package:grc/core/routes/main_tab_routes.dart';
 import 'package:grc/core/repositories/auth_repository.dart';
 import 'package:grc/core/services/auth_storage_service.dart';
 
@@ -123,6 +124,27 @@ class AuthGuard extends GetMiddleware {
     final path = AuthNavigation.intendedPath(route);
     return path == AppConstants.routes.verifyEmail ||
         path.startsWith('${AppConstants.routes.verifyEmail}?');
+  }
+}
+
+class MainTabAccessGuard extends GetMiddleware {
+  @override
+  RouteSettings? redirect(String? route) {
+    final path = AuthNavigation.intendedPath(route);
+
+    if (_auth.isLoggedIn) {
+      return null;
+    }
+
+    if (path == MainTabRoutes.events) {
+      return null;
+    }
+
+    if (MainTabRoutes.isMainTabRoute(path)) {
+      return RouteSettings(name: AuthNavigation.loginPath(returnTo: path));
+    }
+
+    return null;
   }
 }
 

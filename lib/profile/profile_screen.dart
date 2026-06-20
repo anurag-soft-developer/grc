@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:grc/core/navigation/app_navigation.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_query/flutter_query.dart';
 import 'package:get/get.dart';
@@ -46,7 +47,7 @@ class ProfileTabScreen extends HookWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined),
-            onPressed: () => Get.toNamed(AppConstants.routes.settings),
+            onPressed: () => AppNavigation.toNamed(AppConstants.routes.settings),
           ),
         ],
       ),
@@ -144,7 +145,7 @@ class ProfileContent extends StatelessWidget {
                     title: 'Edit profile',
                     onTap: authState.isSigningOut.value
                         ? null
-                        : () => Get.toNamed(AppConstants.routes.editProfile),
+                        : () => AppNavigation.toNamed(AppConstants.routes.editProfile),
                   ),
                   const _ProfileTileDivider(),
                   _ProfileActionTile(
@@ -153,7 +154,7 @@ class ProfileContent extends StatelessWidget {
                     title: 'Settings',
                     onTap: authState.isSigningOut.value
                         ? null
-                        : () => Get.toNamed(AppConstants.routes.settings),
+                        : () => AppNavigation.toNamed(AppConstants.routes.settings),
                   ),
                   const _ProfileTileDivider(),
                   _ProfileActionTile(
@@ -325,7 +326,7 @@ class _VerifyEmailBanner extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: () =>
-            Get.toNamed(AppConstants.routes.verifyEmailPath(email: email)),
+            AppNavigation.toNamed(AppConstants.routes.verifyEmailPath(email: email)),
         borderRadius: BorderRadius.circular(16),
         child: Container(
           padding: const EdgeInsets.all(16),

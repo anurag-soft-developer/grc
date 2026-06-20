@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:grc/core/navigation/app_navigation.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_query/flutter_query.dart';
 import 'package:get/get.dart';
@@ -45,7 +46,7 @@ class MyEventsScreen extends HookWidget {
       backgroundColor: const Color(AppColors.background),
       appBar: AppBar(title: const Text('My Events')),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Get.toNamed(AppConstants.routes.eventForm),
+        onPressed: () => AppNavigation.toNamed(AppConstants.routes.eventForm),
         child: const Icon(Icons.add),
       ),
       body: Column(

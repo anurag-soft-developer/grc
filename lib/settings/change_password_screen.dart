@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:grc/components/shared/custom_button.dart';
 import 'package:grc/components/shared/custom_text_field.dart';
 import 'package:grc/core/auth/auth_state_controller.dart';
+import 'package:grc/core/components/app_bar/app_breadcrumbs.dart';
+import 'package:grc/core/components/app_bar/grc_app_bar.dart';
 import 'package:grc/core/components/layout/adaptive_page_container.dart';
 import 'package:grc/core/utils/responsive_form_spacing.dart';
 import 'package:grc/core/components/query/mutation_loading_overlay.dart';
@@ -74,7 +76,10 @@ class ChangePasswordScreen extends HookWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Change password')),
+      appBar: GrcAppBar(
+        title: 'Change password',
+        breadcrumbs: AppBreadcrumbs.settingsChild('Change password'),
+      ),
       body: MutationLoadingOverlay(
         mutationKey: QueryKeys.changePassword,
         child: AdaptivePageContainer(
