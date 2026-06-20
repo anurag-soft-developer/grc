@@ -29,7 +29,7 @@ class EventParticipantsScreen extends HookWidget {
         if (routeId == null || routeId.isEmpty) return null;
         return RunEventsService.instance.getEventById(routeId);
       },
-      enabled: id != null && id!.isNotEmpty,
+      enabled: id != null && id.isNotEmpty,
     );
 
     final query = useInfiniteQuery<PaginatedRunEventParticipants, Object, int>(
@@ -46,7 +46,7 @@ class EventParticipantsScreen extends HookWidget {
       },
       initialPageParam: 1,
       retry: _noRetry,
-      enabled: id != null && id!.isNotEmpty,
+      enabled: id != null && id.isNotEmpty,
       nextPageParamBuilder: (data) {
         final last = data.pages.isNotEmpty ? data.pages.last : null;
         if (last == null || !last.hasMore) return null;
@@ -63,7 +63,7 @@ class EventParticipantsScreen extends HookWidget {
     return Scaffold(
       backgroundColor: const Color(AppColors.background),
       appBar: AppBar(title: Text('Participants · $title')),
-      body: id == null || id!.isEmpty
+      body: id == null || id.isEmpty
           ? const Center(child: Text('Event not found'))
           : QueryAsyncBody<RunEventModel?, dynamic>(
               state: eventQuery,
@@ -148,8 +148,11 @@ class _ParticipantTile extends StatelessWidget {
     final payment = participant.paymentStatus ?? '';
 
     return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
+      color: const Color(AppColors.surface),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: Color(AppColors.divider)),
+      ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () {
@@ -184,6 +187,7 @@ class _ParticipantTile extends StatelessWidget {
                         style: const TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 16,
+                          color: Color(AppColors.text),
                         ),
                       ),
                     ),
@@ -249,6 +253,7 @@ class _ParticipantTile extends StatelessWidget {
                             style: const TextStyle(
                               fontWeight: FontWeight.w700,
                               fontSize: 16,
+                              color: Color(AppColors.text),
                             ),
                           ),
                           if (contact.isNotEmpty) ...[
@@ -295,10 +300,14 @@ class _ParticipantTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(AppColors.background),
         borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(AppColors.divider)),
       ),
       child: Text(
         label.replaceAll('_', ' ').capitalizeFirst ?? '',
-        style: const TextStyle(fontSize: 12),
+        style: const TextStyle(
+          fontSize: 12,
+          color: Color(AppColors.textSecondary),
+        ),
       ),
     );
   }

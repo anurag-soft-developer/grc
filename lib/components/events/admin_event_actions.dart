@@ -290,10 +290,10 @@ class AdminEventActions extends HookWidget {
     }
 
     const publishColor = Color(AppColors.success);
-    const pauseColor = Color(0xFFF59E0B);
-    const resumeColor = Color(0xFF06B6D4);
+    const pauseColor = Color(AppColors.warning);
+    const resumeColor = Color(AppColors.info);
     const closeColor = Color(AppColors.textSecondary);
-    const archiveColor = Color(0xFF8B5CF6);
+    const archiveColor = Color(AppColors.secondary);
     const deleteColor = Color(AppColors.error);
     const participantsColor = Color(AppColors.primary);
     const analyticsColor = Color(AppColors.secondary);
@@ -392,9 +392,7 @@ class AdminEventActions extends HookWidget {
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: closeMenu,
-              child: ColoredBox(
-                color: Colors.black.withValues(alpha: 0.4),
-              ),
+              child: ColoredBox(color: Colors.black.withValues(alpha: 0.4)),
             ),
           ),
         if (isMenuOpen.value)
@@ -450,7 +448,9 @@ class _ActionsMenuPanel extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: Container(
-        constraints: const BoxConstraints(maxWidth: AdminEventActions._menuMaxWidth),
+        constraints: const BoxConstraints(
+          maxWidth: AdminEventActions._menuMaxWidth,
+        ),
         decoration: BoxDecoration(
           color: const Color(AppColors.surface),
           borderRadius: BorderRadius.circular(20),
@@ -481,9 +481,9 @@ class _ActionsMenuPanel extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: const Color(AppColors.primary).withValues(
-                          alpha: 0.1,
-                        ),
+                        color: const Color(
+                          AppColors.primary,
+                        ).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(

@@ -22,7 +22,7 @@ class HomeComingSoonPoster extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Color(0xFF312E81),
+                Color(AppColors.background),
                 Color(AppColors.primary),
                 Color(AppColors.secondary),
               ],

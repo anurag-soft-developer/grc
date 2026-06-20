@@ -107,7 +107,7 @@ class ProfileContent extends StatelessWidget {
                             icon: adminMode
                                 ? Icons.admin_panel_settings_rounded
                                 : Icons.person_rounded,
-                            color: const Color(0xFF7C3AED),
+                            color: const Color(AppColors.info),
                           ),
                           title: Text(adminMode ? 'Admin mode' : 'User mode'),
                           subtitle: Text(
@@ -341,24 +341,25 @@ class _VerifyEmailBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: const Color(0xFFFFF7ED),
+      color: const Color(AppColors.surface),
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
-        onTap: () => Get.toNamed(AppConstants.routes.verifyEmailPath(email: email)),
+        onTap: () =>
+            Get.toNamed(AppConstants.routes.verifyEmailPath(email: email)),
         borderRadius: BorderRadius.circular(16),
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: const Color(0xFFFDBA74).withValues(alpha: 0.5),
+              color: const Color(AppColors.warning).withValues(alpha: 0.45),
             ),
           ),
           child: Row(
             children: [
               _ColorfulIcon(
                 icon: Icons.mark_email_unread_rounded,
-                color: const Color(0xFFF97316),
+                color: const Color(AppColors.warning),
               ),
               const SizedBox(width: 14),
               const Expanded(
@@ -383,7 +384,10 @@ class _VerifyEmailBanner extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded, color: Color(0xFFF97316)),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: Color(AppColors.warning),
+              ),
             ],
           ),
         ),

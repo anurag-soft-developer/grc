@@ -28,7 +28,9 @@ void main() async {
       queryClient,
       child: GetMaterialApp(
         title: EnvConfig.appName,
-        theme: _lightTheme,
+        theme: _darkTheme,
+        darkTheme: _darkTheme,
+        themeMode: ThemeMode.dark,
         initialBinding: InitialBinding(queryClient: queryClient),
         getPages: AppRoutes.routes,
         initialRoute: AppRoutes.resolveInitialRoute(),
@@ -39,28 +41,37 @@ void main() async {
   );
 }
 
-ThemeData get _lightTheme {
-  const colorScheme = ColorScheme.light(
+ThemeData get _darkTheme {
+  const colorScheme = ColorScheme.dark(
     primary: Color(AppColors.primary),
-    onPrimary: Colors.white,
+    onPrimary: Color(AppColors.background),
     secondary: Color(AppColors.secondary),
-    onSecondary: Colors.white,
+    onSecondary: Color(AppColors.background),
     surface: Color(AppColors.surface),
     onSurface: Color(AppColors.text),
+    onSurfaceVariant: Color(AppColors.textSecondary),
+    outline: Color(AppColors.divider),
     error: Color(AppColors.error),
-    onError: Colors.white,
+    onError: Color(AppColors.background),
   );
 
   return ThemeData(
     useMaterial3: true,
     colorScheme: colorScheme,
     scaffoldBackgroundColor: const Color(AppColors.background),
+    canvasColor: const Color(AppColors.surface),
+    splashColor: colorScheme.primary.withValues(alpha: 0.08),
+    highlightColor: Colors.transparent,
+    textTheme: ThemeData.dark().textTheme.apply(
+      bodyColor: const Color(AppColors.text),
+      displayColor: const Color(AppColors.text),
+    ),
     appBarTheme: const AppBarTheme(
       centerTitle: true,
       elevation: 0,
       scrolledUnderElevation: 0,
-      backgroundColor: Color(AppColors.primary),
-      foregroundColor: Colors.white,
+      backgroundColor: Color(AppColors.surface),
+      foregroundColor: Color(AppColors.text),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
@@ -73,7 +84,7 @@ ThemeData get _lightTheme {
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: const Color(AppColors.surface),
+      fillColor: const Color(AppColors.background),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Color(AppColors.divider)),
@@ -88,6 +99,10 @@ ThemeData get _lightTheme {
       ),
     ),
     dividerColor: const Color(AppColors.divider),
+    dividerTheme: const DividerThemeData(
+      color: Color(AppColors.divider),
+      thickness: 1,
+    ),
     cardTheme: CardThemeData(
       color: const Color(AppColors.surface),
       elevation: 0,

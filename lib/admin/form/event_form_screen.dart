@@ -197,104 +197,171 @@ class EventFormScreen extends HookWidget {
                           v == null || v.trim().isEmpty ? 'Required' : null,
                     ),
                     const SizedBox(height: 16),
-                    FormField<void>(
-                      validator: (_) => controller.eventDate.value == null
-                          ? 'Required'
-                          : null,
-                      builder: (field) => Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Obx(
-                            () => ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              title: const Text('Event date'),
-                              subtitle: Text(
-                                controller.eventDate.value != null
-                                    ? controller.eventDate.value!
-                                          .toLocal()
-                                          .toString()
-                                          .split(' ')
-                                          .first
-                                    : 'Tap to select',
-                              ),
-                              trailing: const Icon(
-                                Icons.calendar_today_outlined,
-                              ),
-                              onTap: () async {
-                                final picked = await showDatePicker(
-                                  context: context,
-                                  initialDate:
-                                      controller.eventDate.value ??
-                                      DateTime.now().add(
-                                        const Duration(days: 7),
-                                      ),
-                                  firstDate: DateTime.now(),
-                                  lastDate: DateTime.now().add(
-                                    const Duration(days: 365 * 2),
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isWide = constraints.maxWidth >= 760;
+
+                        final eventDateField = FormField<void>(
+                          validator: (_) => controller.eventDate.value == null
+                              ? 'Required'
+                              : null,
+                          builder: (field) => Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: field.hasError
+                                        ? Theme.of(context).colorScheme.error
+                                        : const Color(AppColors.divider),
                                   ),
-                                );
-                                if (picked != null) {
-                                  controller.eventDate.value = picked;
-                                  field.didChange(null);
-                                }
-                              },
-                            ),
-                          ),
-                          if (field.hasError)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 4, left: 12),
-                              child: Text(
-                                field.errorText!,
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.error,
-                                  fontSize: 12,
+                                ),
+                                child: Obx(
+                                  () => ListTile(
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 2,
+                                    ),
+                                    title: const Text('Event date'),
+                                    subtitle: Text(
+                                      controller.eventDate.value != null
+                                          ? controller.eventDate.value!
+                                                .toLocal()
+                                                .toString()
+                                                .split(' ')
+                                                .first
+                                          : 'Tap to select',
+                                    ),
+                                    trailing: const Icon(
+                                      Icons.calendar_today_outlined,
+                                    ),
+                                    onTap: () async {
+                                      final picked = await showDatePicker(
+                                        context: context,
+                                        initialDate:
+                                            controller.eventDate.value ??
+                                            DateTime.now().add(
+                                              const Duration(days: 7),
+                                            ),
+                                        firstDate: DateTime.now(),
+                                        lastDate: DateTime.now().add(
+                                          const Duration(days: 365 * 2),
+                                        ),
+                                      );
+                                      if (picked != null) {
+                                        controller.eventDate.value = picked;
+                                        field.didChange(null);
+                                      }
+                                    },
+                                  ),
                                 ),
                               ),
-                            ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    FormField<void>(
-                      validator: (_) => controller.reportingTime.value == null
-                          ? 'Required'
-                          : null,
-                      builder: (field) => Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Obx(
-                            () => ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              title: const Text('Reporting time'),
-                              subtitle: Text(controller.reportingTimeLabel),
-                              trailing: const Icon(Icons.access_time_outlined),
-                              onTap: () async {
-                                final picked = await showTimePicker(
-                                  context: context,
-                                  initialTime:
-                                      controller.reportingTime.value ??
-                                      TimeOfDay.now(),
-                                );
-                                if (picked != null) {
-                                  controller.reportingTime.value = picked;
-                                  field.didChange(null);
-                                }
-                              },
-                            ),
+                              if (field.hasError)
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 4,
+                                    left: 12,
+                                  ),
+                                  child: Text(
+                                    field.errorText!,
+                                    style: TextStyle(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.error,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
-                          if (field.hasError)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 4, left: 12),
-                              child: Text(
-                                field.errorText!,
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.error,
-                                  fontSize: 12,
+                        );
+
+                        final reportingTimeField = FormField<void>(
+                          validator: (_) =>
+                              controller.reportingTime.value == null
+                              ? 'Required'
+                              : null,
+                          builder: (field) => Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: field.hasError
+                                        ? Theme.of(context).colorScheme.error
+                                        : const Color(AppColors.divider),
+                                  ),
+                                ),
+                                child: Obx(
+                                  () => ListTile(
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 2,
+                                    ),
+                                    title: const Text('Reporting time'),
+                                    subtitle: Text(
+                                      controller.reportingTimeLabel,
+                                    ),
+                                    trailing: const Icon(
+                                      Icons.access_time_outlined,
+                                    ),
+                                    onTap: () async {
+                                      final picked = await showTimePicker(
+                                        context: context,
+                                        initialTime:
+                                            controller.reportingTime.value ??
+                                            TimeOfDay.now(),
+                                      );
+                                      if (picked != null) {
+                                        controller.reportingTime.value = picked;
+                                        field.didChange(null);
+                                      }
+                                    },
+                                  ),
                                 ),
                               ),
-                            ),
-                        ],
-                      ),
+                              if (field.hasError)
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 4,
+                                    left: 12,
+                                  ),
+                                  child: Text(
+                                    field.errorText!,
+                                    style: TextStyle(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.error,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        );
+
+                        if (isWide) {
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(child: eventDateField),
+                              const SizedBox(width: 16),
+                              Expanded(child: reportingTimeField),
+                            ],
+                          );
+                        }
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            eventDateField,
+                            const SizedBox(height: 16),
+                            reportingTimeField,
+                          ],
+                        );
+                      },
                     ),
                     const SizedBox(height: 16),
                     FormField<void>(
@@ -355,24 +422,49 @@ class EventFormScreen extends HookWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    CustomTextField(
-                      controller: controller.priceController,
-                      labelText: 'Price (INR)',
-                      keyboardType: TextInputType.number,
-                      validator: (v) =>
-                          v == null || double.tryParse(v.trim()) == null
-                          ? 'Invalid price'
-                          : null,
-                    ),
-                    const SizedBox(height: 16),
-                    CustomTextField(
-                      controller: controller.maxParticipantsController,
-                      labelText: 'Max participants',
-                      keyboardType: TextInputType.number,
-                      validator: (v) =>
-                          v == null || int.tryParse(v.trim()) == null
-                          ? 'Invalid number'
-                          : null,
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isWide = constraints.maxWidth >= 760;
+
+                        final priceField = CustomTextField(
+                          controller: controller.priceController,
+                          labelText: 'Price (INR)',
+                          keyboardType: TextInputType.number,
+                          validator: (v) =>
+                              v == null || double.tryParse(v.trim()) == null
+                              ? 'Invalid price'
+                              : null,
+                        );
+
+                        final maxParticipantsField = CustomTextField(
+                          controller: controller.maxParticipantsController,
+                          labelText: 'Max participants',
+                          keyboardType: TextInputType.number,
+                          validator: (v) =>
+                              v == null || int.tryParse(v.trim()) == null
+                              ? 'Invalid number'
+                              : null,
+                        );
+
+                        if (isWide) {
+                          return Row(
+                            children: [
+                              Expanded(child: priceField),
+                              const SizedBox(width: 16),
+                              Expanded(child: maxParticipantsField),
+                            ],
+                          );
+                        }
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            priceField,
+                            const SizedBox(height: 16),
+                            maxParticipantsField,
+                          ],
+                        );
+                      },
                     ),
                     const SizedBox(height: 16),
                     OutlinedButton.icon(

@@ -13,7 +13,6 @@ import 'package:grc/core/config/constants.dart';
 import 'package:grc/core/models/user/user_model.dart';
 import 'package:grc/core/query/query_keys.dart';
 import 'package:grc/core/repositories/auth_repository.dart';
-import 'package:grc/core/routes/app_routes.dart';
 import 'package:grc/core/utils/exception_handler.dart';
 import 'package:grc/core/utils/validators.dart';
 
@@ -172,13 +171,13 @@ class LoginScreen extends HookWidget {
                                       color: Colors.white,
                                       borderRadius: BorderRadius.circular(10),
                                       border: Border.all(
-                                        color: const Color(0xFFE0E0E0),
+                                        color: const Color(AppColors.divider),
                                       ),
                                     ),
                                     child: const Text(
                                       'G',
                                       style: TextStyle(
-                                        color: Color(0xFF4285F4),
+                                        color: Color(AppColors.info),
                                         fontWeight: FontWeight.w700,
                                         fontSize: 12,
                                         height: 1,

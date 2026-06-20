@@ -113,7 +113,7 @@ class AdminDashboardScreen extends HookWidget {
                             label: 'Paid registrations',
                             value: '${analytics.revenue.paidRegistrations}',
                             icon: Icons.receipt_long_outlined,
-                            accentColor: const Color(0xFF8B5CF6),
+                            accentColor: const Color(AppColors.info),
                           ),
                         ];
                         return cards[index];
