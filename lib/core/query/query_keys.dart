@@ -27,6 +27,10 @@ class QueryKeys {
   static List<String> publicEvent(String slug) => ['publicEvent', slug];
   static const myRegistrations = ['myRegistrations'];
   static const myUpcomingRegistrations = ['myRegistrations', 'upcoming'];
+  static List<String> myRegistrationsList(List<String> filterParts) => [
+    'myRegistrations',
+    ...filterParts,
+  ];
   static List<String> registrationDetail(String id) => [
     'registrationDetail',
     id,
@@ -35,9 +39,13 @@ class QueryKeys {
     'eventRegistrationStatus',
     eventId,
   ];
-  static List<String> eventParticipants(String eventId) => [
+  static List<String> eventParticipants(
+    String eventId, [
+    List<String> filterParts = const [],
+  ]) => [
     'eventParticipants',
     eventId,
+    ...filterParts,
   ];
   static List<String> eventAnalytics(String eventId) => [
     'eventAnalytics',

@@ -12,16 +12,7 @@ class PrimaryDetailsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = participant.userModel;
     final avatar = participant.displayAvatar;
-    final email = user?.email?.trim();
-    final contact = participant.displayContact;
-    final contactLabel = (email != null && email.isNotEmpty)
-        ? email
-        : (contact.isNotEmpty ? contact : null);
-    final contactIcon = (email != null && email.isNotEmpty)
-        ? Icons.email_outlined
-        : Icons.phone_outlined;
     final status = participant.status ?? 'unknown';
     final payment = participant.paymentStatus ?? 'pending';
     final tone = registrationStatusTone(status, payment);
@@ -67,30 +58,50 @@ class PrimaryDetailsCard extends StatelessWidget {
                         letterSpacing: -0.2,
                       ),
                     ),
-                    if (contactLabel != null) ...[
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Icon(
-                            contactIcon,
-                            size: 14,
-                            color: const Color(AppColors.textSecondary),
-                          ),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Text(
-                              contactLabel,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Color(AppColors.textSecondary),
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.email_outlined,
+                          size: 14,
+                          color: Color(AppColors.textSecondary),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            participant.displayEmail,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Color(AppColors.textSecondary),
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ],
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.phone_outlined,
+                          size: 14,
+                          color: Color(AppColors.textSecondary),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            participant.displayPhone,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Color(AppColors.textSecondary),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),

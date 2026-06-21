@@ -18,6 +18,10 @@ class RunEventParticipantModel with RunEventParticipantModelMappable {
   final RunEventRefFieldInstance? runEvent;
   @MappableField(key: 'userId', hook: UserRefHook())
   final UserRefFieldInstance? userId;
+  @MappableField(key: 'fullName')
+  final String? fullName;
+  final String? email;
+  final String? phone;
   final Map<String, dynamic> customQuestionResponses;
   final String? status;
   final double? totalAmount;
@@ -36,6 +40,9 @@ class RunEventParticipantModel with RunEventParticipantModelMappable {
     this.id,
     this.runEvent,
     this.userId,
+    this.fullName,
+    this.email,
+    this.phone,
     this.customQuestionResponses = const {},
     this.status,
     this.totalAmount,
@@ -117,11 +124,28 @@ class RunEventParticipantModel with RunEventParticipantModelMappable {
   UserModel? get userModel => userId?.getModel();
   bool get userPopulated => userId?.isPopulated ?? false;
 
-  String get displayFullName => userId?.getDisplayName() ?? 'Participant';
+  static String? _trimmed(String? value) {
+    final trimmed = value?.trim();
+    if (trimmed == null || trimmed.isEmpty) return null;
+    return trimmed;
+  }
+
+  String get displayFullName =>
+      _trimmed(fullName) ?? _trimmed(userModel?.fullName) ?? 'NA';
+
+  String get displayEmail =>
+      _trimmed(email) ?? _trimmed(userModel?.email) ?? 'NA';
+
+  String get displayPhone =>
+      _trimmed(phone) ?? _trimmed(userModel?.phone) ?? 'NA';
 
   String get displayContact {
-    final user = userId?.getModel();
-    return user?.phone?.trim() ?? user?.email?.trim() ?? '';
+    final phoneValue = _trimmed(phone) ?? _trimmed(userModel?.phone);
+    final emailValue = _trimmed(email) ?? _trimmed(userModel?.email);
+    if (phoneValue != null && emailValue != null) {
+      return '$phoneValue · $emailValue';
+    }
+    return phoneValue ?? emailValue ?? '';
   }
 
   String? get displayAvatar {

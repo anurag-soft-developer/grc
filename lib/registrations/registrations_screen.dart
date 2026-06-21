@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_query/flutter_query.dart';
 import 'package:get/get.dart';
+import 'package:grc/components/events/event_list_filters.dart';
+import 'package:grc/components/events/event_list_filters_bar.dart';
 import 'package:grc/components/home/home_section_message.dart';
 import 'package:grc/components/home/home_upcoming_slot_card.dart';
 import 'package:grc/core/components/bottom_navigation_panel/navigation_controller.dart';
@@ -21,10 +23,17 @@ class RegistrationsScreen extends HookWidget {
   Widget build(BuildContext context) {
     final isActiveTab =
         Uri.parse(Get.currentRoute).path == MainTabRoutes.registrations;
+    final filters = useState(EventListFilters.all);
+    final queryKey = QueryKeys.myRegistrationsList(
+      filters.value.toQueryKeyParts(),
+    );
+
     final query = useInfiniteQuery<PaginatedRunEventParticipants, Object, int>(
-      QueryKeys.myRegistrations,
-      (ctx) =>
-          RunEventParticipantsService.instance.listMine(page: ctx.pageParam),
+      queryKey,
+      (ctx) => RunEventParticipantsService.instance.listMine(
+        page: ctx.pageParam,
+        filters: filters.value,
+      ),
       initialPageParam: 1,
       retry: _noRetry,
       enabled: isActiveTab,
@@ -39,18 +48,49 @@ class RegistrationsScreen extends HookWidget {
         query.data?.pages.expand((p) => p.data).toList() ??
         const <RunEventParticipantModel>[];
 
+    final segmentMode = filters.value.segmentMode;
+
     return Scaffold(
       backgroundColor: const Color(AppColors.background),
       appBar: AppBar(title: const Text('Registrations')),
-      body: _buildBody(context, query, items),
+      body: Column(
+        children: [
+          EventListFiltersBar(
+            filters: filters.value,
+            onChanged: (next) => filters.value = next,
+          ),
+          Expanded(
+            child: _RegistrationsListContent(
+              query: query,
+              items: items,
+              segmentMode: segmentMode,
+            ),
+          ),
+        ],
+      ),
     );
   }
+}
 
-  Widget _buildBody(
-    BuildContext context,
-    InfiniteQueryResult<PaginatedRunEventParticipants, Object, int> query,
-    List<RunEventParticipantModel> items,
-  ) {
+class _RegistrationsListContent extends StatelessWidget {
+  final InfiniteQueryResult<PaginatedRunEventParticipants, Object, int> query;
+  final List<RunEventParticipantModel> items;
+  final EventSegmentFilterMode segmentMode;
+
+  const _RegistrationsListContent({
+    required this.query,
+    required this.items,
+    required this.segmentMode,
+  });
+
+  String get _emptyMessage => switch (segmentMode) {
+    EventSegmentFilterMode.closed => 'No closed registrations found',
+    EventSegmentFilterMode.upcoming => 'No upcoming registrations found',
+    EventSegmentFilterMode.all => 'No registrations found',
+  };
+
+  @override
+  Widget build(BuildContext context) {
     if (query.isLoading && items.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -59,7 +99,7 @@ class RegistrationsScreen extends HookWidget {
         onRefresh: () async => query.refetch(),
         color: const Color(AppColors.primary),
         child: AdaptivePageContainer(
-          maxWidth: 980,
+          maxWidth: EventListFiltersBar.listMaxWidth,
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
@@ -79,16 +119,29 @@ class RegistrationsScreen extends HookWidget {
         onRefresh: () async => query.refetch(),
         color: const Color(AppColors.primary),
         child: AdaptivePageContainer(
-          maxWidth: 980,
+          maxWidth: EventListFiltersBar.listMaxWidth,
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+            padding: const EdgeInsets.all(EventListFiltersBar.horizontalPadding),
             children: [
-              HomeSectionMessage(
-                message: 'No registrations yet',
-                actionLabel: 'Browse events',
-                onAction: () => Get.find<NavigationController>().changeTab(1),
-              ),
+              if (segmentMode == EventSegmentFilterMode.upcoming)
+                HomeSectionMessage(
+                  message: _emptyMessage,
+                  actionLabel: 'Browse events',
+                  onAction: () => Get.find<NavigationController>().changeTab(1),
+                )
+              else
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 48),
+                  child: Center(
+                    child: Text(
+                      _emptyMessage,
+                      style: const TextStyle(
+                        color: Color(AppColors.textSecondary),
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
@@ -121,7 +174,12 @@ class RegistrationsScreen extends HookWidget {
         },
         child: ListView.separated(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          padding: const EdgeInsets.fromLTRB(
+            EventListFiltersBar.horizontalPadding,
+            8,
+            EventListFiltersBar.horizontalPadding,
+            24,
+          ),
           itemCount: items.length + (query.isFetchingNextPage ? 1 : 0),
           separatorBuilder: (_, __) => const SizedBox(height: 12),
           itemBuilder: (context, index) {
@@ -133,7 +191,9 @@ class RegistrationsScreen extends HookWidget {
             }
             return Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 980),
+                constraints: const BoxConstraints(
+                  maxWidth: EventListFiltersBar.listMaxWidth,
+                ),
                 child: HomeUpcomingSlotCard(participant: items[index]),
               ),
             );

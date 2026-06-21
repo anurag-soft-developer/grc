@@ -38,7 +38,6 @@ class HomeScreen extends HookWidget {
       (_) => RunEventParticipantsService.instance.listMine(
         page: 1,
         limit: 20,
-        segment: 'upcoming',
       ),
       retry: _noRetry,
       enabled: isActiveTab,

@@ -4,6 +4,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_query/flutter_query.dart';
 import 'package:get/get.dart';
 import 'package:grc/admin/events/model/run_event_model.dart';
+import 'package:grc/admin/events/participant_list_filters.dart';
+import 'package:grc/admin/events/participant_list_filters_bar.dart';
 import 'package:grc/core/components/app_bar/app_breadcrumbs.dart';
 import 'package:grc/core/components/app_bar/grc_app_bar.dart';
 import 'package:grc/core/components/layout/adaptive_page_container.dart';
@@ -24,6 +26,7 @@ class EventParticipantsScreen extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final id = useMemoized(() => Get.parameters['id']);
+    final filters = useState(ParticipantListFilters.empty);
 
     final eventQuery = useQuery<RunEventModel?, Object>(
       QueryKeys.adminEvent(id ?? ''),
@@ -35,8 +38,13 @@ class EventParticipantsScreen extends HookWidget {
       enabled: id != null && id.isNotEmpty,
     );
 
+    final queryKey = QueryKeys.eventParticipants(
+      id ?? '',
+      filters.value.toQueryKeyParts(),
+    );
+
     final query = useInfiniteQuery<PaginatedRunEventParticipants, Object, int>(
-      QueryKeys.eventParticipants(id ?? ''),
+      queryKey,
       (ctx) {
         final routeId = id;
         if (routeId == null || routeId.isEmpty) {
@@ -45,6 +53,7 @@ class EventParticipantsScreen extends HookWidget {
         return RunEventParticipantsService.instance.listByEvent(
           routeId,
           page: ctx.pageParam,
+          filters: filters.value,
         );
       },
       initialPageParam: 1,
@@ -80,7 +89,15 @@ class EventParticipantsScreen extends HookWidget {
           : QueryAsyncBody<RunEventModel?, dynamic>(
               state: eventQuery,
               onRetry: eventQuery.refetch,
-              data: (_) => _buildBody(context, query, items),
+              data: (_) => Column(
+                children: [
+                  ParticipantListFiltersBar(
+                    filters: filters.value,
+                    onChanged: (next) => filters.value = next,
+                  ),
+                  Expanded(child: _buildBody(context, query, items, filters.value)),
+                ],
+              ),
             ),
     );
   }
@@ -89,7 +106,12 @@ class EventParticipantsScreen extends HookWidget {
     BuildContext context,
     InfiniteQueryResult<PaginatedRunEventParticipants, Object, int> query,
     List<RunEventParticipantModel> items,
+    ParticipantListFilters filters,
   ) {
+    final emptyMessage = filters.hasActiveFilters
+        ? 'No participants match your filters'
+        : 'No participants yet';
+
     if (query.isLoading && items.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -103,9 +125,9 @@ class EventParticipantsScreen extends HookWidget {
         onRefresh: () async => query.refetch(),
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          children: const [
+          children: [
             SizedBox(height: 120),
-            Center(child: Text('No participants yet')),
+            Center(child: Text(emptyMessage)),
           ],
         ),
       );
@@ -114,7 +136,7 @@ class EventParticipantsScreen extends HookWidget {
     return RefreshIndicator(
       onRefresh: () async => query.refetch(),
       child: AdaptivePageContainer(
-        maxWidth: 1120,
+        maxWidth: ParticipantListFiltersBar.listMaxWidth,
         child: NotificationListener<ScrollNotification>(
           onNotification: (n) {
             if (n.metrics.extentAfter < 160 &&
@@ -126,7 +148,9 @@ class EventParticipantsScreen extends HookWidget {
           },
           child: ListView.separated(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(
+              ParticipantListFiltersBar.horizontalPadding,
+            ),
             itemCount: items.length + (query.isFetchingNextPage ? 1 : 0),
             separatorBuilder: (_, __) => const SizedBox(height: 12),
             itemBuilder: (context, index) {

@@ -45,6 +45,24 @@ class RunEventParticipantModelMapper
   static UserRefFieldInstance? _$userId(RunEventParticipantModel v) => v.userId;
   static const Field<RunEventParticipantModel, UserRefFieldInstance> _f$userId =
       Field('userId', _$userId, opt: true, hook: UserRefHook());
+  static String? _$fullName(RunEventParticipantModel v) => v.fullName;
+  static const Field<RunEventParticipantModel, String> _f$fullName = Field(
+    'fullName',
+    _$fullName,
+    opt: true,
+  );
+  static String? _$email(RunEventParticipantModel v) => v.email;
+  static const Field<RunEventParticipantModel, String> _f$email = Field(
+    'email',
+    _$email,
+    opt: true,
+  );
+  static String? _$phone(RunEventParticipantModel v) => v.phone;
+  static const Field<RunEventParticipantModel, String> _f$phone = Field(
+    'phone',
+    _$phone,
+    opt: true,
+  );
   static Map<String, dynamic> _$customQuestionResponses(
     RunEventParticipantModel v,
   ) => v.customQuestionResponses;
@@ -135,6 +153,9 @@ class RunEventParticipantModelMapper
     #id: _f$id,
     #runEvent: _f$runEvent,
     #userId: _f$userId,
+    #fullName: _f$fullName,
+    #email: _f$email,
+    #phone: _f$phone,
     #customQuestionResponses: _f$customQuestionResponses,
     #status: _f$status,
     #totalAmount: _f$totalAmount,
@@ -155,6 +176,9 @@ class RunEventParticipantModelMapper
       id: data.dec(_f$id),
       runEvent: data.dec(_f$runEvent),
       userId: data.dec(_f$userId),
+      fullName: data.dec(_f$fullName),
+      email: data.dec(_f$email),
+      phone: data.dec(_f$phone),
       customQuestionResponses: data.dec(_f$customQuestionResponses),
       status: data.dec(_f$status),
       totalAmount: data.dec(_f$totalAmount),
@@ -249,6 +273,9 @@ abstract class RunEventParticipantModelCopyWith<
     String? id,
     RunEventRefFieldInstance? runEvent,
     UserRefFieldInstance? userId,
+    String? fullName,
+    String? email,
+    String? phone,
     Map<String, dynamic>? customQuestionResponses,
     String? status,
     double? totalAmount,
@@ -289,6 +316,9 @@ class _RunEventParticipantModelCopyWithImpl<$R, $Out>
     Object? id = $none,
     Object? runEvent = $none,
     Object? userId = $none,
+    Object? fullName = $none,
+    Object? email = $none,
+    Object? phone = $none,
     Map<String, dynamic>? customQuestionResponses,
     Object? status = $none,
     Object? totalAmount = $none,
@@ -307,6 +337,9 @@ class _RunEventParticipantModelCopyWithImpl<$R, $Out>
       if (id != $none) #id: id,
       if (runEvent != $none) #runEvent: runEvent,
       if (userId != $none) #userId: userId,
+      if (fullName != $none) #fullName: fullName,
+      if (email != $none) #email: email,
+      if (phone != $none) #phone: phone,
       if (customQuestionResponses != null)
         #customQuestionResponses: customQuestionResponses,
       if (status != $none) #status: status,
@@ -331,6 +364,9 @@ class _RunEventParticipantModelCopyWithImpl<$R, $Out>
     id: data.get(#id, or: $value.id),
     runEvent: data.get(#runEvent, or: $value.runEvent),
     userId: data.get(#userId, or: $value.userId),
+    fullName: data.get(#fullName, or: $value.fullName),
+    email: data.get(#email, or: $value.email),
+    phone: data.get(#phone, or: $value.phone),
     customQuestionResponses: data.get(
       #customQuestionResponses,
       or: $value.customQuestionResponses,

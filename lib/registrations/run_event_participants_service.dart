@@ -1,4 +1,6 @@
 import 'package:grc/admin/events/model/run_event_model.dart';
+import 'package:grc/admin/events/participant_list_filters.dart';
+import 'package:grc/components/events/event_list_filters.dart';
 import 'package:grc/core/config/api_constants.dart';
 import 'package:grc/core/services/api_service.dart';
 import 'package:grc/registrations/model/event_registration_status.dart';
@@ -136,10 +138,15 @@ class RunEventParticipantsService {
     String eventId, {
     int page = 1,
     int limit = 10,
+    ParticipantListFilters filters = ParticipantListFilters.empty,
   }) async {
     final response = await _api.get<Map<String, dynamic>>(
       ApiConstants.runEventParticipants.listByEvent(eventId),
-      queryParameters: {'page': page, 'limit': limit},
+      queryParameters: {
+        'page': page,
+        'limit': limit,
+        ...filters.toQueryParameters(),
+      },
     );
     if (response == null) {
       throw Exception('Failed to load participants');
@@ -153,11 +160,16 @@ class RunEventParticipantsService {
   Future<PaginatedRunEventParticipants> listMine({
     int page = 1,
     int limit = 10,
-    String segment = 'all',
+    EventListFilters filters = EventListFilters.all,
   }) async {
     final response = await _api.get<Map<String, dynamic>>(
       ApiConstants.runEventParticipants.me,
-      queryParameters: {'page': page, 'limit': limit, 'segment': segment},
+      queryParameters: {
+        'page': page,
+        'limit': limit,
+        if (filters.apiSegment != null) 'segment': filters.apiSegment,
+        ...filters.toQueryParameters(),
+      },
     );
     if (response == null) {
       throw Exception('Failed to load registrations');
