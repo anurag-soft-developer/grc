@@ -87,7 +87,7 @@ class ParticipantListFiltersBar extends HookWidget {
                     onChanged: onSearchChanged,
                     style: const TextStyle(fontSize: 13),
                     decoration: InputDecoration(
-                      hintText: 'Name, email, phone, invoice…',
+                      hintText: 'Name, email, phone, booking ID…',
                       hintStyle: const TextStyle(
                         fontSize: 13,
                         color: Color(AppColors.textSecondary),

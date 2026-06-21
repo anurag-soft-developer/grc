@@ -91,12 +91,10 @@ class RunEventParticipantModelMapper
     _$paymentStatus,
     opt: true,
   );
-  static String? _$paymentId(RunEventParticipantModel v) => v.paymentId;
-  static const Field<RunEventParticipantModel, String> _f$paymentId = Field(
-    'paymentId',
-    _$paymentId,
-    opt: true,
-  );
+  static String? _$razorpayPaymentId(RunEventParticipantModel v) =>
+      v.razorpayPaymentId;
+  static const Field<RunEventParticipantModel, String> _f$razorpayPaymentId =
+      Field('razorpayPaymentId', _$razorpayPaymentId, opt: true);
   static String? _$razorpayOrderId(RunEventParticipantModel v) =>
       v.razorpayOrderId;
   static const Field<RunEventParticipantModel, String> _f$razorpayOrderId =
@@ -125,10 +123,10 @@ class RunEventParticipantModelMapper
     _$razorpayPaymentLinkCallbackUrl,
     opt: true,
   );
-  static String? _$invoiceId(RunEventParticipantModel v) => v.invoiceId;
-  static const Field<RunEventParticipantModel, String> _f$invoiceId = Field(
-    'invoiceId',
-    _$invoiceId,
+  static int? _$bookingId(RunEventParticipantModel v) => v.bookingId;
+  static const Field<RunEventParticipantModel, int> _f$bookingId = Field(
+    'bookingId',
+    _$bookingId,
     opt: true,
   );
   static String? _$paidAt(RunEventParticipantModel v) => v.paidAt;
@@ -160,12 +158,12 @@ class RunEventParticipantModelMapper
     #status: _f$status,
     #totalAmount: _f$totalAmount,
     #paymentStatus: _f$paymentStatus,
-    #paymentId: _f$paymentId,
+    #razorpayPaymentId: _f$razorpayPaymentId,
     #razorpayOrderId: _f$razorpayOrderId,
     #razorpayPaymentLinkId: _f$razorpayPaymentLinkId,
     #razorpayPaymentLinkShortUrl: _f$razorpayPaymentLinkShortUrl,
     #razorpayPaymentLinkCallbackUrl: _f$razorpayPaymentLinkCallbackUrl,
-    #invoiceId: _f$invoiceId,
+    #bookingId: _f$bookingId,
     #paidAt: _f$paidAt,
     #paymentExpiresAt: _f$paymentExpiresAt,
     #submittedAt: _f$submittedAt,
@@ -183,14 +181,14 @@ class RunEventParticipantModelMapper
       status: data.dec(_f$status),
       totalAmount: data.dec(_f$totalAmount),
       paymentStatus: data.dec(_f$paymentStatus),
-      paymentId: data.dec(_f$paymentId),
+      razorpayPaymentId: data.dec(_f$razorpayPaymentId),
       razorpayOrderId: data.dec(_f$razorpayOrderId),
       razorpayPaymentLinkId: data.dec(_f$razorpayPaymentLinkId),
       razorpayPaymentLinkShortUrl: data.dec(_f$razorpayPaymentLinkShortUrl),
       razorpayPaymentLinkCallbackUrl: data.dec(
         _f$razorpayPaymentLinkCallbackUrl,
       ),
-      invoiceId: data.dec(_f$invoiceId),
+      bookingId: data.dec(_f$bookingId),
       paidAt: data.dec(_f$paidAt),
       paymentExpiresAt: data.dec(_f$paymentExpiresAt),
       submittedAt: data.dec(_f$submittedAt),
@@ -280,12 +278,12 @@ abstract class RunEventParticipantModelCopyWith<
     String? status,
     double? totalAmount,
     String? paymentStatus,
-    String? paymentId,
+    String? razorpayPaymentId,
     String? razorpayOrderId,
     String? razorpayPaymentLinkId,
     String? razorpayPaymentLinkShortUrl,
     String? razorpayPaymentLinkCallbackUrl,
-    String? invoiceId,
+    int? bookingId,
     String? paidAt,
     String? paymentExpiresAt,
     String? submittedAt,
@@ -323,12 +321,12 @@ class _RunEventParticipantModelCopyWithImpl<$R, $Out>
     Object? status = $none,
     Object? totalAmount = $none,
     Object? paymentStatus = $none,
-    Object? paymentId = $none,
+    Object? razorpayPaymentId = $none,
     Object? razorpayOrderId = $none,
     Object? razorpayPaymentLinkId = $none,
     Object? razorpayPaymentLinkShortUrl = $none,
     Object? razorpayPaymentLinkCallbackUrl = $none,
-    Object? invoiceId = $none,
+    Object? bookingId = $none,
     Object? paidAt = $none,
     Object? paymentExpiresAt = $none,
     Object? submittedAt = $none,
@@ -345,7 +343,7 @@ class _RunEventParticipantModelCopyWithImpl<$R, $Out>
       if (status != $none) #status: status,
       if (totalAmount != $none) #totalAmount: totalAmount,
       if (paymentStatus != $none) #paymentStatus: paymentStatus,
-      if (paymentId != $none) #paymentId: paymentId,
+      if (razorpayPaymentId != $none) #razorpayPaymentId: razorpayPaymentId,
       if (razorpayOrderId != $none) #razorpayOrderId: razorpayOrderId,
       if (razorpayPaymentLinkId != $none)
         #razorpayPaymentLinkId: razorpayPaymentLinkId,
@@ -353,7 +351,7 @@ class _RunEventParticipantModelCopyWithImpl<$R, $Out>
         #razorpayPaymentLinkShortUrl: razorpayPaymentLinkShortUrl,
       if (razorpayPaymentLinkCallbackUrl != $none)
         #razorpayPaymentLinkCallbackUrl: razorpayPaymentLinkCallbackUrl,
-      if (invoiceId != $none) #invoiceId: invoiceId,
+      if (bookingId != $none) #bookingId: bookingId,
       if (paidAt != $none) #paidAt: paidAt,
       if (paymentExpiresAt != $none) #paymentExpiresAt: paymentExpiresAt,
       if (submittedAt != $none) #submittedAt: submittedAt,
@@ -374,7 +372,10 @@ class _RunEventParticipantModelCopyWithImpl<$R, $Out>
     status: data.get(#status, or: $value.status),
     totalAmount: data.get(#totalAmount, or: $value.totalAmount),
     paymentStatus: data.get(#paymentStatus, or: $value.paymentStatus),
-    paymentId: data.get(#paymentId, or: $value.paymentId),
+    razorpayPaymentId: data.get(
+      #razorpayPaymentId,
+      or: $value.razorpayPaymentId,
+    ),
     razorpayOrderId: data.get(#razorpayOrderId, or: $value.razorpayOrderId),
     razorpayPaymentLinkId: data.get(
       #razorpayPaymentLinkId,
@@ -388,7 +389,7 @@ class _RunEventParticipantModelCopyWithImpl<$R, $Out>
       #razorpayPaymentLinkCallbackUrl,
       or: $value.razorpayPaymentLinkCallbackUrl,
     ),
-    invoiceId: data.get(#invoiceId, or: $value.invoiceId),
+    bookingId: data.get(#bookingId, or: $value.bookingId),
     paidAt: data.get(#paidAt, or: $value.paidAt),
     paymentExpiresAt: data.get(#paymentExpiresAt, or: $value.paymentExpiresAt),
     submittedAt: data.get(#submittedAt, or: $value.submittedAt),

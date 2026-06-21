@@ -159,8 +159,21 @@ class PrimaryDetailsCard extends StatelessWidget {
               label: 'Amount',
               value: '₹${participant.totalAmount!.toStringAsFixed(0)}',
             ),
-          if (participant.invoiceId != null)
-            _CompactInfoRow(label: 'Invoice', value: participant.invoiceId!),
+          if (participant.bookingId != null)
+            _CompactInfoRow(
+              label: 'Booking ID',
+              value: '${participant.bookingId}',
+            ),
+          if (participant.razorpayOrderId != null)
+            _CompactInfoRow(
+              label: 'Razorpay order ID',
+              value: participant.razorpayOrderId!,
+            ),
+          if (participant.razorpayPaymentId != null)
+            _CompactInfoRow(
+              label: 'Razorpay payment ID',
+              value: participant.razorpayPaymentId!,
+            ),
           if (participant.submittedAt != null)
             _CompactInfoRow(
               label: 'Submitted',

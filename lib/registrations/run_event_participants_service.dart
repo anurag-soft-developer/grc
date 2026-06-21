@@ -187,4 +187,12 @@ class RunEventParticipantsService {
     if (response == null) return null;
     return RunEventParticipantModel.fromApiMap(response);
   }
+
+  Future<RunEventParticipantModel?> syncPayment(String id) async {
+    final response = await _api.post<Map<String, dynamic>>(
+      ApiConstants.runEventParticipants.syncPayment(id),
+    );
+    if (response == null) return null;
+    return RunEventParticipantModel.fromApiMap(response);
+  }
 }

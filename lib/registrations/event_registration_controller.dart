@@ -100,7 +100,9 @@ class EventRegistrationController extends GetxController {
     if (eventId != null) {
       _eventId = eventId;
     }
-    await AppNavigation.toNamed(AppConstants.routes.registrationDetailPath(participantId));
+    await AppNavigation.toNamed(
+      AppConstants.routes.registrationDetailPath(participantId),
+    );
     await _invalidateEventRegistrationStatus();
   }
 
@@ -110,6 +112,37 @@ class EventRegistrationController extends GetxController {
     await QueryClient().invalidateQueries(
       queryKey: QueryKeys.eventRegistrationStatus(eventId),
     );
+  }
+
+  Future<RunEventParticipantModel?> loadRegistrationDetail(
+    String routeId,
+  ) async {
+    final participant = await _service.getById(routeId);
+    if (participant == null || !participant.needsPaymentSync) {
+      return participant;
+    }
+
+    try {
+      final synced = await _service.syncPayment(routeId);
+      final result = synced ?? participant;
+
+      if (result.isPaid) {
+        final eventId = result.runEventId;
+        if (eventId != null) {
+          _eventId = eventId;
+          await QueryClient().invalidateQueries(
+            queryKey: QueryKeys.eventRegistrationStatus(eventId),
+          );
+        }
+        await QueryClient().invalidateQueries(
+          queryKey: QueryKeys.myRegistrations,
+        );
+      }
+
+      return result;
+    } catch (_) {
+      return participant;
+    }
   }
 
   Future<void> startRegistration(RunEventModel runEvent) async {
@@ -146,7 +179,9 @@ class EventRegistrationController extends GetxController {
         return;
       }
       isLoading.value = false;
-      await AppNavigation.toNamed(AppConstants.routes.registrationFormPath(eventId));
+      await AppNavigation.toNamed(
+        AppConstants.routes.registrationFormPath(eventId),
+      );
       await _invalidateEventRegistrationStatus();
     } on DioException catch (e) {
       ExceptionHandler.handleDioException(e);
@@ -215,10 +250,7 @@ class EventRegistrationController extends GetxController {
     } else {
       final existingOrder = current?.reusableCheckoutOrder;
       if (existingOrder != null && current != null) {
-        _openRazorpayCheckout(
-          order: existingOrder,
-          participantModel: current,
-        );
+        _openRazorpayCheckout(order: existingOrder, participantModel: current);
         return;
       }
     }
@@ -251,8 +283,14 @@ class EventRegistrationController extends GetxController {
       return;
     }
 
+    final order = orderResponse.order;
+    if (order == null) {
+      ExceptionHandler.showErrorToast('Could not start payment');
+      return;
+    }
+
     _openRazorpayCheckout(
-      order: orderResponse.order,
+      order: order,
       participantModel: orderResponse.participant,
     );
   }

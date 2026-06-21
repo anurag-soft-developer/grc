@@ -26,12 +26,12 @@ class RunEventParticipantModel with RunEventParticipantModelMappable {
   final String? status;
   final double? totalAmount;
   final String? paymentStatus;
-  final String? paymentId;
+  final String? razorpayPaymentId;
   final String? razorpayOrderId;
   final String? razorpayPaymentLinkId;
   final String? razorpayPaymentLinkShortUrl;
   final String? razorpayPaymentLinkCallbackUrl;
-  final String? invoiceId;
+  final int? bookingId;
   final String? paidAt;
   final String? paymentExpiresAt;
   final String? submittedAt;
@@ -47,12 +47,12 @@ class RunEventParticipantModel with RunEventParticipantModelMappable {
     this.status,
     this.totalAmount,
     this.paymentStatus,
-    this.paymentId,
+    this.razorpayPaymentId,
     this.razorpayOrderId,
     this.razorpayPaymentLinkId,
     this.razorpayPaymentLinkShortUrl,
     this.razorpayPaymentLinkCallbackUrl,
-    this.invoiceId,
+    this.bookingId,
     this.paidAt,
     this.paymentExpiresAt,
     this.submittedAt,
@@ -61,6 +61,13 @@ class RunEventParticipantModel with RunEventParticipantModelMappable {
   bool get isSubmitted => status == 'submitted';
   bool get isPendingPayment => status == 'pending_payment';
   bool get isPaid => paymentStatus == 'paid';
+
+  bool get needsPaymentSync =>
+      isPendingPayment &&
+      !isPaid &&
+      ((razorpayPaymentLinkId?.trim().isNotEmpty ?? false) ||
+          (razorpayOrderId?.trim().isNotEmpty ?? false) ||
+          (paymentExpiresAt?.trim().isNotEmpty ?? false));
 
   bool get isPaymentHoldActive {
     if (!isPendingPayment) return false;
@@ -230,12 +237,12 @@ class PaginatedRunEventParticipants with PaginatedRunEventParticipantsMappable {
 
 class CreateParticipantOrderResponse {
   final RunEventParticipantModel participant;
-  final RazorpayOrderModel order;
+  final RazorpayOrderModel? order;
   final RazorpayPaymentLinkModel? paymentLink;
 
   const CreateParticipantOrderResponse({
     required this.participant,
-    required this.order,
+    this.order,
     this.paymentLink,
   });
 
@@ -244,9 +251,11 @@ class CreateParticipantOrderResponse {
       participant: RunEventParticipantModel.fromApiMap(
         Map<String, dynamic>.from(map['participant'] as Map),
       ),
-      order: RazorpayOrderModel.fromMap(
-        Map<String, dynamic>.from(map['order'] as Map),
-      ),
+      order: map['order'] is Map
+          ? RazorpayOrderModel.fromMap(
+              Map<String, dynamic>.from(map['order'] as Map),
+            )
+          : null,
       paymentLink: map['paymentLink'] is Map
           ? RazorpayPaymentLinkModel.fromMap(
               Map<String, dynamic>.from(map['paymentLink'] as Map),

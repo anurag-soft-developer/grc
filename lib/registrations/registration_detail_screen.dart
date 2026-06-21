@@ -17,7 +17,6 @@ import 'package:grc/core/query/query_keys.dart';
 import 'package:grc/registrations/event_registration_controller.dart';
 import 'package:grc/registrations/model/custom_question_model.dart';
 import 'package:grc/registrations/model/run_event_participant_model.dart';
-import 'package:grc/registrations/run_event_participants_service.dart';
 
 class RegistrationDetailScreen extends HookWidget {
   const RegistrationDetailScreen({super.key});
@@ -37,7 +36,7 @@ class RegistrationDetailScreen extends HookWidget {
       (_) async {
         final routeId = id;
         if (routeId == null || routeId.isEmpty) return null;
-        return RunEventParticipantsService.instance.getById(routeId);
+        return payController.loadRegistrationDetail(routeId);
       },
       enabled: id != null && id.isNotEmpty,
     );
